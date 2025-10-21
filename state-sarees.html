@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#8b1538">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>State-wise Saree Collections - TheIndianSarees</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .state-hero {
+            background: linear-gradient(135deg, rgba(139, 21, 56, 0.9) 0%, rgba(160, 30, 66, 0.8) 50%, rgba(212, 175, 55, 0.1) 100%), url('https://images.unsplash.com/photo-1610276198568-eb6d0ff53e48?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            padding: 120px 0 80px;
+            text-align: center;
+            color: white;
+        }
+        
+        .state-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .state-hero p {
+            font-size: 1.2rem;
+            color: #f8f4f0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .states-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            padding: 4rem 0;
+        }
+        
+        .state-card {
+            background: linear-gradient(135deg, #ffffff 0%, #fef7f0 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(139, 21, 56, 0.1);
+            border: 2px solid #d4af37;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .state-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(139, 21, 56, 0.2);
+            border-color: #8b1538;
+        }
+        
+        .state-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8b1538, #d4af37, #8b1538);
+        }
+        
+        .state-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .state-flag {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #8b1538 0%, #d4af37 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 21, 56, 0.3);
+        }
+        
+        .state-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #8b1538;
+            margin: 0;
+        }
+        
+        .saree-list {
+            margin-bottom: 1.5rem;
+        }
+        
+        .saree-item {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #8b1538;
+            padding: 0.5rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-right: 0.5rem;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+        }
+        
+        .state-description {
+            color: #8b1538;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .state-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-state {
+            background: linear-gradient(135deg, #8b1538 0%, #a01e42 100%);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: 2px solid #d4af37;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 21, 56, 0.4);
+        }
+        
+        .btn-state:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #8b1538;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+        
+        .back-to-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #8b1538 0%, #a01e42 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(139, 21, 56, 0.4);
+            border: 2px solid #d4af37;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .back-to-home:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #8b1538;
+            transform: translateY(-2px);
+        }
+        
+        .search-section {
+            background: linear-gradient(135deg, #fef7f0 0%, #f8f4f0 100%);
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #d4af37;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            background: white;
+            color: #8b1538;
+            box-shadow: 0 4px 15px rgba(139, 21, 56, 0.1);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #8b1538;
+            box-shadow: 0 0 0 3px rgba(139, 21, 56, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b1538;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .state-hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .states-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .state-actions {
+                flex-direction: column;
+            }
+            
+            .btn-state {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-to-home">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+
+    <!-- Hero Section -->
+    <section class="state-hero">
+        <div class="container">
+            <h1>State-wise Saree Collections</h1>
+            <p>Explore the rich diversity of Indian sarees from every state. Each state has its unique weaving techniques, materials, and cultural significance.</p>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Search for a state or saree type..." id="searchInput">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- States Grid -->
+    <section class="states-grid" id="statesGrid">
+        <!-- States will be populated by JavaScript -->
+        <div style="text-align: center; padding: 2rem; color: #8b1538;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Loading state saree collections...</p>
+        </div>
+    </section>
+
+    <script>
+        const stateData = {
+            'Gujarat': {
+                emoji: '🦚',
+                sarees: ['Patola', 'Bandhani', 'Kutch Embroidery', 'Gharchola', 'Panetar'],
+                description: 'Famous for intricate tie-dye work, mirror work, and double ikat Patola sarees. The vibrant colors and geometric patterns reflect the rich cultural heritage of Gujarat.',
+                materials: ['Silk', 'Cotton', 'Georgette'],
+                speciality: 'Double Ikat Weaving'
+            },
+            'Maharashtra': {
+                emoji: '🏛️',
+                sarees: ['Paithani', 'Narayan Peth', 'Karvat Kati', 'Nauvari', 'Lugade'],
+                description: 'Known for luxurious silk sarees with gold borders, especially the famous Paithani with peacock motifs and intricate zari work.',
+                materials: ['Pure Silk', 'Zari', 'Cotton'],
+                speciality: 'Zari Work & Peacock Motifs'
+            },
+            'Rajasthan': {
+                emoji: '🏰',
+                sarees: ['Leheriya', 'Bandhani', 'Kota Doria', 'Mothra', 'Gota Patti'],
+                description: 'Traditional tie-dye and lightweight cotton sarees with vibrant wave patterns and intricate embroidery work.',
+                materials: ['Silk', 'Georgette', 'Cotton'],
+                speciality: 'Tie-Dye Techniques'
+            },
+            'Punjab': {
+                emoji: '🌾',
+                sarees: ['Phulkari', 'Chope', 'Bagh', 'Sainchi Phulkari', 'Thirma'],
+                description: 'Embroidered sarees with vibrant floral patterns using colorful threads, representing the agricultural heritage of Punjab.',
+                materials: ['Cotton', 'Silk', 'Khadi'],
+                speciality: 'Phulkari Embroidery'
+            },
+            'Uttar Pradesh': {
+                emoji: '🕌',
+                sarees: ['Banarasi', 'Chikankari', 'Zardozi', 'Tissue', 'Katan'],
+                description: 'Opulent silk sarees with intricate gold work, especially Banarasi brocades with meenakari and zari embellishments.',
+                materials: ['Pure Silk', 'Zari', 'Tissue'],
+                speciality: 'Brocade & Zari Work'
+            },
+            'West Bengal': {
+                emoji: '🎭',
+                sarees: ['Jamdani', 'Tant', 'Baluchari', 'Murshidabad Silk', 'Dhakai'],
+                description: 'Fine muslin and cotton sarees with delicate weaving, especially the famous Jamdani with butis and floral patterns.',
+                materials: ['Cotton', 'Silk', 'Muslin'],
+                speciality: 'Jamdani Weaving'
+            },
+            'Assam': {
+                emoji: '🌿',
+                sarees: ['Muga Silk', 'Eri Silk', 'Pat Silk', 'Mekhela Chador', 'Gamosa'],
+                description: 'Unique silk varieties native to Assam, known for their natural golden sheen and durability.',
+                materials: ['Muga Silk', 'Eri Silk', 'Pat Silk'],
+                speciality: 'Wild Silk Production'
+            },
+            'Karnataka': {
+                emoji: '🏛️',
+                sarees: ['Mysore Silk', 'Ilkal', 'Molakalmuru', 'Kasuti', 'Karnataka Silk'],
+                description: 'Pure silk sarees with elegant drape, especially Mysore silk known for its quality and traditional motifs.',
+                materials: ['Pure Silk', 'Cotton', 'Zari'],
+                speciality: 'Mysore Silk Quality'
+            },
+            'Kerala': {
+                emoji: '🌴',
+                sarees: ['Kasavu', 'Kanjeevaram', 'Balaramapuram', 'Kerala Cotton', 'Mundum Neriyathum'],
+                description: 'Gold-bordered sarees perfect for festivals, especially the traditional Kasavu with golden borders.',
+                materials: ['Cotton', 'Zari', 'Silk'],
+                speciality: 'Gold Border Work'
+            },
+            'Tamil Nadu': {
+                emoji: '🏛️',
+                sarees: ['Kanchipuram', 'Coimbatore Cotton', 'Madurai Cotton', 'Kongu', 'Chettinad'],
+                description: 'Temple borders and pure silk sarees, especially Kanchipuram known for its temple borders and contrast pallus.',
+                materials: ['Pure Silk', 'Zari', 'Cotton'],
+                speciality: 'Temple Border Designs'
+            },
+            'Telangana': {
+                emoji: '🎨',
+                sarees: ['Pochampally', 'Gadwal', 'Venkatagiri', 'Narayanpet', 'Kalamkari'],
+                description: 'Ikat weaving and traditional designs, especially lightweight Gadwal and intricate Pochampally patterns.',
+                materials: ['Silk', 'Cotton', 'Ikat'],
+                speciality: 'Ikat Weaving'
+            },
+            'Andhra Pradesh': {
+                emoji: '🌊',
+                sarees: ['Mangalagiri', 'Uppada', 'Dharmavaram', 'Kalamkari', 'Venkatagiri'],
+                description: 'Cotton and silk sarees with unique weaving, especially Jamdhani Uppada weaves and Mangalagiri cotton.',
+                materials: ['Cotton', 'Silk', 'Jamdhani'],
+                speciality: 'Jamdhani Weaving'
+            },
+            'Odisha': {
+                emoji: '🏛️',
+                sarees: ['Sambalpuri', 'Bomkai', 'Berhampur Silk', 'Kotpad', 'Ikat'],
+                description: 'Traditional ikat and silk sarees with geometric patterns, especially Sambalpuri with temple motifs.',
+                materials: ['Cotton', 'Silk', 'Ikat'],
+                speciality: 'Geometric Ikat Patterns'
+            },
+            'Bihar': {
+                emoji: '🕉️',
+                sarees: ['Tussar Silk', 'Bhagalpur Silk', 'Madhubani', 'Sujni', 'Kantha'],
+                description: 'Wild silk and hand-painted sarees, especially Tussar silk known for its texture and Bhagalpur silk.',
+                materials: ['Tussar Silk', 'Cotton', 'Hand-painted'],
+                speciality: 'Wild Silk & Hand Painting'
+            },
+            'Madhya Pradesh': {
+                emoji: '🏛️',
+                sarees: ['Chanderi', 'Maheshwari', 'Bagru Print', 'Kalamkari', 'Bandhani'],
+                description: 'Lightweight cotton and silk sarees, especially sheer Chanderi known for its transparency and elegance.',
+                materials: ['Silk-Cotton', 'Cotton', 'Silk'],
+                speciality: 'Sheer Weaving Techniques'
+            },
+            'Himachal Pradesh': {
+                emoji: '🏔️',
+                sarees: ['Kullu Shawl', 'Kinnauri', 'Chamba Rumal', 'Kangra', 'Pahari'],
+                description: 'Traditional woolen and cotton sarees with mountain motifs and warm colors reflecting the Himalayan culture.',
+                materials: ['Wool', 'Cotton', 'Silk'],
+                speciality: 'Mountain Motifs'
+            },
+            'Jammu & Kashmir': {
+                emoji: '🏔️',
+                sarees: ['Kashmiri Silk', 'Pashmina', 'Kani Shawl', 'Sozni', 'Tilla'],
+                description: 'Luxurious silk and woolen sarees with intricate embroidery, especially Pashmina and Sozni work.',
+                materials: ['Pashmina', 'Silk', 'Wool'],
+                speciality: 'Pashmina & Sozni Work'
+            },
+            'Haryana': {
+                emoji: '🌾',
+                sarees: ['Phulkari', 'Haryana Cotton', 'Khes', 'Durries', 'Rugs'],
+                description: 'Traditional embroidered sarees with geometric patterns and vibrant colors representing the agricultural state.',
+                materials: ['Cotton', 'Silk', 'Khadi'],
+                speciality: 'Geometric Embroidery'
+            },
+            'Delhi': {
+                emoji: '🏛️',
+                sarees: ['Chikankari', 'Zardozi', 'Kalamkari', 'Block Print', 'Embroidery'],
+                description: 'Fusion sarees combining various techniques from across India, especially Chikankari and Zardozi work.',
+                materials: ['Cotton', 'Silk', 'Georgette'],
+                speciality: 'Fusion Techniques'
+            },
+            'Goa': {
+                emoji: '🏖️',
+                sarees: ['Kunbi', 'Pano Bhaju', 'Goan Cotton', 'Kunbi Saree', 'Traditional'],
+                description: 'Traditional cotton sarees with simple designs and vibrant colors reflecting the coastal culture of Goa.',
+                materials: ['Cotton', 'Silk', 'Linen'],
+                speciality: 'Coastal Motifs'
+            }
+        };
+
+        function createStateCard(stateName, data) {
+            return `
+                <div class="state-card" data-state="${stateName.toLowerCase()}">
+                    <div class="state-header">
+                        <div class="state-flag">${data.emoji}</div>
+                        <h3 class="state-name">${stateName}</h3>
+                    </div>
+                    
+                    <div class="saree-list">
+                        ${data.sarees.map(saree => `<span class="saree-item">${saree}</span>`).join('')}
+                    </div>
+                    
+                    <p class="state-description">${data.description}</p>
+                    
+                    <div class="state-actions">
+                        <a href="#" class="btn-state" onclick="viewSareeDetails('${stateName}')">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        <a href="${getStatePageUrl(stateName)}" class="btn-state">
+                            <i class="fas fa-store"></i> Shop ${stateName}
+                        </a>
+                        <a href="index.html#collections" class="btn-state">
+                            <i class="fas fa-shopping-bag"></i> All Collections
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStates() {
+            const grid = document.getElementById('statesGrid');
+            grid.innerHTML = Object.entries(stateData)
+                .map(([stateName, data]) => createStateCard(stateName, data))
+                .join('');
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.state-card');
+                
+                cards.forEach(card => {
+                    const stateName = card.dataset.state;
+                    const cardText = card.textContent.toLowerCase();
+                    
+                    if (cardText.includes(query)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        function getStatePageUrl(stateName) {
+            const statePages = {
+                'Gujarat': 'gujarat-sarees.html',
+                'Tamil Nadu': 'tamil-nadu-sarees.html',
+                'Uttar Pradesh': 'uttar-pradesh-sarees.html',
+                'West Bengal': 'west-bengal-sarees.html',
+                'Maharashtra': 'maharashtra-sarees.html',
+                'Rajasthan': 'rajasthan-sarees.html'
+            };
+            return statePages[stateName] || '#';
+        }
+
+        function viewSareeDetails(stateName) {
+            const data = stateData[stateName];
+            if (data) {
+                alert(`${stateName} Sarees:\n\nFamous Sarees: ${data.sarees.join(', ')}\n\nMaterials: ${data.materials.join(', ')}\n\nSpeciality: ${data.speciality}\n\n${data.description}`);
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, initializing states...');
+            renderStates();
+            setupSearch();
+            console.log('States rendered:', Object.keys(stateData).length);
+        });
+
+        // Make functions globally available
+        window.viewSareeDetails = viewSareeDetails;
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "sareesutra-website",
+  "version": "1.0.0",
+  "description": "A modern web application showcasing SareeSutra - One Stop Sarees from Every Indian State",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -o",
+    "dev": "npx live-server --port=3000 --open=/",
+    "build": "echo 'No build process needed for static site'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "saree",
+    "indian",
+    "fashion",
+    "handloom",
+    "textile",
+    "ecommerce",
+    "website"
+  ],
+  "author": "Plan My Trip",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/planmytrip/website.git"
+  },
+  "homepage": "https://plan-my-trip-lqv2p.ondigitalocean.app/",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidsTube - YouTube API Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #FFE66D);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #FF6B6B;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .api-setup {
+            background: #f8f9fa;
+            border: 2px solid #4ECDC4;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .api-key-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            border: 2px solid #4ECDC4;
+            border-radius: 25px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        
+        .api-btn {
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 30px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            border: 3px solid #4ECDC4;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .search-btn {
+            padding: 15px 25px;
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-element {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 2;
+        }
+        
+        .video-placeholder i {
+            font-size: 4rem;
+            color: #FF6B6B;
+            margin-bottom: 15px;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-info {
+            padding: 15px;
+        }
+        
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .video-duration {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-play-circle"></i> KidsTube</h1>
+            <p>Fetch real videos from YouTube! 🎈</p>
+        </div>
+        
+        <div class="api-setup">
+            <h3><i class="fas fa-key"></i> YouTube API Setup</h3>
+            <p>Enter your YouTube Data API v3 key to fetch real videos:</p>
+            <input type="text" id="apiKeyInput" class="api-key-input" placeholder="Enter YouTube API Key (optional - will use demo videos if empty)">
+            <br>
+            <button class="api-btn" onclick="setupAPI()">Setup API</button>
+            <button class="api-btn" onclick="useDemoVideos()">Use Demo Videos</button>
+            <div id="apiStatus"></div>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search for kid-friendly videos...">
+            <button onclick="searchYouTubeVideos()" class="search-btn">Search YouTube</button>
+        </div>
+        
+        <div class="video-player" id="videoPlayer">
+            <div class="video-placeholder">
+                <i class="fas fa-play-circle"></i>
+                <p>Search and select a video to watch!</p>
+            </div>
+        </div>
+        
+        <div class="video-grid" id="videoGrid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #4ECDC4; margin-bottom: 15px;"></i>
+                <p>Ready to search YouTube videos!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let apiKey = '';
+        let selectedVideo = null;
+        let currentVideos = [];
+        
+        // Demo videos (fallback when no API key)
+        const demoVideos = [
+            {
+                id: 'XqZsoesa55w',
+                title: 'Baby Shark Dance! 🦈',
+                thumbnail: 'https://img.youtube.com/vi/XqZsoesa55w/maxresdefault.jpg',
+                duration: '4:15',
+                channelTitle: 'Pinkfong'
+            },
+            {
+                id: 'kffacxfA7G4',
+                title: 'Wheels on the Bus! 🚌',
+                thumbnail: 'https://img.youtube.com/vi/kffacxfA7G4/maxresdefault.jpg',
+                duration: '3:47',
+                channelTitle: 'Super Simple Songs'
+            },
+            {
+                id: 'h6CNvzJhLdE',
+                title: 'ABC Song - Alphabet Song! 📚',
+                thumbnail: 'https://img.youtube.com/vi/h6CNvzJhLdE/maxresdefault.jpg',
+                duration: '7:12',
+                channelTitle: 'Cocomelon'
+            }
+        ];
+        
+        // Initialize app
+        function init() {
+            console.log('Initializing YouTube KidsTube...');
+            displayVideos(demoVideos);
+            console.log('App initialized with demo videos');
+        }
+        
+        // Setup YouTube API
+        function setupAPI() {
+            apiKey = document.getElementById('apiKeyInput').value.trim();
+            
+            if (!apiKey) {
+                showError('Please enter a valid YouTube API key');
+                return;
+            }
+            
+            // Test the API key
+            testAPIKey(apiKey);
+        }
+        
+        // Test API key
+        async function testAPIKey(key) {
+            try {
+                const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=kids+learning&type=video&key=${key}&maxResults=1`);
+                
+                if (response.ok) {
+                    showSuccess('YouTube API connected successfully!');
+                    document.getElementById('apiStatus').innerHTML = '<div class="success">✅ API Connected - You can now search YouTube!</div>';
+                } else {
+                    showError('Invalid API key. Please check your key and try again.');
+                }
+            } catch (error) {
+                showError('Error connecting to YouTube API: ' + error.message);
+            }
+        }
+        
+        // Use demo videos
+        function useDemoVideos() {
+            apiKey = '';
+            showSuccess('Using demo videos. Enter an API key to search real YouTube videos.');
+            document.getElementById('apiStatus').innerHTML = '<div class="success">📺 Using Demo Videos</div>';
+            displayVideos(demoVideos);
+        }
+        
+        // Search YouTube videos
+        async function searchYouTubeVideos() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            
+            if (!searchTerm) {
+                showError('Please enter a search term');
+                return;
+            }
+            
+            if (!apiKey) {
+                showError('Please setup YouTube API key first or use demo videos');
+                return;
+            }
+            
+            showLoading('Searching YouTube for kid-friendly videos...');
+            
+            try {
+                const videos = await fetchYouTubeVideos(searchTerm);
+                currentVideos = videos;
+                displayVideos(videos);
+                showSuccess(`Found ${videos.length} videos for "${searchTerm}"`);
+            } catch (error) {
+                showError('Error searching YouTube: ' + error.message);
+                displayVideos(demoVideos); // Fallback to demo videos
+            }
+        }
+        
+        // Fetch videos from YouTube API
+        async function fetchYouTubeVideos(query) {
+            const searchQuery = encodeURIComponent(query + ' kids children learning');
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&key=${apiKey}&maxResults=12&videoCategoryId=27&safeSearch=strict`;
+            
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('YouTube API request failed');
+            }
+            
+            const data = await response.json();
+            
+            return data.items.map(item => ({
+                id: item.id.videoId,
+                title: item.snippet.title,
+                thumbnail: item.snippet.thumbnails.medium.url,
+                duration: 'Unknown',
+                channelTitle: item.snippet.channelTitle,
+                description: item.snippet.description
+            }));
+        }
+        
+        // Display videos
+        function displayVideos(videoList) {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+            
+            if (videoList.length === 0) {
+                grid.innerHTML = '<div class="loading">No videos found</div>';
+                return;
+            }
+            
+            videoList.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => selectVideo(video);
+                
+                card.innerHTML = `
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
+                        <i class="fas fa-play" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 50%;"></i>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-duration">${video.channelTitle} • ${video.duration}</div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            console.log(`Displayed ${videoList.length} videos`);
+        }
+        
+        // Select video
+        function selectVideo(video) {
+            console.log('Selected video:', video.title);
+            selectedVideo = video;
+            
+            const player = document.getElementById('videoPlayer');
+            player.innerHTML = `
+                <div class="video-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Click to play: ${video.title}</p>
+                </div>
+            `;
+        }
+        
+        // Play selected video
+        function playSelectedVideo() {
+            if (!selectedVideo) {
+                showError('Please select a video first!');
+                return;
+            }
+            
+            console.log('Playing video:', selectedVideo.title);
+            
+            const player = document.getElementById('videoPlayer');
+            player.innerHTML = `
+                <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src="https://www.youtube.com/embed/${selectedVideo.id}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1" 
+                    frameborder="0" 
+                    allowfullscreen>
+                </iframe>
+            `;
+        }
+        
+        // Show loading message
+        function showLoading(message) {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #4ECDC4; margin-bottom: 15px;"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        // Show error message
+        function showError(message) {
+            const status = document.getElementById('apiStatus');
+            status.innerHTML = `<div class="error">❌ ${message}</div>`;
+            console.error(message);
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            const status = document.getElementById('apiStatus');
+            status.innerHTML = `<div class="success">✅ ${message}</div>`;
+            console.log(message);
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Test functions
+        window.testAPI = function() {
+            console.log('API Key:', apiKey ? 'Set' : 'Not set');
+            console.log('Current videos:', currentVideos.length);
+        };
+        
+        window.testSearch = function(term) {
+            document.getElementById('searchInput').value = term;
+            searchYouTubeVideos();
+        };
+    </script>
+</body>
+</html>

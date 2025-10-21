@@ -1,0 +1,44 @@
+{
+  "name": "kids-video-app",
+  "version": "1.0.0",
+  "description": "A kid-friendly mobile web app for watching YouTube videos with bright colors and safe content",
+  "main": "kids-video-app.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -o kids-video-app.html",
+    "dev": "npx live-server --port=3000 --open=kids-video-app.html",
+    "build": "echo 'No build process needed for static site'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "kids",
+    "video",
+    "youtube",
+    "mobile",
+    "web-app",
+    "children",
+    "education",
+    "entertainment",
+    "family-friendly"
+  ],
+  "author": "KidsTube Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Paipadabhijith/Kids-app.git"
+  },
+  "homepage": "https://paipadabhijith.github.io/Kids-app/",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "iOS >= 10",
+    "Android >= 5"
+  ]
+}

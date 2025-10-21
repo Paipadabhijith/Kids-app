@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        .search-btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .results {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            min-height: 200px;
+        }
+        .video-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .video-item:hover {
+            background: #f8f9fa;
+        }
+        .debug {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search Test</h1>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search for videos...">
+            <button onclick="testSearch()" class="search-btn">Search</button>
+        </div>
+        
+        <div class="results" id="results">
+            <p>Enter a search term and click Search</p>
+        </div>
+        
+        <div class="debug" id="debug">
+            Debug info will appear here...
+        </div>
+    </div>
+
+    <script>
+        // Test video data
+        const videos = [
+            { id: 1, title: 'Learn Colors! 🌈', category: 'education' },
+            { id: 2, title: 'Happy Music! 🎵', category: 'music' },
+            { id: 3, title: 'Fun Cartoons! 🎬', category: 'cartoons' },
+            { id: 4, title: 'ABC Learning! 📚', category: 'education' },
+            { id: 5, title: 'Dancing Kids! 💃', category: 'music' }
+        ];
+        
+        function log(message) {
+            const debug = document.getElementById('debug');
+            debug.innerHTML += message + '<br>';
+            console.log(message);
+        }
+        
+        function testSearch() {
+            log('=== SEARCH TEST STARTED ===');
+            
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.trim();
+            
+            log('Search term: "' + searchTerm + '"');
+            log('Search term length: ' + searchTerm.length);
+            
+            if (!searchTerm) {
+                log('ERROR: No search term entered');
+                document.getElementById('results').innerHTML = '<p style="color: red;">Please enter a search term</p>';
+                return;
+            }
+            
+            log('Videos available: ' + videos.length);
+            
+            const filtered = videos.filter(video => {
+                const titleMatch = video.title.toLowerCase().includes(searchTerm.toLowerCase());
+                const categoryMatch = video.category.toLowerCase().includes(searchTerm.toLowerCase());
+                
+                log('Checking video: ' + video.title);
+                log('  Title match: ' + titleMatch);
+                log('  Category match: ' + categoryMatch);
+                
+                return titleMatch || categoryMatch;
+            });
+            
+            log('Filtered results: ' + filtered.length);
+            log('Filtered videos: ' + filtered.map(v => v.title).join(', '));
+            
+            displayResults(filtered);
+        }
+        
+        function displayResults(filteredVideos) {
+            const results = document.getElementById('results');
+            
+            if (filteredVideos.length === 0) {
+                results.innerHTML = '<p style="color: red;">No videos found</p>';
+                return;
+            }
+            
+            let html = '<h3>Search Results (' + filteredVideos.length + '):</h3>';
+            filteredVideos.forEach(video => {
+                html += '<div class="video-item">' + video.title + ' (' + video.category + ')</div>';
+            });
+            
+            results.innerHTML = html;
+        }
+        
+        // Test on page load
+        window.onload = function() {
+            log('Page loaded successfully');
+            log('Videos loaded: ' + videos.length);
+            log('Ready to test search');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#8b1538">
+    <title>Tamil Nadu Sarees - Kanchipuram & More | TheIndianSarees</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .state-hero {
+            background: linear-gradient(135deg, rgba(139, 21, 56, 0.9) 0%, rgba(160, 30, 66, 0.8) 50%, rgba(212, 175, 55, 0.1) 100%), url('https://images.unsplash.com/photo-1600979413381-05b3f381bb77?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            padding: 120px 0 80px;
+            text-align: center;
+            color: white;
+        }
+        
+        .state-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .saree-showcase {
+            padding: 4rem 0;
+            background: linear-gradient(135deg, #fef7f0 0%, #f8f4f0 100%);
+        }
+        
+        .saree-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .saree-card {
+            background: linear-gradient(135deg, #ffffff 0%, #fef7f0 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(139, 21, 56, 0.1);
+            border: 2px solid #d4af37;
+            transition: all 0.3s ease;
+        }
+        
+        .saree-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(139, 21, 56, 0.2);
+            border-color: #8b1538;
+        }
+        
+        .saree-image {
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .saree-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(139, 21, 56, 0.8) 0%, rgba(212, 175, 55, 0.6) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .saree-card:hover .saree-overlay {
+            opacity: 1;
+        }
+        
+        .saree-content {
+            padding: 1.5rem;
+        }
+        
+        .saree-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #8b1538;
+            margin-bottom: 0.5rem;
+        }
+        
+        .saree-description {
+            color: #8b1538;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .saree-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-tag {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #8b1538;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .saree-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #8b1538;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-saree {
+            background: linear-gradient(135deg, #8b1538 0%, #a01e42 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #d4af37;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 21, 56, 0.4);
+        }
+        
+        .btn-saree:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #8b1538;
+            transform: translateY(-2px);
+        }
+        
+        .back-to-states {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #8b1538 0%, #a01e42 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(139, 21, 56, 0.4);
+            border: 2px solid #d4af37;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .back-to-states:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #8b1538;
+            transform: translateY(-2px);
+        }
+        
+        .state-info {
+            background: white;
+            padding: 3rem 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+        
+        .info-content h3 {
+            color: #8b1538;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-content p {
+            color: #8b1538;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #fef7f0 0%, #f8f4f0 100%);
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #8b1538;
+        }
+        
+        .stat-label {
+            color: #8b1538;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .state-hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .saree-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="state-sarees.html" class="back-to-states">
+        <i class="fas fa-arrow-left"></i> Back to States
+    </a>
+
+    <!-- Hero Section -->
+    <section class="state-hero">
+        <div class="container">
+            <h1>🏛️ Tamil Nadu Sarees</h1>
+            <p>Discover the royal elegance of Tamil Nadu's sarees - from temple borders of Kanchipuram to cotton weaves</p>
+        </div>
+    </section>
+
+    <!-- State Information -->
+    <section class="state-info">
+        <div class="container">
+            <div class="info-grid">
+                <div class="info-content">
+                    <h3>Tamil Nadu's Saree Heritage</h3>
+                    <p>Tamil Nadu is home to some of India's most prestigious sarees, particularly the world-famous Kanchipuram silk sarees. Known for their temple borders, contrast pallus, and pure silk quality, these sarees are a symbol of South Indian elegance and tradition.</p>
+                    <p>From the royal Kanchipuram to the comfortable cotton weaves of Coimbatore and Madurai, Tamil Nadu offers a diverse range of sarees for every occasion and budget.</p>
+                    
+                    <div class="info-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">4+</div>
+                            <div class="stat-label">Saree Types</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">400+</div>
+                            <div class="stat-label">Years Old</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">100+</div>
+                            <div class="stat-label">Weaving Families</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-image">
+                    <img src="https://images.unsplash.com/photo-1600979413381-05b3f381bb77?q=80&w=800&auto=format&fit=crop" alt="Tamil Nadu Sarees" style="width: 100%; border-radius: 15px; box-shadow: 0 15px 35px rgba(139, 21, 56, 0.2);">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Saree Showcase -->
+    <section class="saree-showcase">
+        <div class="container">
+            <div class="section-header">
+                <h2>Featured Tamil Nadu Sarees</h2>
+                <p>Explore our curated collection of authentic Tamil Nadu sarees</p>
+            </div>
+            
+            <div class="saree-grid">
+                <div class="saree-card">
+                    <div class="saree-image" style="background-image: url('https://images.unsplash.com/photo-1600979413381-05b3f381bb77?q=80&w=600&auto=format&fit=crop');">
+                        <div class="saree-overlay">
+                            <i class="fas fa-eye" style="color: white; font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="saree-content">
+                        <h3 class="saree-name">Kanchipuram Silk</h3>
+                        <p class="saree-description">The queen of silk sarees with temple borders and contrast pallus. Handwoven with pure mulberry silk and zari work.</p>
+                        <div class="saree-features">
+                            <span class="feature-tag">Pure Silk</span>
+                            <span class="feature-tag">Temple Borders</span>
+                            <span class="feature-tag">Zari Work</span>
+                        </div>
+                        <div class="saree-price">₹15,000 - ₹1,00,000</div>
+                        <a href="#" class="btn-saree">View Details</a>
+                    </div>
+                </div>
+                
+                <div class="saree-card">
+                    <div class="saree-image" style="background-image: url('https://images.unsplash.com/photo-1621514310462-d90c3e90a9b1?q=80&w=600&auto=format&fit=crop');">
+                        <div class="saree-overlay">
+                            <i class="fas fa-eye" style="color: white; font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="saree-content">
+                        <h3 class="saree-name">Coimbatore Cotton</h3>
+                        <p class="saree-description">Lightweight cotton sarees perfect for daily wear. Known for their comfort and traditional South Indian designs.</p>
+                        <div class="saree-features">
+                            <span class="feature-tag">Cotton</span>
+                            <span class="feature-tag">Daily Wear</span>
+                            <span class="feature-tag">Comfortable</span>
+                        </div>
+                        <div class="saree-price">₹800 - ₹3,500</div>
+                        <a href="#" class="btn-saree">View Details</a>
+                    </div>
+                </div>
+                
+                <div class="saree-card">
+                    <div class="saree-image" style="background-image: url('https://images.unsplash.com/photo-1556227701-6d1a3032f0f1?q=80&w=600&auto=format&fit=crop');">
+                        <div class="saree-overlay">
+                            <i class="fas fa-eye" style="color: white; font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="saree-content">
+                        <h3 class="saree-name">Madurai Cotton</h3>
+                        <p class="saree-description">Traditional cotton sarees from Madurai with intricate borders and traditional South Indian motifs.</p>
+                        <div class="saree-features">
+                            <span class="feature-tag">Cotton</span>
+                            <span class="feature-tag">Traditional</span>
+                            <span class="feature-tag">Intricate Borders</span>
+                        </div>
+                        <div class="saree-price">₹1,200 - ₹4,500</div>
+                        <a href="#" class="btn-saree">View Details</a>
+                    </div>
+                </div>
+                
+                <div class="saree-card">
+                    <div class="saree-image" style="background-image: url('https://images.unsplash.com/photo-1610276198568-eb6d0ff53e48?q=80&w=600&auto=format&fit=crop');">
+                        <div class="saree-overlay">
+                            <i class="fas fa-eye" style="color: white; font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="saree-content">
+                        <h3 class="saree-name">Kongu Saree</h3>
+                        <p class="saree-description">Traditional saree from Kongu region with unique weaving patterns and vibrant colors representing local culture.</p>
+                        <div class="saree-features">
+                            <span class="feature-tag">Traditional</span>
+                            <span class="feature-tag">Unique Patterns</span>
+                            <span class="feature-tag">Vibrant Colors</span>
+                        </div>
+                        <div class="saree-price">₹2,000 - ₹8,000</div>
+                        <a href="#" class="btn-saree">View Details</a>
+                    </div>
+                </div>
+                
+                <div class="saree-card">
+                    <div class="saree-image" style="background-image: url('https://images.unsplash.com/photo-1581167765614-5f71f6e2a0d8?q=80&w=600&auto=format&fit=crop');">
+                        <div class="saree-overlay">
+                            <i class="fas fa-eye" style="color: white; font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="saree-content">
+                        <h3 class="saree-name">Chettinad Saree</h3>
+                        <p class="saree-description">Elegant sarees from Chettinad region known for their sophisticated designs and high-quality materials.</p>
+                        <div class="saree-features">
+                            <span class="feature-tag">Elegant</span>
+                            <span class="feature-tag">High Quality</span>
+                            <span class="feature-tag">Sophisticated</span>
+                        </div>
+                        <div class="saree-price">₹5,000 - ₹25,000</div>
+                        <a href="#" class="btn-saree">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

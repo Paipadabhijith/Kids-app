@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FF6B6B">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>KidsTube - Fun Videos for Kids! 🎈</title>
+    <link rel="stylesheet" href="kids-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-play-circle"></i>
+                <span>KidsTube</span>
+            </div>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search for fun videos! 🔍" class="search-input">
+                <button class="search-btn" onclick="searchVideos()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-category="all">All Videos</button>
+        <button class="nav-tab" data-category="cartoons">Cartoons</button>
+        <button class="nav-tab" data-category="education">Learning</button>
+        <button class="nav-tab" data-category="music">Music</button>
+        <button class="nav-tab" data-category="games">Games</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Featured Video Section -->
+        <section class="featured-video">
+            <div class="video-container">
+                <div id="videoPlayer" class="video-player">
+                    <div class="video-placeholder">
+                        <i class="fas fa-play-circle"></i>
+                        <p>Click a video to start watching!</p>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h2 id="videoTitle">Welcome to KidsTube!</h2>
+                    <p id="videoDescription">Choose a fun video from below to get started! 🎉</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tonedown Control Panel -->
+        <section class="tonedown-section">
+            <div class="tonedown-panel" id="tonedownPanel">
+                <div class="tonedown-header">
+                    <h4><i class="fas fa-clock"></i> Screen Time Control</h4>
+                    <button class="tonedown-toggle" id="tonedownToggle" onclick="toggleTonedown()">
+                        <i class="fas fa-play"></i> Start Tonedown
+                    </button>
+                </div>
+                <div class="tonedown-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="progressText">Ready to start tonedown</span>
+                        <span id="timeRemaining"></span>
+                    </div>
+                </div>
+                <div class="tonedown-settings">
+                    <label for="tonedownDuration">Duration (minutes):</label>
+                    <select id="tonedownDuration">
+                        <option value="15">15 minutes</option>
+                        <option value="30" selected>30 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">1 hour</option>
+                    </select>
+                    <button class="reset-btn" onclick="resetTonedown()">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Video Grid -->
+        <section class="video-grid">
+            <h3>Popular Videos</h3>
+            <div class="videos-container" id="videosContainer">
+                <!-- Videos will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Safety Notice -->
+    <div class="safety-notice">
+        <i class="fas fa-shield-alt"></i>
+        <span>All videos are kid-safe and family-friendly!</span>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <p>Loading fun videos...</p>
+    </div>
+
+    <script src="kids-script.js"></script>
+</body>
+</html>

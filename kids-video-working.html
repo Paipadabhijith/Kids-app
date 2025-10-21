@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidsTube - Working Video Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #FFE66D);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #FF6B6B;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 30px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            border: 3px solid #4ECDC4;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .search-btn {
+            padding: 15px 25px;
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-element {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 2;
+        }
+        
+        .video-placeholder i {
+            font-size: 4rem;
+            color: #FF6B6B;
+            margin-bottom: 15px;
+        }
+        
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .play-btn {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #FF6B6B;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        .time-display {
+            color: white;
+            font-size: 14px;
+            min-width: 100px;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+        }
+        
+        .video-info {
+            padding: 15px;
+        }
+        
+        .video-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .video-duration {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .category-tab {
+            padding: 10px 20px;
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .category-tab.active {
+            background: #FF6B6B;
+        }
+        
+        .tonedown-panel {
+            background: #f8f9fa;
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .tonedown-btn {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        .progress-bar-tonedown {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill-tonedown {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        /* Search message animations */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-play-circle"></i> KidsTube</h1>
+            <p>Working video player with real content! 🎈</p>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search for fun videos...">
+            <button onclick="searchVideos()" class="search-btn">Search</button>
+        </div>
+        
+        <div class="category-tabs">
+            <button class="category-tab active" onclick="filterVideos('all')">All</button>
+            <button class="category-tab" onclick="filterVideos('education')">Learning</button>
+            <button class="category-tab" onclick="filterVideos('music')">Music</button>
+            <button class="category-tab" onclick="filterVideos('cartoons')">Cartoons</button>
+        </div>
+        
+        <div class="video-player" id="videoPlayer">
+            <div class="video-placeholder">
+                <i class="fas fa-play-circle"></i>
+                <p>Click a video below to start watching!</p>
+            </div>
+            <video class="video-element" id="videoElement" style="display: none;">
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-controls" id="videoControls" style="display: none;">
+                <button class="play-btn" id="playBtn" onclick="togglePlay()">
+                    <i class="fas fa-play"></i>
+                </button>
+                <div class="progress-bar" id="progressBar" onclick="seekVideo(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+            </div>
+        </div>
+        
+        <div class="tonedown-panel">
+            <h3><i class="fas fa-clock"></i> Screen Time Control</h3>
+            <button class="tonedown-btn" onclick="toggleTonedown()" id="tonedownBtn">Start Tonedown</button>
+            <div class="progress-bar-tonedown">
+                <div class="progress-fill-tonedown" id="progressFillTonedown"></div>
+            </div>
+            <p id="tonedownStatus">Ready to start tonedown</p>
+        </div>
+        
+        <div class="video-grid" id="videoGrid">
+            <!-- Videos will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Real working video data with actual video URLs
+        const videos = [
+            {
+                id: '1',
+                title: 'Fun Learning Colors! 🌈',
+                category: 'education',
+                duration: '2:30',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+                thumbnail: '🌈'
+            },
+            {
+                id: '2',
+                title: 'Happy Animal Sounds! 🐱',
+                category: 'education',
+                duration: '3:15',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+                thumbnail: '🐱'
+            },
+            {
+                id: '3',
+                title: 'Kids Music Time! 🎵',
+                category: 'music',
+                duration: '4:20',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+                thumbnail: '🎵'
+            },
+            {
+                id: '4',
+                title: 'Cartoon Adventure! 🎬',
+                category: 'cartoons',
+                duration: '5:10',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+                thumbnail: '🎬'
+            },
+            {
+                id: '5',
+                title: 'ABC Learning Fun! 📚',
+                category: 'education',
+                duration: '3:45',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+                thumbnail: '📚'
+            },
+            {
+                id: '6',
+                title: 'Dancing Kids! 💃',
+                category: 'music',
+                duration: '2:55',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+                thumbnail: '💃'
+            },
+            {
+                id: '7',
+                title: 'Science Fun! 🔬',
+                category: 'education',
+                duration: '4:30',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+                thumbnail: '🔬'
+            },
+            {
+                id: '8',
+                title: 'Story Time! 📖',
+                category: 'cartoons',
+                duration: '6:15',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+                thumbnail: '📖'
+            }
+        ];
+        
+        let currentCategory = 'all';
+        let selectedVideo = null;
+        let tonedownActive = false;
+        let isPlaying = false;
+        
+        // Initialize app
+        function init() {
+            console.log('Initializing Working KidsTube...');
+            displayVideos(videos);
+            setupVideoPlayer();
+            console.log('App initialized successfully!');
+        }
+        
+        // Setup video player
+        function setupVideoPlayer() {
+            const video = document.getElementById('videoElement');
+            const playBtn = document.getElementById('playBtn');
+            const progressFill = document.getElementById('progressFill');
+            const timeDisplay = document.getElementById('timeDisplay');
+            
+            // Video event listeners
+            video.addEventListener('loadedmetadata', function() {
+                updateTimeDisplay();
+            });
+            
+            video.addEventListener('timeupdate', function() {
+                if (video.duration) {
+                    const progress = (video.currentTime / video.duration) * 100;
+                    progressFill.style.width = progress + '%';
+                    updateTimeDisplay();
+                }
+            });
+            
+            video.addEventListener('play', function() {
+                isPlaying = true;
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            });
+            
+            video.addEventListener('pause', function() {
+                isPlaying = false;
+                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            });
+            
+            video.addEventListener('ended', function() {
+                isPlaying = false;
+                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            });
+        }
+        
+        // Display videos
+        function displayVideos(videoList) {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+            
+            videoList.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => selectVideo(video);
+                
+                card.innerHTML = `
+                    <div class="video-thumbnail">
+                        ${video.thumbnail}
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-duration">${video.duration}</div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            console.log(`Displayed ${videoList.length} videos`);
+        }
+        
+        // Select video
+        function selectVideo(video) {
+            console.log('Selected video:', video.title);
+            selectedVideo = video;
+            
+            const player = document.getElementById('videoPlayer');
+            const videoElement = document.getElementById('videoElement');
+            const controls = document.getElementById('videoControls');
+            const placeholder = player.querySelector('.video-placeholder');
+            
+            // Hide placeholder, show video and controls
+            placeholder.style.display = 'none';
+            videoElement.style.display = 'block';
+            controls.style.display = 'flex';
+            
+            // Load video
+            videoElement.src = video.url;
+            videoElement.load();
+            
+            console.log('Video loaded:', video.url);
+        }
+        
+        // Toggle play/pause
+        function togglePlay() {
+            const video = document.getElementById('videoElement');
+            
+            if (isPlaying) {
+                video.pause();
+            } else {
+                video.play();
+            }
+        }
+        
+        // Seek video
+        function seekVideo(event) {
+            const video = document.getElementById('videoElement');
+            const progressBar = document.getElementById('progressBar');
+            const rect = progressBar.getBoundingClientRect();
+            const pos = (event.clientX - rect.left) / rect.width;
+            const time = pos * video.duration;
+            
+            video.currentTime = time;
+        }
+        
+        // Update time display
+        function updateTimeDisplay() {
+            const video = document.getElementById('videoElement');
+            const timeDisplay = document.getElementById('timeDisplay');
+            
+            const current = formatTime(video.currentTime);
+            const duration = formatTime(video.duration);
+            
+            timeDisplay.textContent = `${current} / ${duration}`;
+        }
+        
+        // Format time
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Search videos - Simplified and reliable
+        function searchVideos() {
+            console.log('=== SEARCH FUNCTION CALLED ===');
+            
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) {
+                console.error('Search input element not found!');
+                return;
+            }
+            
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            console.log('Search term:', searchTerm);
+            
+            if (!searchTerm) {
+                console.log('No search term, showing all videos');
+                displayVideos(videos);
+                return;
+            }
+            
+            console.log('Total videos available:', videos.length);
+            
+            // Simple search - just check title and category
+            const filtered = videos.filter(video => {
+                const titleMatch = video.title.toLowerCase().includes(searchTerm);
+                const categoryMatch = video.category.toLowerCase().includes(searchTerm);
+                const result = titleMatch || categoryMatch;
+                
+                console.log(`Video: ${video.title} - Title match: ${titleMatch}, Category match: ${categoryMatch}, Result: ${result}`);
+                return result;
+            });
+            
+            console.log(`Found ${filtered.length} videos for "${searchTerm}"`);
+            console.log('Filtered videos:', filtered.map(v => v.title));
+            
+            if (filtered.length === 0) {
+                showNoResultsMessage(searchTerm);
+            } else {
+                displayVideos(filtered);
+                alert(`Found ${filtered.length} video${filtered.length === 1 ? '' : 's'} for "${searchTerm}"!`);
+            }
+        }
+        
+        // Get keywords for each video to improve search
+        function getVideoKeywords(video) {
+            const keywordMap = {
+                '1': ['colors', 'learning', 'fun', 'rainbow', 'bright'],
+                '2': ['animals', 'sounds', 'pets', 'cute', 'happy'],
+                '3': ['music', 'songs', 'kids', 'dance', 'sing'],
+                '4': ['cartoon', 'adventure', 'fun', 'story', 'animation'],
+                '5': ['abc', 'alphabet', 'letters', 'learning', 'education'],
+                '6': ['dancing', 'music', 'kids', 'move', 'dance'],
+                '7': ['science', 'experiment', 'learning', 'fun', 'education'],
+                '8': ['story', 'book', 'reading', 'cartoon', 'adventure']
+            };
+            
+            return keywordMap[video.id] || [];
+        }
+        
+        // Show no results message
+        function showNoResultsMessage(searchTerm) {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
+                    <i class="fas fa-search" style="font-size: 3rem; color: #FF6B6B; margin-bottom: 20px;"></i>
+                    <h3>No videos found for "${searchTerm}"</h3>
+                    <p>Try searching for:</p>
+                    <div style="margin: 20px 0;">
+                        <span style="background: #4ECDC4; color: white; padding: 5px 15px; border-radius: 20px; margin: 5px; display: inline-block;">colors</span>
+                        <span style="background: #4ECDC4; color: white; padding: 5px 15px; border-radius: 20px; margin: 5px; display: inline-block;">music</span>
+                        <span style="background: #4ECDC4; color: white; padding: 5px 15px; border-radius: 20px; margin: 5px; display: inline-block;">cartoons</span>
+                        <span style="background: #4ECDC4; color: white; padding: 5px 15px; border-radius: 20px; margin: 5px; display: inline-block;">learning</span>
+                    </div>
+                    <button onclick="clearSearch()" style="background: #FF6B6B; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
+                        Show All Videos
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Show search results message
+        function showSearchResultsMessage(count, searchTerm) {
+            // Create a temporary success message
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4ECDC4;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 25px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            message.textContent = `Found ${count} video${count === 1 ? '' : 's'} for "${searchTerm}"! 🎉`;
+            
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        document.body.removeChild(message);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Clear search
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            filterVideos(currentCategory);
+        }
+        
+        // Filter by category
+        function filterVideos(category) {
+            console.log('Filtering by category:', category);
+            currentCategory = category;
+            
+            // Update active tab
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Clear search when filtering
+            document.getElementById('searchInput').value = '';
+            
+            if (category === 'all') {
+                console.log('Showing all videos');
+                displayVideos(videos);
+            } else {
+                const filtered = videos.filter(video => video.category === category);
+                console.log(`Showing ${filtered.length} videos in category: ${category}`);
+                displayVideos(filtered);
+            }
+        }
+        
+        // Tonedown feature - Gradual and subtle
+        let tonedownInterval = null;
+        let tonedownStartTime = null;
+        let tonedownDuration = 30; // 30 minutes
+        
+        function toggleTonedown() {
+            const btn = document.getElementById('tonedownBtn');
+            const status = document.getElementById('tonedownStatus');
+            const progress = document.getElementById('progressFillTonedown');
+            
+            if (!tonedownActive) {
+                startGradualTonedown();
+            } else {
+                stopTonedown();
+            }
+        }
+        
+        function startGradualTonedown() {
+            tonedownActive = true;
+            tonedownStartTime = Date.now();
+            
+            const btn = document.getElementById('tonedownBtn');
+            const status = document.getElementById('tonedownStatus');
+            
+            btn.textContent = 'Stop Tonedown';
+            status.textContent = 'Tonedown started - colors will gradually fade...';
+            
+            // Start gradual tonedown process
+            tonedownInterval = setInterval(updateGradualTonedown, 5000); // Update every 5 seconds
+            
+            console.log('Gradual tonedown started - 30 minutes duration');
+        }
+        
+        function updateGradualTonedown() {
+            if (!tonedownActive || !tonedownStartTime) return;
+            
+            const elapsed = Date.now() - tonedownStartTime;
+            const totalDuration = tonedownDuration * 60 * 1000; // Convert to milliseconds
+            const progress = Math.min(elapsed / totalDuration, 1);
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progressFillTonedown');
+            progressBar.style.width = (progress * 100) + '%';
+            
+            // Calculate gradual effects based on progress
+            const saturation = calculateGradualSaturation(progress);
+            const brightness = calculateGradualBrightness(progress);
+            const contrast = calculateGradualContrast(progress);
+            
+            // Apply gradual visual effects
+            document.body.style.filter = `saturate(${saturation}) brightness(${brightness}) contrast(${contrast})`;
+            
+            // Update status message
+            const remainingMinutes = Math.ceil((totalDuration - elapsed) / (60 * 1000));
+            const status = document.getElementById('tonedownStatus');
+            
+            if (progress < 0.1) {
+                status.textContent = 'Tonedown in progress - barely noticeable...';
+            } else if (progress < 0.3) {
+                status.textContent = 'Tonedown in progress - colors slightly dimming...';
+            } else if (progress < 0.6) {
+                status.textContent = 'Tonedown in progress - colors becoming duller...';
+            } else if (progress < 0.9) {
+                status.textContent = 'Tonedown in progress - colors very dull...';
+            } else {
+                status.textContent = 'Tonedown almost complete - very dull colors...';
+            }
+            
+            // Complete tonedown
+            if (progress >= 1) {
+                completeTonedown();
+            }
+        }
+        
+        function calculateGradualSaturation(progress) {
+            // Very gradual saturation reduction
+            if (progress < 0.1) return 1.0; // No change for first 10%
+            if (progress < 0.3) return 1.0 - (progress - 0.1) * 0.2; // 0.98 to 0.96
+            if (progress < 0.6) return 0.96 - (progress - 0.3) * 0.3; // 0.96 to 0.87
+            if (progress < 0.9) return 0.87 - (progress - 0.6) * 0.4; // 0.87 to 0.75
+            return 0.75 - (progress - 0.9) * 0.65; // 0.75 to 0.1
+        }
+        
+        function calculateGradualBrightness(progress) {
+            // Very gradual brightness reduction
+            if (progress < 0.2) return 1.0; // No change for first 20%
+            if (progress < 0.5) return 1.0 - (progress - 0.2) * 0.1; // 1.0 to 0.97
+            if (progress < 0.8) return 0.97 - (progress - 0.5) * 0.2; // 0.97 to 0.91
+            return 0.91 - (progress - 0.8) * 0.45; // 0.91 to 0.82
+        }
+        
+        function calculateGradualContrast(progress) {
+            // Very gradual contrast reduction
+            if (progress < 0.15) return 1.0; // No change for first 15%
+            if (progress < 0.4) return 1.0 - (progress - 0.15) * 0.05; // 1.0 to 0.9875
+            if (progress < 0.7) return 0.9875 - (progress - 0.4) * 0.1; // 0.9875 to 0.9575
+            return 0.9575 - (progress - 0.7) * 0.3; // 0.9575 to 0.87
+        }
+        
+        function completeTonedown() {
+            tonedownActive = false;
+            clearInterval(tonedownInterval);
+            
+            const btn = document.getElementById('tonedownBtn');
+            const status = document.getElementById('tonedownStatus');
+            
+            btn.textContent = 'Reset';
+            status.textContent = 'Tonedown complete! Screen is now very dull to encourage stopping.';
+            
+            // Apply maximum tonedown effect
+            document.body.style.filter = 'saturate(0.05) brightness(0.6) contrast(0.7)';
+            
+            console.log('Tonedown completed - maximum dullness applied');
+            
+            // Auto-reset after 5 minutes
+            setTimeout(() => {
+                if (!tonedownActive) {
+                    resetTonedown();
+                }
+            }, 5 * 60 * 1000);
+        }
+        
+        function stopTonedown() {
+            tonedownActive = false;
+            clearInterval(tonedownInterval);
+            resetTonedown();
+        }
+        
+        function resetTonedown() {
+            const btn = document.getElementById('tonedownBtn');
+            const status = document.getElementById('tonedownStatus');
+            const progress = document.getElementById('progressFillTonedown');
+            
+            btn.textContent = 'Start Tonedown';
+            status.textContent = 'Ready to start tonedown';
+            progress.style.width = '0%';
+            document.body.style.filter = 'none';
+            
+            console.log('Tonedown reset - all effects removed');
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Test functions
+        window.testApp = function() {
+            console.log('=== Working KidsTube Test ===');
+            console.log('Videos loaded:', videos.length);
+            console.log('Selected video:', selectedVideo);
+            console.log('Current category:', currentCategory);
+        };
+        
+        window.testVideo = function(index = 0) {
+            if (index >= videos.length) {
+                console.log('All videos tested!');
+                return;
+            }
+            
+            const video = videos[index];
+            console.log(`Testing video ${index + 1}: ${video.title}`);
+            selectVideo(video);
+        };
+    </script>
+</body>
+</html>

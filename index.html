@@ -11,6 +11,14 @@
     <link rel="stylesheet" href="kids-styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .video-channel {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -209,6 +217,7 @@
         </section>
     </main>
 
+
     <!-- Safety Notice -->
     <div class="safety-notice">
         <i class="fas fa-shield-alt"></i>
@@ -382,14 +391,58 @@
         };
         let parentalAccess = false;
         const parentalPassword = 'parent123'; // Default password
+        
+        // YouTube API configuration
+        let apiKey = 'AIzaSyDdqnaHe2qjRnZWFM2HNYvWxUwxPo07J8g';
+        let isYouTubeEnabled = true;
 
         // Initialize app
         window.onload = function() {
             console.log('App initialized');
+            checkApiKey();
             loadVideos();
             setupEventListeners();
             setupTonedownFeature();
         };
+        
+        // Check if API key exists
+        function checkApiKey() {
+            console.log('YouTube API key configured, search enabled');
+        }
+        
+        
+        // Fetch videos from YouTube API
+        async function fetchYouTubeVideos(query) {
+            if (!apiKey) {
+                throw new Error('No API key provided');
+            }
+            
+            const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&q=${encodeURIComponent(query)}&type=video&part=snippet&maxResults=20&safeSearch=strict&videoEmbeddable=true&videoDuration=short`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+                
+                const videoResults = data.items.map(item => ({
+                    id: item.id.videoId,
+                    title: item.snippet.title,
+                    description: item.snippet.description,
+                    category: 'youtube',
+                    thumbnail: item.snippet.thumbnails.medium.url,
+                    duration: 'Unknown',
+                    channelTitle: item.snippet.channelTitle
+                }));
+                
+                return videoResults;
+            } catch (error) {
+                console.error('YouTube API error:', error);
+                throw error;
+            }
+        }
 
         function setupEventListeners() {
             // Navigation tabs
@@ -479,7 +532,7 @@
             showSuccessMessage(`Now playing: ${title}! 🎉`);
         }
 
-        function searchVideos() {
+        async function searchVideos() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
             console.log('Searching for:', searchTerm);
 
@@ -488,27 +541,63 @@
                 return;
             }
 
-            // Search through ALL videos regardless of current category
-            const filteredVideos = videoData.filter(video => {
-                const title = video.title.toLowerCase();
-                const description = video.description.toLowerCase();
-                const category = video.category.toLowerCase();
+            // Show loading spinner
+            showLoading(true);
+            
+            try {
+                let searchResults = [];
                 
-                // Direct matches
-                if (title.includes(searchTerm) || description.includes(searchTerm) || category.includes(searchTerm)) {
-                    return true;
+                if (isYouTubeEnabled && apiKey) {
+                    // Use YouTube API search
+                    console.log('Searching YouTube for:', searchTerm);
+                    searchResults = await fetchYouTubeVideos(searchTerm);
+                    console.log('YouTube search results:', searchResults.length);
+                } else {
+                    // Fallback to local search
+                    console.log('Using local search for:', searchTerm);
+                    searchResults = videoData.filter(video => {
+                        const title = video.title.toLowerCase();
+                        const description = video.description.toLowerCase();
+                        const category = video.category.toLowerCase();
+                        
+                        // Direct matches
+                        if (title.includes(searchTerm) || description.includes(searchTerm) || category.includes(searchTerm)) {
+                            return true;
+                        }
+                        
+                        // Partial word matches
+                        const searchWords = searchTerm.split(' ');
+                        return searchWords.some(word => 
+                            title.includes(word) || description.includes(word) || category.includes(word)
+                        );
+                    });
                 }
                 
-                // Partial word matches
-                const searchWords = searchTerm.split(' ');
-                return searchWords.some(word => 
-                    title.includes(word) || description.includes(word) || category.includes(word)
-                );
-            });
-
+                displaySearchResults(searchResults, searchTerm);
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                showSuccessMessage(`Search failed: ${error.message}. Using local videos instead.`);
+                
+                // Fallback to local search
+                const localResults = videoData.filter(video => {
+                    const title = video.title.toLowerCase();
+                    const description = video.description.toLowerCase();
+                    const category = video.category.toLowerCase();
+                    
+                    return title.includes(searchTerm) || description.includes(searchTerm) || category.includes(searchTerm);
+                });
+                
+                displaySearchResults(localResults, searchTerm);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function displaySearchResults(results, searchTerm) {
             const videosContainer = document.getElementById('videosContainer');
             
-            if (filteredVideos.length === 0) {
+            if (results.length === 0) {
                 // Show helpful message when no results found
                 videosContainer.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-light);">
@@ -526,7 +615,7 @@
                 `;
                 showSuccessMessage(`No videos found for "${searchTerm}". Try different keywords!`);
             } else {
-                videosContainer.innerHTML = filteredVideos.map(video => `
+                videosContainer.innerHTML = results.map(video => `
                     <div class="video-card" onclick="playVideo('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.description.replace(/'/g, "\\'")}')">
                         <div class="video-thumbnail">
                             <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
@@ -536,10 +625,18 @@
                             <h4>${video.title}</h4>
                             <p>${video.description}</p>
                             <span class="video-category">${video.category}</span>
+                            ${video.channelTitle ? `<span class="video-channel">${video.channelTitle}</span>` : ''}
                         </div>
                     </div>
                 `).join('');
-                showSuccessMessage(`Found ${filteredVideos.length} video${filteredVideos.length === 1 ? '' : 's'}! 🎉`);
+                showSuccessMessage(`Found ${results.length} video${results.length === 1 ? '' : 's'}! 🎉`);
+            }
+        }
+
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            if (spinner) {
+                spinner.style.display = show ? 'flex' : 'none';
             }
         }
 

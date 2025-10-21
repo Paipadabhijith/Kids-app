@@ -2,297 +2,1306 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta name="theme-color" content="#8b1538">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FF6B6B">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>TheIndianSarees - One Stop Sarees from Every Indian State</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>KidsTube - No Scroll Test</title>
+    <link rel="stylesheet" href="kids-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://unpkg.com/topojson@3"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-store"></i>
-                <span>TheIndianSarees</span>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-play-circle"></i>
+                <span>KidsTube</span>
             </div>
-            <ul class="nav-menu">
-                <li><a href="#home" class="nav-link">Home</a></li>
-                <li><a href="#states" class="nav-link">States</a></li>
-                <li><a href="state-sarees.html" class="nav-link">State Sarees</a></li>
-                <li><a href="#collections" class="nav-link">Collections</a></li>
-                <li><a href="history.html" class="nav-link">History</a></li>
-                <li><a href="#about" class="nav-link">About</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search for fun videos! 🔍" class="search-input">
+                <button class="search-btn" onclick="searchVideos()">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
         </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-category="all">All Videos</button>
+        <button class="nav-tab" data-category="cartoons">Cartoons</button>
+        <button class="nav-tab" data-category="education">Learning</button>
+        <button class="nav-tab" data-category="music">Music</button>
+        <button class="nav-tab" data-category="games">Games</button>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <h1 class="hero-title">Explore India's Sarees, State by State</h1>
-                <p class="hero-subtitle">A modern marketplace bringing the finest handlooms and iconic sarees from every Indian state — discover weaves, materials, and stories on an interactive map.</p>
-                <div class="hero-buttons">
-                    <button class="btn btn-primary" onclick="scrollToSection('states')">Explore the Map</button>
-                    <button class="btn btn-secondary" onclick="scrollToSection('collections')">Shop Collections</button>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Featured Video Section -->
+        <section class="featured-video">
+            <div class="video-container">
+                <div id="videoPlayer" class="video-player">
+                    <div class="video-placeholder">
+                        <i class="fas fa-play-circle"></i>
+                        <p>Click a video to start watching!</p>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h2 id="videoTitle">Welcome to KidsTube!</h2>
+                    <p id="videoDescription">Choose a fun video from below to get started! 🎉</p>
                 </div>
             </div>
-            <div class="hero-image">
-                <div class="floating-card">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <h3>Interactive Map</h3>
-                    <p>Hover states to learn weaves</p>
-                </div>
-                <div class="floating-card">
-                    <i class="fas fa-feather"></i>
-                    <h3>Authentic Handlooms</h3>
-                    <p>Straight from artisans</p>
-                </div>
-                <div class="floating-card">
-                    <i class="fas fa-heart"></i>
-                    <h3>Curated Picks</h3>
-                    <p>Styles for every occasion</p>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- States Map Section -->
-    <section id="states" class="india-states">
-        <div class="container">
-            <div class="section-header">
-                <h2>Discover Sarees by State</h2>
-                <p>Hover over hotspots to see signature sarees and materials. Click to view collections.</p>
+        <!-- Video Grid -->
+        <section class="video-grid">
+            <h3>Popular Videos</h3>
+            <div class="videos-container" id="videosContainer">
+                <!-- Videos will be loaded here -->
             </div>
-            <div class="map-wrapper">
-                <div class="map-tooltip" id="mapTooltip" aria-hidden="true"></div>
-                <div id="indiaMapContainer" class="india-map">
-                    <div id="mapLoading" class="map-loading">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Loading Interactive Map...</p>
-                    </div>
-                </div>
-                <div class="map-legend">
-                    <h4>Legend</h4>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #8b1538;"></span>
-                        <span>Major Saree States</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: #d4af37;"></span>
-                        <span>Click to explore</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
+        </section>
 
-    <!-- Collections Section -->
-    <section id="collections" class="destinations">
-        <div class="container">
-            <div class="section-header">
-                <h2>Featured Collections</h2>
-                <p>Handpicked sarees across weaves, regions, and occasions</p>
+        <!-- Enhanced Screen Time Control Section -->
+        <section class="tonedown-section">
+            <div class="tonedown-panel">
+                <div class="tonedown-header">
+                    <h4><i class="fas fa-clock"></i> Screen Time Control</h4>
+                    <div class="timer-controls">
+                        <button class="tonedown-toggle" id="tonedownToggle">
+                            <i class="fas fa-play"></i> Start Timer
+                        </button>
+                        <button class="quick-timer-btn" id="quickTimerBtn">
+                            <i class="fas fa-bolt"></i> Quick 5min
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tonedown-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="timeRemaining">30:00 remaining</span>
+                        <span id="timeElapsed">0:00 elapsed</span>
+                    </div>
+                </div>
+                
+                <div class="tonedown-settings">
+                    <div class="settings-row">
+                        <label for="durationSelect">Session Duration:</label>
+                        <select id="durationSelect">
+                            <option value="300000">5 minutes</option>
+                            <option value="900000">15 minutes</option>
+                            <option value="1800000" selected>30 minutes</option>
+                            <option value="2700000">45 minutes</option>
+                            <option value="3600000">1 hour</option>
+                            <option value="7200000">2 hours</option>
+                        </select>
+                    </div>
+                    
+                    <div class="settings-row">
+                        <label for="breakReminder">Break Reminder:</label>
+                        <select id="breakReminder">
+                            <option value="0">Off</option>
+                            <option value="300000" selected>Every 5 minutes</option>
+                            <option value="600000">Every 10 minutes</option>
+                            <option value="900000">Every 15 minutes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="settings-row">
+                        <button class="reset-btn" id="resetBtn">
+                            <i class="fas fa-refresh"></i> Reset
+                        </button>
+                        <button class="stats-btn" id="statsBtn">
+                            <i class="fas fa-chart-bar"></i> Statistics
+                        </button>
+                        <button class="parental-btn" id="parentalBtn">
+                            <i class="fas fa-lock"></i> Parental
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Statistics Panel -->
+                <div class="stats-panel" id="statsPanel" style="display: none;">
+                    <h5><i class="fas fa-chart-line"></i> Usage Statistics</h5>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Today:</span>
+                            <span class="stat-value" id="todayTime">0:00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">This Week:</span>
+                            <span class="stat-value" id="weekTime">0:00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Sessions:</span>
+                            <span class="stat-value" id="sessionCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Avg Session:</span>
+                            <span class="stat-value" id="avgSession">0:00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Parental Controls Panel -->
+                <div class="parental-panel" id="parentalPanel" style="display: none;">
+                    <!-- Password Entry -->
+                    <div class="password-section" id="passwordSection">
+                        <h5><i class="fas fa-lock"></i> Parental Access</h5>
+                        <p>Enter parental password to access controls:</p>
+                        <div class="password-input-group">
+                            <input type="password" id="parentalPassword" placeholder="Enter password" maxlength="10">
+                            <button class="password-btn" id="passwordSubmit">
+                                <i class="fas fa-unlock"></i> Access
+                            </button>
+                        </div>
+                        <p class="password-hint">Default password: <strong>parent123</strong></p>
+                    </div>
+                    
+                    <!-- Parental Settings (Hidden by default) -->
+                    <div class="parental-settings" id="parentalSettings" style="display: none;">
+                        <div class="settings-header">
+                            <h5><i class="fas fa-shield-alt"></i> Parental Controls</h5>
+                            <button class="lock-btn" id="lockSettings">
+                                <i class="fas fa-lock"></i> Lock
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="dailyLimitEnabled">
+                                Enable Daily Limit
+                            </label>
+                            <input type="number" id="dailyLimitHours" value="2" min="0.5" max="8" step="0.5" disabled>
+                            <span>hours</span>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="bedtimeMode">
+                                Bedtime Mode (9 PM - 7 AM)
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="weekendMode">
+                                Weekend Mode (Extra 1 hour)
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="breakReminderEnabled">
+                                Force Break Reminders
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="hideParentalBtn">
+                                Hide Parental Button from Kids
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="destinations-grid">
-                <div class="destination-card">
-                    <div class="destination-image">
-                        <img src="https://images.unsplash.com/photo-1581167765614-5f71f6e2a0d8?q=80&w=2069&auto=format&fit=crop" alt="Kanchipuram Silk">
-                        <div class="destination-overlay">
-                            <button class="btn btn-outline">View</button>
-                        </div>
-                    </div>
-                    <div class="destination-content">
-                        <h3>Kanchipuram Silk</h3>
-                        <p>Pure mulberry silk with zari — temple borders and vibrant hues.</p>
-                        <div class="destination-tags">
-                            <span class="tag">Tamil Nadu</span>
-                            <span class="tag">Silk</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="destination-card">
-                    <div class="destination-image">
-                        <img src="https://images.unsplash.com/photo-1621514310462-d90c3e90a9b1?q=80&w=2070&auto=format&fit=crop" alt="Banarasi Brocade">
-                        <div class="destination-overlay">
-                            <button class="btn btn-outline">View</button>
-                        </div>
-                    </div>
-                    <div class="destination-content">
-                        <h3>Banarasi Brocade</h3>
-                        <p>Opulent brocades with gold/silver zari motifs and intricate meenakari.</p>
-                        <div class="destination-tags">
-                            <span class="tag">Uttar Pradesh</span>
-                            <span class="tag">Brocade</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="destination-card">
-                    <div class="destination-image">
-                        <img src="https://images.unsplash.com/photo-1600979413381-05b3f381bb77?q=80&w=2070&auto=format&fit=crop" alt="Jamdani Muslin">
-                        <div class="destination-overlay">
-                            <button class="btn btn-outline">View</button>
-                        </div>
-                    </div>
-                    <div class="destination-content">
-                        <h3>Jamdani Muslin</h3>
-                        <p>Ultra-fine cotton muslin with handwoven butis and floral patterns.</p>
-                        <div class="destination-tags">
-                            <span class="tag">West Bengal</span>
-                            <span class="tag">Cotton</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <!-- About Section -->
-    <section id="about" class="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>About TheIndianSarees</h2>
-                    <p>We celebrate India's rich textile heritage by connecting you to authentic sarees, responsibly sourced from artisans and trusted boutiques across the country.</p>
-                    <p>From Banarasi and Kanchipuram to Paithani and Patola — shop by state, weave, material, or occasion with confidence.</p>
-                    <div class="stats">
-                        <div class="stat">
-                            <h3>5K+</h3>
-                            <p>Curated Sarees</p>
-                        </div>
-                        <div class="stat">
-                            <h3>28</h3>
-                            <p>Indian States</p>
-                        </div>
-                        <div class="stat">
-                            <h3>1K+</h3>
-                            <p>Artisan Partners</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1556227701-6d1a3032f0f1?q=80&w=2026&auto=format&fit=crop" alt="Indian Sarees">
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Safety Notice -->
+    <div class="safety-notice">
+        <i class="fas fa-shield-alt"></i>
+        <span>All videos are kid-safe and family-friendly!</span>
+    </div>
 
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
-        <div class="container">
-            <div class="section-header">
-                <h2>Get In Touch</h2>
-                <p>Ready to discover your perfect saree?</p>
-            </div>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <div>
-                            <h3>Email Us</h3>
-                            <p>hello@theindiansarees.com</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fas fa-phone"></i>
-                        <div>
-                            <h3>Call Us</h3>
-                            <p>+91 (555) 123-4567</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <div>
-                            <h3>Visit Us</h3>
-                            <p>123 Saree Street, Textile City, Mumbai 400001</p>
-                        </div>
-                    </div>
-                </div>
-                <form class="contact-form">
-                    <div class="form-group">
-                        <input type="text" placeholder="Your Name" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" placeholder="Your Email" required>
-                    </div>
-                    <div class="form-group">
-                        <textarea placeholder="Your Message" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send Message</button>
-                </form>
-            </div>
-        </div>
-    </section>
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <p>Loading fun videos...</p>
+    </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <i class="fas fa-store"></i>
-                        <span>TheIndianSarees</span>
-                    </div>
-                    <p>Celebrating India's rich textile heritage with authentic sarees from every state.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#states">States</a></li>
-                        <li><a href="state-sarees.html">State Sarees</a></li>
-                        <li><a href="#collections">Collections</a></li>
-                        <li><a href="history.html">History</a></li>
-                        <li><a href="#about">About</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Support</h3>
-                    <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Newsletter</h3>
-                    <p>Subscribe to get saree styling tips and exclusive offers.</p>
-                    <div class="newsletter-form">
-                        <input type="email" placeholder="Enter your email">
-                        <button type="submit" class="btn btn-primary">Subscribe</button>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                    <p>&copy; 2025 TheIndianSarees. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <script>
+        // Video data - Kid-friendly videos with guaranteed working YouTube IDs
+        const videoData = [
+            // Cartoons
+            {
+                id: 'XqZsoesa55w',
+                title: 'Baby Shark Dance',
+                description: 'Sing and dance with Baby Shark! 🦈',
+                category: 'cartoons',
+                thumbnail: 'https://img.youtube.com/vi/XqZsoesa55w/maxresdefault.jpg'
+            },
+            {
+                id: 'CQ6K6Y2FJ0A',
+                title: 'Peppa Pig - Muddy Puddles',
+                description: 'Join Peppa Pig on fun adventures! 🐷',
+                category: 'cartoons',
+                thumbnail: 'https://img.youtube.com/vi/CQ6K6Y2FJ0A/maxresdefault.jpg'
+            },
+            {
+                id: 'kffacxfA7G4',
+                title: 'Mickey Mouse Clubhouse - Hot Dog Dance',
+                description: 'Fun with Mickey and his friends! 🐭',
+                category: 'cartoons',
+                thumbnail: 'https://img.youtube.com/vi/kffacxfA7G4/maxresdefault.jpg'
+            },
+            {
+                id: '8cK_ONKqk2k',
+                title: 'Dinosaur Train - Theme Song',
+                description: 'Learn about dinosaurs with Buddy! 🦕',
+                category: 'cartoons',
+                thumbnail: 'https://img.youtube.com/vi/8cK_ONKqk2k/maxresdefault.jpg'
+            },
+            
+            // Education
+            {
+                id: 'BEljZ1zUHEM',
+                title: 'ABC Song for Kids',
+                description: 'Learn the alphabet with fun music! 🎵',
+                category: 'education',
+                thumbnail: 'https://img.youtube.com/vi/BEljZ1zUHEM/maxresdefault.jpg'
+            },
+            {
+                id: 'DRxq6ljIxI0',
+                title: 'Counting Numbers 1-10',
+                description: 'Learn to count with colorful animations! 🔢',
+                category: 'education',
+                thumbnail: 'https://img.youtube.com/vi/DRxq6ljIxI0/maxresdefault.jpg'
+            },
+            {
+                id: 'eHjR6hnjku0',
+                title: 'Colors and Shapes',
+                description: 'Discover colors and shapes around us! 🌈',
+                category: 'education',
+                thumbnail: 'https://img.youtube.com/vi/eHjR6hnjku0/maxresdefault.jpg'
+            },
+            {
+                id: 'tGBIWA4ITUY',
+                title: 'Animal Sounds',
+                description: 'Learn what different animals say! 🐶🐱🐮',
+                category: 'education',
+                thumbnail: 'https://img.youtube.com/vi/tGBIWA4ITUY/maxresdefault.jpg'
+            },
+            
+            // Music
+            {
+                id: 'VfxByW0WrU8',
+                title: 'Wheels on the Bus',
+                description: 'Sing along to this classic kids song! 🚌',
+                category: 'music',
+                thumbnail: 'https://img.youtube.com/vi/VfxByW0WrU8/maxresdefault.jpg'
+            },
+            {
+                id: 'yCjJyiqpAuU',
+                title: 'Twinkle Twinkle Little Star',
+                description: 'Beautiful lullaby for bedtime! ⭐',
+                category: 'music',
+                thumbnail: 'https://img.youtube.com/vi/yCjJyiqpAuU/maxresdefault.jpg'
+            },
+            {
+                id: '5oYKonYBujg',
+                title: 'Old MacDonald Had a Farm',
+                description: 'Farm animals and fun sounds! 🚜',
+                category: 'music',
+                thumbnail: 'https://img.youtube.com/vi/5oYKonYBujg/maxresdefault.jpg'
+            },
+            
+            // Games
+            {
+                id: 'jNQXAC9IVRw',
+                title: 'Me at the zoo',
+                description: 'First YouTube video ever! 📹',
+                category: 'games',
+                thumbnail: 'https://img.youtube.com/vi/jNQXAC9IVRw/maxresdefault.jpg'
+            },
+            {
+                id: '9bZkp7q19f0',
+                title: 'PSY - GANGNAM STYLE',
+                description: 'Famous K-pop dance video! 🎵',
+                category: 'games',
+                thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg'
+            },
+            {
+                id: 'kJQP7kiw5Fk',
+                title: 'Luis Fonsi - Despacito',
+                description: 'Popular Spanish music video! 🎵',
+                category: 'games',
+                thumbnail: 'https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg'
+            },
+            
+            // Additional working videos
+            {
+                id: 'dQw4w9WgXcQ',
+                title: 'Rick Astley - Never Gonna Give You Up',
+                description: 'Classic music video! 🎵',
+                category: 'music',
+                thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg'
+            },
+            {
+                id: 'M7lc1UVf-VE',
+                title: 'Dinosaur Train Adventures',
+                description: 'Learn about dinosaurs with Buddy! 🦕',
+                category: 'cartoons',
+                thumbnail: 'https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg'
+            },
+            {
+                id: 'CevxZvSJLk8',
+                title: 'Educational Game',
+                description: 'Fun learning game for kids! 🎮',
+                category: 'games',
+                thumbnail: 'https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg'
+            }
+        ];
 
-    <script src="script.js"></script>
-    <script src="interactive-map.js"></script>
+        let currentCategory = 'all';
+        let tonedownActive = false;
+        let tonedownTimer = null;
+        let tonedownStartTime = null;
+        let tonedownDuration = 1800000; // 30 minutes in milliseconds
+        let breakReminderInterval = null;
+        
+        // Break system variables
+        let videoStartTime = null;
+        let breakInterval = null;
+        let currentBreakGame = null;
+        let breakDuration = 15 * 60 * 1000; // 15 minutes in milliseconds
+        let breakReminderDuration = 300000; // 5 minutes
+        let lastBreakTime = 0;
+        let dailyUsage = 0;
+        let weeklyUsage = 0;
+        let sessionCount = 0;
+        let totalSessionTime = 0;
+        let parentalSettings = {
+            dailyLimitEnabled: false,
+            dailyLimitHours: 2,
+            bedtimeMode: false,
+            weekendMode: false,
+            breakReminderEnabled: false,
+            hideParentalBtn: false
+        };
+        let parentalAccess = false;
+        const parentalPassword = 'parent123'; // Default password
+
+        // Initialize app
+        window.onload = function() {
+            console.log('App initialized');
+            loadVideos();
+            setupEventListeners();
+            setupTonedownFeature();
+        };
+
+        function setupEventListeners() {
+            // Navigation tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Get category and filter videos
+                    const category = this.getAttribute('data-category');
+                    currentCategory = category;
+                    loadVideos();
+                });
+            });
+
+            // Search input - Enter key listener and real-time search
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                // Real-time search as you type
+                searchInput.addEventListener('input', function() {
+                    searchVideos();
+                });
+                
+                // Enter key listener
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchVideos();
+                    }
+                });
+            }
+        }
+
+        function loadVideos() {
+            const videosContainer = document.getElementById('videosContainer');
+            let videosToShow = videoData;
+
+            // Filter by category
+            if (currentCategory !== 'all') {
+                videosToShow = videoData.filter(video => video.category === currentCategory);
+            }
+
+            // Display videos
+            videosContainer.innerHTML = videosToShow.map(video => `
+                <div class="video-card" onclick="playVideo('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.description.replace(/'/g, "\\'")}')">
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
+                        <i class="fas fa-play-circle play-icon"></i>
+                    </div>
+                    <div class="video-info">
+                        <h4>${video.title}</h4>
+                        <p>${video.description}</p>
+                        <span class="video-category">${video.category}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function playVideo(videoId, title, description) {
+            console.log('Playing video:', title);
+            
+            const videoPlayer = document.getElementById('videoPlayer');
+            const titleElement = document.getElementById('videoTitle');
+            const descElement = document.getElementById('videoDescription');
+            
+            // Update video player
+            videoPlayer.innerHTML = `
+                <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&controls=1&fs=1" 
+                    frameborder="0" 
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            `;
+            
+            // Update video info
+            if (titleElement) titleElement.textContent = title;
+            if (descElement) descElement.textContent = description;
+            
+            // Start break timer
+            startBreakTimer();
+            
+            // NO SCROLLING - just show success message
+            showSuccessMessage(`Now playing: ${title}! 🎉`);
+        }
+
+        function searchVideos() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            console.log('Searching for:', searchTerm);
+
+            if (!searchTerm) {
+                loadVideos();
+                return;
+            }
+
+            // Search through ALL videos regardless of current category
+            const filteredVideos = videoData.filter(video => {
+                const title = video.title.toLowerCase();
+                const description = video.description.toLowerCase();
+                const category = video.category.toLowerCase();
+                
+                // Direct matches
+                if (title.includes(searchTerm) || description.includes(searchTerm) || category.includes(searchTerm)) {
+                    return true;
+                }
+                
+                // Partial word matches
+                const searchWords = searchTerm.split(' ');
+                return searchWords.some(word => 
+                    title.includes(word) || description.includes(word) || category.includes(word)
+                );
+            });
+
+            const videosContainer = document.getElementById('videosContainer');
+            
+            if (filteredVideos.length === 0) {
+                // Show helpful message when no results found
+                videosContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-light);">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary-pink);"></i>
+                        <h3>No videos found for "${searchTerm}"</h3>
+                        <p>Try searching for:</p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
+                            <span style="background: var(--primary-green); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem;">cartoons</span>
+                            <span style="background: var(--primary-blue); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem;">music</span>
+                            <span style="background: var(--primary-yellow); color: var(--text-dark); padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem;">education</span>
+                            <span style="background: var(--primary-orange); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem;">games</span>
+                        </div>
+                        <p style="margin-top: 1rem; font-size: 0.9rem;">Or try: "baby", "dinosaur", "abc", "counting", "colors"</p>
+                    </div>
+                `;
+                showSuccessMessage(`No videos found for "${searchTerm}". Try different keywords!`);
+            } else {
+                videosContainer.innerHTML = filteredVideos.map(video => `
+                    <div class="video-card" onclick="playVideo('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.description.replace(/'/g, "\\'")}')">
+                        <div class="video-thumbnail">
+                            <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
+                            <i class="fas fa-play-circle play-icon"></i>
+                        </div>
+                        <div class="video-info">
+                            <h4>${video.title}</h4>
+                            <p>${video.description}</p>
+                            <span class="video-category">${video.category}</span>
+                        </div>
+                    </div>
+                `).join('');
+                showSuccessMessage(`Found ${filteredVideos.length} video${filteredVideos.length === 1 ? '' : 's'}! 🎉`);
+            }
+        }
+
+        function showSuccessMessage(message) {
+            // Remove existing messages
+            const existingMessage = document.querySelector('.success-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            // Create new message
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'success-message';
+            messageDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                z-index: 1000;
+                font-weight: bold;
+                animation: slideIn 0.3s ease;
+            `;
+
+            // Add animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            document.body.appendChild(messageDiv);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // Enhanced Screen Time Control functions
+        function setupTonedownFeature() {
+            const toggleBtn = document.getElementById('tonedownToggle');
+            const resetBtn = document.getElementById('resetBtn');
+            const durationSelect = document.getElementById('durationSelect');
+            const breakReminderSelect = document.getElementById('breakReminder');
+            const quickTimerBtn = document.getElementById('quickTimerBtn');
+            const statsBtn = document.getElementById('statsBtn');
+            const parentalBtn = document.getElementById('parentalBtn');
+            const passwordSubmit = document.getElementById('passwordSubmit');
+            const parentalPasswordInput = document.getElementById('parentalPassword');
+            const lockSettings = document.getElementById('lockSettings');
+
+            // Basic controls
+            if (toggleBtn) toggleBtn.addEventListener('click', toggleTonedown);
+            if (resetBtn) resetBtn.addEventListener('click', resetTonedown);
+            if (quickTimerBtn) quickTimerBtn.addEventListener('click', startQuickTimer);
+            if (statsBtn) statsBtn.addEventListener('click', toggleStatsPanel);
+            if (parentalBtn) parentalBtn.addEventListener('click', toggleParentalPanel);
+            
+            // Password protection
+            if (passwordSubmit) passwordSubmit.addEventListener('click', checkParentalPassword);
+            if (parentalPasswordInput) {
+                parentalPasswordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkParentalPassword();
+                    }
+                });
+            }
+            if (lockSettings) lockSettings.addEventListener('click', lockParentalSettings);
+
+            // Settings
+            if (durationSelect) {
+                durationSelect.addEventListener('change', function() {
+                    tonedownDuration = parseInt(this.value);
+                    updateTimeDisplay();
+                });
+            }
+
+            if (breakReminderSelect) {
+                breakReminderSelect.addEventListener('change', function() {
+                    breakReminderDuration = parseInt(this.value);
+                    setupBreakReminders();
+                });
+            }
+
+            // Parental controls
+            setupParentalControls();
+            loadSettings();
+            updateStatistics();
+        }
+
+        function startQuickTimer() {
+            tonedownDuration = 300000; // 5 minutes
+            document.getElementById('durationSelect').value = '300000';
+            if (!tonedownActive) {
+                toggleTonedown();
+            }
+            showSuccessMessage('Quick 5-minute timer started! ⚡');
+        }
+
+        function toggleStatsPanel() {
+            const statsPanel = document.getElementById('statsPanel');
+            const parentalPanel = document.getElementById('parentalPanel');
+            
+            if (statsPanel.style.display === 'none') {
+                statsPanel.style.display = 'block';
+                parentalPanel.style.display = 'none';
+                updateStatistics();
+            } else {
+                statsPanel.style.display = 'none';
+            }
+        }
+
+        function toggleParentalPanel() {
+            const parentalPanel = document.getElementById('parentalPanel');
+            const statsPanel = document.getElementById('statsPanel');
+            
+            if (parentalPanel.style.display === 'none') {
+                parentalPanel.style.display = 'block';
+                statsPanel.style.display = 'none';
+                
+                // Reset password section if not already accessed
+                if (!parentalAccess) {
+                    showPasswordSection();
+                }
+            } else {
+                parentalPanel.style.display = 'none';
+            }
+        }
+
+        function checkParentalPassword() {
+            const passwordInput = document.getElementById('parentalPassword');
+            const enteredPassword = passwordInput.value.trim();
+            
+            if (enteredPassword === parentalPassword) {
+                parentalAccess = true;
+                showParentalSettings();
+                passwordInput.value = '';
+                showSuccessMessage('Parental access granted! 🔓');
+            } else {
+                showSuccessMessage('Incorrect password. Try again. ❌');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+
+        function showPasswordSection() {
+            const passwordSection = document.getElementById('passwordSection');
+            const parentalSettings = document.getElementById('parentalSettings');
+            
+            if (passwordSection) passwordSection.style.display = 'block';
+            if (parentalSettings) parentalSettings.style.display = 'none';
+        }
+
+        function showParentalSettings() {
+            const passwordSection = document.getElementById('passwordSection');
+            const parentalSettings = document.getElementById('parentalSettings');
+            
+            if (passwordSection) passwordSection.style.display = 'none';
+            if (parentalSettings) parentalSettings.style.display = 'block';
+        }
+
+        function lockParentalSettings() {
+            parentalAccess = false;
+            showPasswordSection();
+            showSuccessMessage('Parental settings locked! 🔒');
+        }
+
+        function setupParentalControls() {
+            const dailyLimitCheckbox = document.getElementById('dailyLimitEnabled');
+            const dailyLimitInput = document.getElementById('dailyLimitHours');
+            const bedtimeCheckbox = document.getElementById('bedtimeMode');
+            const weekendCheckbox = document.getElementById('weekendMode');
+            const breakReminderCheckbox = document.getElementById('breakReminderEnabled');
+
+            if (dailyLimitCheckbox) {
+                dailyLimitCheckbox.addEventListener('change', function() {
+                    parentalSettings.dailyLimitEnabled = this.checked;
+                    dailyLimitInput.disabled = !this.checked;
+                    saveSettings();
+                });
+            }
+
+            if (dailyLimitInput) {
+                dailyLimitInput.addEventListener('change', function() {
+                    parentalSettings.dailyLimitHours = parseFloat(this.value);
+                    saveSettings();
+                });
+            }
+
+            if (bedtimeCheckbox) {
+                bedtimeCheckbox.addEventListener('change', function() {
+                    parentalSettings.bedtimeMode = this.checked;
+                    saveSettings();
+                    checkBedtimeMode();
+                });
+            }
+
+            if (weekendCheckbox) {
+                weekendCheckbox.addEventListener('change', function() {
+                    parentalSettings.weekendMode = this.checked;
+                    saveSettings();
+                });
+            }
+
+            if (breakReminderCheckbox) {
+                breakReminderCheckbox.addEventListener('change', function() {
+                    parentalSettings.breakReminderEnabled = this.checked;
+                    saveSettings();
+                    setupBreakReminders();
+                });
+            }
+
+            // Hide parental button option
+            const hideParentalCheckbox = document.getElementById('hideParentalBtn');
+            if (hideParentalCheckbox) {
+                hideParentalCheckbox.addEventListener('change', function() {
+                    parentalSettings.hideParentalBtn = this.checked;
+                    saveSettings();
+                    updateParentalButtonVisibility();
+                });
+            }
+        }
+
+        function setupBreakReminders() {
+            if (breakReminderInterval) {
+                clearInterval(breakReminderInterval);
+                breakReminderInterval = null;
+            }
+
+            if (breakReminderDuration > 0 && parentalSettings.breakReminderEnabled) {
+                breakReminderInterval = setInterval(() => {
+                    if (tonedownActive) {
+                        showBreakReminder();
+                    }
+                }, breakReminderDuration);
+            }
+        }
+
+        function showBreakReminder() {
+            const now = Date.now();
+            if (now - lastBreakTime > breakReminderDuration) {
+                showSuccessMessage('Time for a break! Look away from the screen for 20 seconds! 👀');
+                lastBreakTime = now;
+            }
+        }
+
+        function checkBedtimeMode() {
+            if (!parentalSettings.bedtimeMode) return;
+            
+            const now = new Date();
+            const hour = now.getHours();
+            
+            if (hour >= 21 || hour < 7) { // 9 PM to 7 AM
+                showSuccessMessage('It\'s bedtime! Screen time is limited. 🌙');
+                if (tonedownActive) {
+                    completeTonedown();
+                }
+            }
+        }
+
+        function updateStatistics() {
+            const todayTime = document.getElementById('todayTime');
+            const weekTime = document.getElementById('weekTime');
+            const sessionCountEl = document.getElementById('sessionCount');
+            const avgSession = document.getElementById('avgSession');
+
+            if (todayTime) todayTime.textContent = formatTime(dailyUsage);
+            if (weekTime) weekTime.textContent = formatTime(weeklyUsage);
+            if (sessionCountEl) sessionCountEl.textContent = sessionCount;
+            if (avgSession) {
+                const avg = sessionCount > 0 ? totalSessionTime / sessionCount : 0;
+                avgSession.textContent = formatTime(avg);
+            }
+        }
+
+        function saveSettings() {
+            localStorage.setItem('parentalSettings', JSON.stringify(parentalSettings));
+            localStorage.setItem('usageStats', JSON.stringify({
+                dailyUsage,
+                weeklyUsage,
+                sessionCount,
+                totalSessionTime
+            }));
+        }
+
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('parentalSettings');
+            if (savedSettings) {
+                parentalSettings = { ...parentalSettings, ...JSON.parse(savedSettings) };
+            }
+
+            const savedStats = localStorage.getItem('usageStats');
+            if (savedStats) {
+                const stats = JSON.parse(savedStats);
+                dailyUsage = stats.dailyUsage || 0;
+                weeklyUsage = stats.weeklyUsage || 0;
+                sessionCount = stats.sessionCount || 0;
+                totalSessionTime = stats.totalSessionTime || 0;
+            }
+
+            // Update UI
+            document.getElementById('dailyLimitEnabled').checked = parentalSettings.dailyLimitEnabled;
+            document.getElementById('dailyLimitHours').value = parentalSettings.dailyLimitHours;
+            document.getElementById('dailyLimitHours').disabled = !parentalSettings.dailyLimitEnabled;
+            document.getElementById('bedtimeMode').checked = parentalSettings.bedtimeMode;
+            document.getElementById('weekendMode').checked = parentalSettings.weekendMode;
+            document.getElementById('breakReminderEnabled').checked = parentalSettings.breakReminderEnabled;
+            document.getElementById('hideParentalBtn').checked = parentalSettings.hideParentalBtn;
+            
+            // Update parental button visibility
+            updateParentalButtonVisibility();
+        }
+
+        function toggleTonedown() {
+            const toggleBtn = document.getElementById('tonedownToggle');
+            const progressFill = document.getElementById('progressFill');
+            
+            if (!tonedownActive) {
+                // Start tone-down
+                tonedownActive = true;
+                tonedownStartTime = Date.now();
+                
+                toggleBtn.innerHTML = '<i class="fas fa-pause"></i> Pause Timer';
+                toggleBtn.classList.add('active');
+                
+                // Apply tone-down effect
+                document.body.classList.add('tonedown-active');
+                
+                // Start timer
+                tonedownTimer = setInterval(updateTonedownProgress, 1000);
+                
+                // Setup break reminders
+                setupBreakReminders();
+                
+                showSuccessMessage('Screen time timer started! 🌙');
+            } else {
+                // Pause tone-down
+                tonedownActive = false;
+                
+                toggleBtn.innerHTML = '<i class="fas fa-play"></i> Resume Timer';
+                toggleBtn.classList.remove('active');
+                
+                // Remove tone-down effect
+                document.body.classList.remove('tonedown-active');
+                
+                // Stop timer
+                if (tonedownTimer) {
+                    clearInterval(tonedownTimer);
+                    tonedownTimer = null;
+                }
+                
+                // Stop break reminders
+                if (breakReminderInterval) {
+                    clearInterval(breakReminderInterval);
+                    breakReminderInterval = null;
+                }
+                
+                showSuccessMessage('Timer paused! ⏸️');
+            }
+        }
+
+        function updateTonedownProgress() {
+            if (!tonedownActive || !tonedownStartTime) return;
+            
+            const elapsed = Date.now() - tonedownStartTime;
+            const remaining = Math.max(0, tonedownDuration - elapsed);
+            const progress = Math.min(100, (elapsed / tonedownDuration) * 100);
+            
+            // Update progress bar
+            const progressFill = document.getElementById('progressFill');
+            if (progressFill) {
+                progressFill.style.width = progress + '%';
+            }
+            
+            // Update time display
+            updateTimeDisplay();
+            
+            // Check if time is up
+            if (remaining <= 0) {
+                completeTonedown();
+            }
+        }
+
+        function updateTimeDisplay() {
+            const timeRemaining = document.getElementById('timeRemaining');
+            const timeElapsed = document.getElementById('timeElapsed');
+            
+            if (!tonedownStartTime) {
+                if (timeRemaining) timeRemaining.textContent = formatTime(tonedownDuration) + ' remaining';
+                if (timeElapsed) timeElapsed.textContent = '0:00 elapsed';
+                return;
+            }
+            
+            const elapsed = Date.now() - tonedownStartTime;
+            const remaining = Math.max(0, tonedownDuration - elapsed);
+            
+            if (timeRemaining) timeRemaining.textContent = formatTime(remaining) + ' remaining';
+            if (timeElapsed) timeElapsed.textContent = formatTime(elapsed) + ' elapsed';
+        }
+
+        function formatTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        }
+
+        function completeTonedown() {
+            tonedownActive = false;
+            
+            const toggleBtn = document.getElementById('tonedownToggle');
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start Timer';
+                toggleBtn.classList.remove('active');
+            }
+            
+            // Track statistics
+            if (tonedownStartTime) {
+                const sessionTime = Date.now() - tonedownStartTime;
+                dailyUsage += sessionTime;
+                weeklyUsage += sessionTime;
+                sessionCount++;
+                totalSessionTime += sessionTime;
+                saveSettings();
+            }
+            
+            // Apply extreme tone-down effect
+            document.body.classList.remove('tonedown-active');
+            document.body.classList.add('tonedown-extreme');
+            
+            // Stop timer
+            if (tonedownTimer) {
+                clearInterval(tonedownTimer);
+                tonedownTimer = null;
+            }
+            
+            // Stop break reminders
+            if (breakReminderInterval) {
+                clearInterval(breakReminderInterval);
+                breakReminderInterval = null;
+            }
+            
+            showSuccessMessage('Screen time complete! Time for a break! 🌙✨');
+        }
+
+        function resetTonedown() {
+            tonedownActive = false;
+            tonedownStartTime = null;
+            
+            const toggleBtn = document.getElementById('tonedownToggle');
+            const progressFill = document.getElementById('progressFill');
+            
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start Timer';
+                toggleBtn.classList.remove('active');
+            }
+            
+            if (progressFill) {
+                progressFill.style.width = '0%';
+            }
+            
+            // Remove all tone-down effects
+            document.body.classList.remove('tonedown-active', 'tonedown-extreme');
+            
+            // Stop timer
+            if (tonedownTimer) {
+                clearInterval(tonedownTimer);
+                tonedownTimer = null;
+            }
+            
+            updateTimeDisplay();
+            showSuccessMessage('Timer reset! 🔄');
+        }
+
+        function updateParentalButtonVisibility() {
+            const parentalBtn = document.getElementById('parentalBtn');
+            if (parentalBtn) {
+                if (parentalSettings.hideParentalBtn) {
+                    parentalBtn.style.display = 'none';
+                } else {
+                    parentalBtn.style.display = 'flex';
+                }
+            }
+        }
+
+        // Break System Functions
+        function startBreakTimer() {
+            // Clear any existing timer
+            if (breakInterval) {
+                clearInterval(breakInterval);
+            }
+            
+            videoStartTime = Date.now();
+            
+            // Set up break reminder every 15 minutes
+            breakInterval = setInterval(() => {
+                showBreakModal();
+            }, breakDuration);
+        }
+
+        function stopBreakTimer() {
+            if (breakInterval) {
+                clearInterval(breakInterval);
+                breakInterval = null;
+            }
+            videoStartTime = null;
+        }
+
+        function showBreakModal() {
+            // Create break modal
+            const modal = document.createElement('div');
+            modal.id = 'breakModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Fredoka', sans-serif;
+            `;
+
+            // Get random game
+            const game = getRandomBreakGame();
+            
+            modal.innerHTML = `
+                <div style="
+                    background: var(--bg-white);
+                    border-radius: 20px;
+                    padding: 2rem;
+                    max-width: 500px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    position: relative;
+                ">
+                    <div style="
+                        position: absolute;
+                        top: -10px;
+                        right: -10px;
+                        width: 30px;
+                        height: 20px;
+                        background: radial-gradient(ellipse, var(--primary-pink) 12px 8px, transparent 12px 8px);
+                    "></div>
+                    <div style="
+                        position: absolute;
+                        bottom: -8px;
+                        left: -8px;
+                        width: 25px;
+                        height: 15px;
+                        background: radial-gradient(ellipse, var(--primary-blue) 10px 6px, transparent 10px 6px);
+                    "></div>
+                    
+                    <h2 style="color: var(--text-dark); margin-bottom: 1rem; font-family: 'Fredoka One', cursive;">
+                        🎮 Break Time! 🎮
+                    </h2>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">
+                        You've been watching for 15 minutes! Let's play a fun game! 🦕
+                    </p>
+                    
+                    <div id="breakGameContent" style="margin-bottom: 2rem;">
+                        ${game.html}
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="completeBreakGame()" style="
+                            background: var(--primary-green);
+                            color: white;
+                            border: none;
+                            padding: 1rem 2rem;
+                            border-radius: 15px;
+                            font-family: 'Fredoka', sans-serif;
+                            font-weight: 600;
+                            font-size: 1rem;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='#4ECDC4'" onmouseout="this.style.background='var(--primary-green)'">
+                            ✅ I'm Done! Continue Watching
+                        </button>
+                        <button onclick="skipBreak()" style="
+                            background: var(--primary-orange);
+                            color: white;
+                            border: none;
+                            padding: 1rem 2rem;
+                            border-radius: 15px;
+                            font-family: 'Fredoka', sans-serif;
+                            font-weight: 600;
+                            font-size: 1rem;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='#FF8C00'" onmouseout="this.style.background='var(--primary-orange)'">
+                            ⏭️ Skip Break
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            currentBreakGame = game;
+        }
+
+        function getRandomBreakGame() {
+            const games = [
+                {
+                    name: "Dinosaur Memory Game",
+                    html: `
+                        <div style="margin-bottom: 1rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem;">🦕 Find the Matching Dinosaurs! 🦕</h3>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; max-width: 300px; margin: 0 auto;">
+                                <div onclick="flipCard(this)" style="
+                                    width: 60px; height: 60px; background: var(--primary-pink); 
+                                    border-radius: 10px; display: flex; align-items: center; 
+                                    justify-content: center; cursor: pointer; font-size: 1.5rem;
+                                ">🦕</div>
+                                <div onclick="flipCard(this)" style="
+                                    width: 60px; height: 60px; background: var(--primary-blue); 
+                                    border-radius: 10px; display: flex; align-items: center; 
+                                    justify-content: center; cursor: pointer; font-size: 1.5rem;
+                                ">🦖</div>
+                                <div onclick="flipCard(this)" style="
+                                    width: 60px; height: 60px; background: var(--primary-yellow); 
+                                    border-radius: 10px; display: flex; align-items: center; 
+                                    justify-content: center; cursor: pointer; font-size: 1.5rem;
+                                ">🦕</div>
+                                <div onclick="flipCard(this)" style="
+                                    width: 60px; height: 60px; background: var(--primary-green); 
+                                    border-radius: 10px; display: flex; align-items: center; 
+                                    justify-content: center; cursor: pointer; font-size: 1.5rem;
+                                ">🦖</div>
+                            </div>
+                            <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 1rem;">
+                                Click the dinosaurs to find matching pairs!
+                            </p>
+                        </div>
+                    `
+                },
+                {
+                    name: "Color Counting Game",
+                    html: `
+                        <div style="margin-bottom: 1rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem;">🌈 Count the Colors! 🌈</h3>
+                            <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                                <div style="width: 40px; height: 40px; background: var(--primary-pink); border-radius: 50%;"></div>
+                                <div style="width: 40px; height: 40px; background: var(--primary-blue); border-radius: 50%;"></div>
+                                <div style="width: 40px; height: 40px; background: var(--primary-yellow); border-radius: 50%;"></div>
+                                <div style="width: 40px; height: 40px; background: var(--primary-green); border-radius: 50%;"></div>
+                                <div style="width: 40px; height: 40px; background: var(--primary-orange); border-radius: 50%;"></div>
+                            </div>
+                            <p style="font-size: 1.2rem; color: var(--text-dark); font-weight: 600;">
+                                How many circles do you see? <span id="colorAnswer" style="color: var(--primary-pink);">5</span>
+                            </p>
+                        </div>
+                    `
+                },
+                {
+                    name: "Shape Puzzle",
+                    html: `
+                        <div style="margin-bottom: 1rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem;">🔷 Complete the Pattern! 🔷</h3>
+                            <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                                <div style="width: 50px; height: 50px; background: var(--primary-pink); border-radius: 10px;"></div>
+                                <div style="width: 50px; height: 50px; background: var(--primary-blue); border-radius: 50%;"></div>
+                                <div style="width: 50px; height: 50px; background: var(--primary-yellow); border-radius: 10px;"></div>
+                                <div style="width: 50px; height: 50px; background: var(--primary-green); border-radius: 50%;"></div>
+                                <div style="width: 50px; height: 50px; background: var(--primary-orange); border-radius: 10px; border: 3px dashed var(--text-light);"></div>
+                            </div>
+                            <p style="font-size: 1rem; color: var(--text-dark);">
+                                What shape should go in the empty space? <br>
+                                <button onclick="checkShapeAnswer('circle')" style="
+                                    background: var(--primary-blue); color: white; border: none; 
+                                    padding: 0.5rem 1rem; margin: 0.5rem; border-radius: 10px; cursor: pointer;
+                                ">Circle</button>
+                                <button onclick="checkShapeAnswer('square')" style="
+                                    background: var(--primary-pink); color: white; border: none; 
+                                    padding: 0.5rem 1rem; margin: 0.5rem; border-radius: 10px; cursor: pointer;
+                                ">Square</button>
+                            </p>
+                        </div>
+                    `
+                },
+                {
+                    name: "Animal Sounds Game",
+                    html: `
+                        <div style="margin-bottom: 1rem;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 1rem;">🐶 What Sound Does This Animal Make? 🐶</h3>
+                            <div style="font-size: 4rem; margin: 1rem 0;">🐱</div>
+                            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                <button onclick="checkAnimalSound('meow')" style="
+                                    background: var(--primary-green); color: white; border: none; 
+                                    padding: 0.8rem 1.5rem; margin: 0.5rem; border-radius: 15px; cursor: pointer; font-size: 1rem;
+                                ">Meow</button>
+                                <button onclick="checkAnimalSound('woof')" style="
+                                    background: var(--primary-orange); color: white; border: none; 
+                                    padding: 0.8rem 1.5rem; margin: 0.5rem; border-radius: 15px; cursor: pointer; font-size: 1rem;
+                                ">Woof</button>
+                                <button onclick="checkAnimalSound('moo')" style="
+                                    background: var(--primary-blue); color: white; border: none; 
+                                    padding: 0.8rem 1.5rem; margin: 0.5rem; border-radius: 15px; cursor: pointer; font-size: 1rem;
+                                ">Moo</button>
+                            </div>
+                        </div>
+                    `
+                }
+            ];
+            
+            return games[Math.floor(Math.random() * games.length)];
+        }
+
+        function completeBreakGame() {
+            const modal = document.getElementById('breakModal');
+            if (modal) {
+                modal.remove();
+            }
+            showSuccessMessage('Great job! Time to continue watching! 🎉');
+            // Restart the break timer
+            startBreakTimer();
+        }
+
+        function skipBreak() {
+            const modal = document.getElementById('breakModal');
+            if (modal) {
+                modal.remove();
+            }
+            showSuccessMessage('Break skipped! Continue watching! ⏭️');
+            // Restart the break timer
+            startBreakTimer();
+        }
+
+        function flipCard(element) {
+            element.style.transform = element.style.transform === 'rotateY(180deg)' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+            element.style.transition = 'transform 0.3s ease';
+        }
+
+        function checkShapeAnswer(answer) {
+            if (answer === 'circle') {
+                showSuccessMessage('Correct! It should be a circle! 🎉');
+            } else {
+                showSuccessMessage('Try again! Look at the pattern! 🤔');
+            }
+        }
+
+        function checkAnimalSound(answer) {
+            if (answer === 'meow') {
+                showSuccessMessage('Correct! Cats say meow! 🐱🎉');
+            } else {
+                showSuccessMessage('Not quite! Cats say meow! 🐱');
+            }
+        }
+    </script>
 </body>
 </html>

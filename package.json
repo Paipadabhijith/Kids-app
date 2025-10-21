@@ -1,7 +1,7 @@
 {
-  "name": "sareesutra-website",
+  "name": "kids-video-app",
   "version": "1.0.0",
-  "description": "A modern web application showcasing SareeSutra - One Stop Sarees from Every Indian State",
+  "description": "A kid-friendly video platform with screen time controls and educational content",
   "main": "index.html",
   "scripts": {
     "start": "npx http-server -p 3000 -o",
@@ -10,15 +10,15 @@
     "test": "echo 'No tests specified'"
   },
   "keywords": [
-    "saree",
-    "indian",
-    "fashion",
-    "handloom",
-    "textile",
-    "ecommerce",
-    "website"
+    "kids",
+    "video",
+    "education",
+    "screen-time",
+    "parental-controls",
+    "youtube",
+    "children"
   ],
-  "author": "Plan My Trip",
+  "author": "Kids App Developer",
   "license": "MIT",
   "devDependencies": {
     "http-server": "^14.1.1",
@@ -26,9 +26,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/planmytrip/website.git"
+    "url": "https://github.com/yourusername/kids-app.git"
   },
-  "homepage": "https://plan-my-trip-lqv2p.ondigitalocean.app/",
+  "homepage": "https://your-kids-app.ondigitalocean.app/",
   "engines": {
     "node": ">=14.0.0"
   }

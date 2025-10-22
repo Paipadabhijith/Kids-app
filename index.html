@@ -11,12 +11,640 @@
     <link rel="stylesheet" href="kids-styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         .video-channel {
             display: block;
             font-size: 0.8rem;
             color: #666;
             margin-top: 5px;
+        }
+        
+        /* Video player tonedown effects */
+        .video-player {
+            transition: filter 0.5s ease;
+        }
+        
+        .video-player iframe {
+            transition: filter 0.5s ease;
+        }
+        
+        /* Fullscreen support for tonedown */
+        .video-player:-webkit-full-screen {
+            transition: filter 0.5s ease;
+        }
+        
+        .video-player:-moz-full-screen {
+            transition: filter 0.5s ease;
+        }
+        
+        .video-player:fullscreen {
+            transition: filter 0.5s ease;
+        }
+        
+        /* Ensure tonedown works in fullscreen */
+        .video-player:-webkit-full-screen iframe {
+            transition: filter 0.5s ease;
+        }
+        
+        .video-player:-moz-full-screen iframe {
+            transition: filter 0.5s ease;
+        }
+        
+        .video-player:fullscreen iframe {
+            transition: filter 0.5s ease;
+        }
+        
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            margin-left: 15px;
+        }
+        
+        .menu-toggle {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .menu-toggle:hover {
+            background: #e55a5a;
+            transform: scale(1.1);
+        }
+        
+        /* Sidebar Styles */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100%;
+            background: white;
+            z-index: 9999;
+            transition: right 0.3s ease;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+        
+        .sidebar.open {
+            right: 0;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+        
+        .sidebar-header {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.3rem;
+        }
+        
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+        
+        .close-sidebar:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar-content {
+            padding: 20px;
+        }
+        
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            cursor: pointer;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-header:hover {
+            border-bottom-color: #4ECDC4;
+        }
+        
+        .filter-header h4 {
+            color: #333;
+            margin: 0;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .dropdown-arrow {
+            color: #666;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+        
+        .filter-dropdown {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .filter-dropdown.open {
+            max-height: 600px;
+        }
+        
+        .dropdown-arrow.rotated {
+            transform: rotate(180deg);
+        }
+        
+        /* Control Sections */
+        .control-section {
+            margin-top: 20px;
+        }
+        
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            cursor: pointer;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .control-header:hover {
+            border-bottom-color: #4ECDC4;
+        }
+        
+        .control-header h4 {
+            color: #333;
+            margin: 0;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .control-dropdown {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .control-dropdown.open {
+            max-height: 400px;
+        }
+        
+        .control-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .control-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .control-option:hover {
+            border-color: #4ECDC4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .control-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+        
+        .control-info h5 {
+            margin: 0 0 4px 0;
+            font-size: 1rem;
+            color: #333;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+        }
+        
+        .control-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .filter-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .filter-option:hover {
+            border-color: #4ECDC4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-option.active {
+            border-color: #FF6B6B;
+            background: #fff5f5;
+        }
+        
+        .filter-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            margin-right: 15px;
+            flex-shrink: 0;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .filter-info h5 {
+            margin: 0;
+            font-size: 1rem;
+            color: #333;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+        }
+        
+        .sidebar-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .parental-access-btn {
+            width: 100%;
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .parental-access-btn:hover {
+            background: #3bb5b0;
+            transform: translateY(-2px);
+        }
+        
+        /* Safe Search Indicator */
+        .safe-search-indicator {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+        
+        .safe-search-indicator i {
+            font-size: 18px;
+        }
+        
+        .safe-search-indicator span {
+            font-size: 14px;
+        }
+        
+        /* Video Overlay Styles */
+        .video-player {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .overlay-controls {
+            pointer-events: all;
+        }
+        
+        .overlay-info {
+            pointer-events: all;
+        }
+        
+        .video-player:hover .video-overlay {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        .overlay-controls {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3));
+            gap: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .overlay-play-btn {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+            position: relative;
+            z-index: 15;
+        }
+        
+        .overlay-play-btn::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            background: transparent;
+            z-index: 10;
+        }
+        
+        .overlay-play-btn:hover {
+            background: #e55a5a;
+            transform: scale(1.1);
+        }
+        
+        .overlay-progress {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .overlay-progress-bar {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .overlay-progress-fill {
+            height: 100%;
+            background: #FF6B6B;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        .overlay-time {
+            color: white;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .overlay-volume {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .overlay-volume-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background 0.3s ease;
+        }
+        
+        .overlay-volume-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .overlay-volume-slider {
+            width: 80px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .overlay-volume-fill {
+            height: 100%;
+            background: #4ECDC4;
+            border-radius: 2px;
+            width: 100%;
+            transition: width 0.1s ease;
+        }
+        
+        .overlay-fullscreen-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 3px;
+            transition: background 0.3s ease;
+        }
+        
+        .overlay-fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .overlay-toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 3px;
+            transition: background 0.3s ease;
+        }
+        
+        .overlay-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .overlay-info {
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3));
+            color: white;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .overlay-info h3 {
+            margin: 0 0 8px 0;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .overlay-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .overlay-click-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: transparent;
+            cursor: pointer;
+            z-index: 5;
+        }
+        
+        /* Completely block YouTube controls and interactions */
+        .video-player iframe {
+            pointer-events: none;
+        }
+        
+        .video-player.playing iframe {
+            pointer-events: none;
+        }
+        
+        /* Block any YouTube overlays or controls */
+        .video-player iframe::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            z-index: 1000;
+            pointer-events: all;
+        }
+        
+        /* Make overlay click-through for play button area */
+        .overlay-play-btn {
+            z-index: 20;
+        }
+        
+        .video-player.playing .video-overlay {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .video-player.playing:hover .video-overlay {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        /* When no video is loaded, show overlay prominently */
+        .video-player:not(.playing) .video-overlay {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        /* When overlay is hidden */
+        .video-player.overlay-hidden .video-overlay {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .video-player.overlay-hidden:hover .video-overlay {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                right: -100%;
+            }
         }
     </style>
 </head>
@@ -34,8 +662,167 @@
                     <i class="fas fa-search"></i>
                 </button>
             </div>
+            <div class="header-actions">
+                <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-cog"></i> Video Filters</h3>
+            <button class="close-sidebar" onclick="closeSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sidebar-content">
+            <!-- Video Filters Section -->
+            <div class="filter-section">
+                <div class="filter-header" onclick="toggleFilterDropdown()">
+                    <h4><i class="fas fa-palette"></i> Video Filters</h4>
+                    <i class="fas fa-chevron-down dropdown-arrow" id="dropdownArrow"></i>
+                </div>
+                
+                <div class="filter-dropdown" id="filterDropdown">
+                    <div class="filter-options">
+                        <div class="filter-option" onclick="selectFilter('none')">
+                            <div class="filter-preview" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d);"></div>
+                            <div class="filter-info">
+                                <h5>Off / No Filter</h5>
+                    </div>
+                </div>
+                        
+                        <div class="filter-option" onclick="selectFilter('reduce_addiction')">
+                            <div class="filter-preview" style="background: linear-gradient(45deg, #8a8a8a, #a0a0a0, #b8b8b8); filter: saturate(0.6) contrast(0.95);"></div>
+                            <div class="filter-info">
+                                <h5>🚫 Reduce Screen Addiction</h5>
+                </div>
+            </div>
+                        
+                        <div class="filter-option" onclick="selectFilter('sleep_warm')">
+                            <div class="filter-preview" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d); filter: sepia(0.6) hue-rotate(10deg) saturate(0.9) brightness(0.98);"></div>
+                            <div class="filter-info">
+                                <h5>🌙 Help with Sleep</h5>
+            </div>
+                        </div>
+                        
+                        <div class="filter-option" onclick="selectFilter('calm_cool')">
+                            <div class="filter-preview" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d); filter: hue-rotate(190deg) saturate(0.85) brightness(0.96);"></div>
+                            <div class="filter-info">
+                                <h5>🧘 Calm Overstimulation</h5>
+                    </div>
+                </div>
+                
+                        <div class="filter-option" onclick="selectFilter('focus_monotone')">
+                            <div class="filter-preview" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d); filter: grayscale(0.6) contrast(0.9) brightness(0.98);"></div>
+                            <div class="filter-info">
+                                <h5>🎯 Improve Focus</h5>
+                    </div>
+                        </div>
+                        
+                        <div class="filter-option" onclick="selectFilter('memory_balanced')">
+                            <div class="filter-preview" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d); filter: saturate(0.9) contrast(0.98) brightness(1.0);"></div>
+                            <div class="filter-info">
+                                <h5>🧩 Enhance Memory</h5>
+                    </div>
+                </div>
+                
+                        <div class="filter-option" onclick="selectFilter('creativity_soft')">
+                            <div class="filter-preview" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d); filter: saturate(0.85) contrast(0.94) brightness(1.02);"></div>
+                            <div class="filter-info">
+                                <h5>🎨 Stimulate Creativity</h5>
+                            </div>
+                    </div>
+                    
+                        <div class="filter-option" onclick="selectFilter('anxiety_green')">
+                            <div class="filter-preview" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d); filter: hue-rotate(150deg) saturate(0.85) brightness(0.97);"></div>
+                            <div class="filter-info">
+                                <h5>🫂 Reduce Anxiety</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                    
+            <!-- Screen Time Control Section -->
+            <div class="control-section">
+                <div class="control-header" onclick="toggleScreenTimeDropdown()">
+                    <h4><i class="fas fa-clock"></i> Screen Time Control</h4>
+                    <i class="fas fa-chevron-down dropdown-arrow" id="screenTimeArrow"></i>
+                </div>
+                
+                <div class="control-dropdown" id="screenTimeDropdown">
+                    <div class="control-options">
+                        <div class="control-option" onclick="toggleTonedown()">
+                            <div class="control-icon">
+                                <i class="fas fa-play" id="timerIcon"></i>
+                            </div>
+                            <div class="control-info">
+                                <h5 id="timerText">Start Timer</h5>
+                                <p id="timerStatus">Ready to start</p>
+                    </div>
+                </div>
+                
+                        <div class="control-option" onclick="startQuickTimer()">
+                            <div class="control-icon">
+                                <i class="fas fa-bolt"></i>
+                        </div>
+                            <div class="control-info">
+                                <h5>Quick 5min Timer</h5>
+                                <p>Start a quick 5-minute session</p>
+                        </div>
+                        </div>
+                        
+                        <div class="control-option" onclick="resetTonedown()">
+                            <div class="control-icon">
+                                <i class="fas fa-refresh"></i>
+                        </div>
+                            <div class="control-info">
+                                <h5>Reset Timer</h5>
+                                <p>Reset all timers and filters</p>
+                    </div>
+                </div>
+                
+                        <div class="control-option" onclick="toggleStatsPanel()">
+                            <div class="control-icon">
+                                <i class="fas fa-chart-bar"></i>
+                        </div>
+                            <div class="control-info">
+                                <h5>View Statistics</h5>
+                                <p>See usage statistics</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                    
+            <!-- Parental Controls Section -->
+            <div class="control-section">
+                <div class="control-header" onclick="toggleParentalDropdown()">
+                    <h4><i class="fas fa-shield-alt"></i> Parental Controls</h4>
+                    <i class="fas fa-chevron-down dropdown-arrow" id="parentalArrow"></i>
+                </div>
+                
+                <div class="control-dropdown" id="parentalDropdown">
+                    <div class="control-options">
+                        <div class="control-option" onclick="openParentalControls()">
+                            <div class="control-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="control-info">
+                                <h5>Access Parental Settings</h5>
+                                <p>Configure advanced settings</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Navigation Tabs -->
     <nav class="nav-tabs">
@@ -52,6 +839,40 @@
         <section class="featured-video">
             <div class="video-container">
                 <div id="videoPlayer" class="video-player">
+                    <div class="video-overlay" id="videoOverlay">
+                        <div class="overlay-controls">
+                            <button class="overlay-play-btn" id="overlayPlayBtn">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <div class="overlay-progress">
+                                <div class="overlay-progress-bar" id="overlayProgressBar">
+                                    <div class="overlay-progress-fill" id="overlayProgressFill"></div>
+                        </div>
+                        </div>
+                            <div class="overlay-time">
+                                <span id="overlayCurrentTime">0:00</span>
+                                <span id="overlayDuration">0:00</span>
+                        </div>
+                            <div class="overlay-volume">
+                                <button class="overlay-volume-btn" id="overlayVolumeBtn">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                                <div class="overlay-volume-slider" id="overlayVolumeSlider">
+                                    <div class="overlay-volume-fill" id="overlayVolumeFill"></div>
+                        </div>
+                        </div>
+                            <button class="overlay-fullscreen-btn" id="overlayFullscreenBtn">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <button class="overlay-toggle-btn" id="overlayToggleBtn">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
+                        </div>
+                        <div class="overlay-info">
+                            <h3 id="overlayTitle">Welcome to KidsTube!</h3>
+                            <p id="overlayDescription">Choose a fun video from below to get started! 🎉</p>
+                    </div>
+                </div>
                     <div class="video-placeholder">
                         <i class="fas fa-play-circle"></i>
                         <p>Click a video to start watching!</p>
@@ -69,150 +890,6 @@
             <h3>Popular Videos</h3>
             <div class="videos-container" id="videosContainer">
                 <!-- Videos will be loaded here -->
-            </div>
-        </section>
-
-        <!-- Enhanced Screen Time Control Section -->
-        <section class="tonedown-section">
-            <div class="tonedown-panel">
-                <div class="tonedown-header">
-                    <h4><i class="fas fa-clock"></i> Screen Time Control</h4>
-                    <div class="timer-controls">
-                        <button class="tonedown-toggle" id="tonedownToggle">
-                            <i class="fas fa-play"></i> Start Timer
-                        </button>
-                        <button class="quick-timer-btn" id="quickTimerBtn">
-                            <i class="fas fa-bolt"></i> Quick 5min
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="tonedown-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div class="progress-text">
-                        <span id="timeRemaining">30:00 remaining</span>
-                        <span id="timeElapsed">0:00 elapsed</span>
-                    </div>
-                </div>
-                
-                <div class="tonedown-settings">
-                    <div class="settings-row">
-                        <label for="durationSelect">Session Duration:</label>
-                        <select id="durationSelect">
-                            <option value="300000">5 minutes</option>
-                            <option value="900000">15 minutes</option>
-                            <option value="1800000" selected>30 minutes</option>
-                            <option value="2700000">45 minutes</option>
-                            <option value="3600000">1 hour</option>
-                            <option value="7200000">2 hours</option>
-                        </select>
-                    </div>
-                    
-                    <div class="settings-row">
-                        <label for="breakReminder">Break Reminder:</label>
-                        <select id="breakReminder">
-                            <option value="0">Off</option>
-                            <option value="300000" selected>Every 5 minutes</option>
-                            <option value="600000">Every 10 minutes</option>
-                            <option value="900000">Every 15 minutes</option>
-                        </select>
-                    </div>
-                    
-                    <div class="settings-row">
-                        <button class="reset-btn" id="resetBtn">
-                            <i class="fas fa-refresh"></i> Reset
-                        </button>
-                        <button class="stats-btn" id="statsBtn">
-                            <i class="fas fa-chart-bar"></i> Statistics
-                        </button>
-                        <button class="parental-btn" id="parentalBtn">
-                            <i class="fas fa-lock"></i> Parental
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Statistics Panel -->
-                <div class="stats-panel" id="statsPanel" style="display: none;">
-                    <h5><i class="fas fa-chart-line"></i> Usage Statistics</h5>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Today:</span>
-                            <span class="stat-value" id="todayTime">0:00</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">This Week:</span>
-                            <span class="stat-value" id="weekTime">0:00</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Sessions:</span>
-                            <span class="stat-value" id="sessionCount">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Avg Session:</span>
-                            <span class="stat-value" id="avgSession">0:00</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Parental Controls Panel -->
-                <div class="parental-panel" id="parentalPanel" style="display: none;">
-                    <!-- Password Entry -->
-                    <div class="password-section" id="passwordSection">
-                        <h5><i class="fas fa-lock"></i> Parental Access</h5>
-                        <p>Enter parental password to access controls:</p>
-                        <div class="password-input-group">
-                            <input type="password" id="parentalPassword" placeholder="Enter password" maxlength="10">
-                            <button class="password-btn" id="passwordSubmit">
-                                <i class="fas fa-unlock"></i> Access
-                            </button>
-                        </div>
-                        <p class="password-hint">Default password: <strong>parent123</strong></p>
-                    </div>
-                    
-                    <!-- Parental Settings (Hidden by default) -->
-                    <div class="parental-settings" id="parentalSettings" style="display: none;">
-                        <div class="settings-header">
-                            <h5><i class="fas fa-shield-alt"></i> Parental Controls</h5>
-                            <button class="lock-btn" id="lockSettings">
-                                <i class="fas fa-lock"></i> Lock
-                            </button>
-                        </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="dailyLimitEnabled">
-                                Enable Daily Limit
-                            </label>
-                            <input type="number" id="dailyLimitHours" value="2" min="0.5" max="8" step="0.5" disabled>
-                            <span>hours</span>
-                        </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="bedtimeMode">
-                                Bedtime Mode (9 PM - 7 AM)
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="weekendMode">
-                                Weekend Mode (Extra 1 hour)
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="breakReminderEnabled">
-                                Force Break Reminders
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="hideParentalBtn">
-                                Hide Parental Button from Kids
-                            </label>
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
     </main>
@@ -387,7 +1064,8 @@
             bedtimeMode: false,
             weekendMode: false,
             breakReminderEnabled: false,
-            hideParentalBtn: false
+            hideParentalBtn: false,
+            targetMode: 'none' // filter/goal mode
         };
         let parentalAccess = false;
         const parentalPassword = 'parent123'; // Default password
@@ -395,6 +1073,59 @@
         // YouTube API configuration
         let apiKey = 'AIzaSyDdqnaHe2qjRnZWFM2HNYvWxUwxPo07J8g';
         let isYouTubeEnabled = true;
+        let safeSearchEnabled = true; // Enable safe search for kids
+        let youtubePlayer = null;
+        let isVideoPlaying = false;
+
+        // YouTube API functions
+        function onYouTubeIframeAPIReady() {
+            console.log('YouTube API ready');
+        }
+        
+        function createYouTubePlayer(videoId) {
+            if (youtubePlayer) {
+                youtubePlayer.destroy();
+            }
+            
+            youtubePlayer = new YT.Player('youtubePlayer', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 0,
+                    'disablekb': 1,
+                    'fs': 0,
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'showinfo': 0,
+                    'iv_load_policy': 3,
+                    'cc_load_policy': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+        
+        function onPlayerReady(event) {
+            console.log('YouTube player ready');
+            isVideoPlaying = false;
+        }
+        
+        function onPlayerStateChange(event) {
+            const playBtn = document.getElementById('overlayPlayBtn');
+            const icon = playBtn ? playBtn.querySelector('i') : null;
+            
+            if (event.data === YT.PlayerState.PLAYING) {
+                isVideoPlaying = true;
+                if (icon) icon.className = 'fas fa-pause';
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                isVideoPlaying = false;
+                if (icon) icon.className = 'fas fa-play';
+            }
+        }
 
         // Initialize app
         window.onload = function() {
@@ -403,6 +1134,7 @@
             loadVideos();
             setupEventListeners();
             setupTonedownFeature();
+            setupVideoOverlay();
         };
         
         // Check if API key exists
@@ -417,7 +1149,8 @@
                 throw new Error('No API key provided');
             }
             
-            const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&q=${encodeURIComponent(query)}&type=video&part=snippet&maxResults=20&safeSearch=strict&videoEmbeddable=true&videoDuration=short`;
+            // Enhanced safe search for kids
+            const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&q=${encodeURIComponent(query)}&type=video&part=snippet&maxResults=20&safeSearch=strict&videoEmbeddable=true&videoDuration=short&videoCategoryId=27&order=relevance`;
             
             try {
                 const response = await fetch(url);
@@ -437,11 +1170,57 @@
                     channelTitle: item.snippet.channelTitle
                 }));
                 
-                return videoResults;
+                // Apply additional client-side safety filtering
+                const safeVideos = filterSafeContent(videoResults);
+                
+                console.log(`Safe search: ${safeVideos.length}/${videoResults.length} videos passed safety filters`);
+                return safeVideos;
             } catch (error) {
                 console.error('YouTube API error:', error);
                 throw error;
             }
+        }
+        
+        // Additional client-side safety filtering for kids
+        function filterSafeContent(videos) {
+            if (!safeSearchEnabled) return videos;
+            
+            const inappropriateKeywords = [
+                // Violence and scary content
+                'scary', 'horror', 'frightening', 'violent', 'fight', 'battle', 'war', 'death', 'kill',
+                // Inappropriate language
+                'bad words', 'swear', 'curse', 'inappropriate', 'adult', 'mature',
+                // Dangerous activities
+                'dangerous', 'risky', 'stunt', 'challenge', 'prank', 'scare',
+                // Inappropriate content
+                'sexy', 'hot', 'adult content', 'inappropriate', 'explicit',
+                // Negative behaviors
+                'hate', 'bully', 'mean', 'rude', 'disrespectful'
+            ];
+            
+            return videos.filter(video => {
+                const title = video.title.toLowerCase();
+                const description = video.description.toLowerCase();
+                const channelTitle = video.channelTitle.toLowerCase();
+                
+                // Check for inappropriate keywords
+                const hasInappropriateContent = inappropriateKeywords.some(keyword => 
+                    title.includes(keyword) || description.includes(keyword) || channelTitle.includes(keyword)
+                );
+                
+                // Check for educational/child-friendly indicators
+                const isEducational = [
+                    'educational', 'learn', 'teach', 'kids', 'children', 'family', 'fun',
+                    'cartoon', 'animation', 'story', 'song', 'music', 'dance', 'art',
+                    'science', 'math', 'reading', 'writing', 'abc', '123', 'colors',
+                    'shapes', 'animals', 'nature', 'cooking', 'craft', 'toy'
+                ].some(keyword => 
+                    title.includes(keyword) || description.includes(keyword) || channelTitle.includes(keyword)
+                );
+                
+                // Allow if educational and not inappropriate
+                return !hasInappropriateContent && (isEducational || title.length < 50); // Short titles are usually safer
+            });
         }
 
         function setupEventListeners() {
@@ -509,17 +1288,53 @@
             const titleElement = document.getElementById('videoTitle');
             const descElement = document.getElementById('videoDescription');
             
-            // Update video player
+            // Update video player with YouTube API
             videoPlayer.innerHTML = `
-                <iframe 
-                    width="100%" 
-                    height="100%" 
-                    src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&controls=1&fs=1" 
-                    frameborder="0" 
-                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
+                <div class="video-overlay" id="videoOverlay">
+                    <div class="overlay-controls">
+                        <button class="overlay-play-btn" id="overlayPlayBtn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <div class="overlay-progress">
+                            <div class="overlay-progress-bar" id="overlayProgressBar">
+                                <div class="overlay-progress-fill" id="overlayProgressFill"></div>
+                            </div>
+                        </div>
+                        <div class="overlay-time">
+                            <span id="overlayCurrentTime">0:00</span>
+                            <span id="overlayDuration">0:00</span>
+                        </div>
+                        <div class="overlay-volume">
+                            <button class="overlay-volume-btn" id="overlayVolumeBtn">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                            <div class="overlay-volume-slider" id="overlayVolumeSlider">
+                                <div class="overlay-volume-fill" id="overlayVolumeFill"></div>
+                            </div>
+                        </div>
+                        <button class="overlay-fullscreen-btn" id="overlayFullscreenBtn">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="overlay-toggle-btn" id="overlayToggleBtn">
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                    </div>
+                    <div class="overlay-info">
+                        <h3 id="overlayTitle">${title}</h3>
+                        <p id="overlayDescription">${description}</p>
+                    </div>
+                </div>
+                <div id="youtubePlayer"></div>
             `;
+            
+            // Add playing class to enable overlay controls
+            videoPlayer.classList.add('playing');
+            
+            // Create YouTube player
+            createYouTubePlayer(videoId);
+            
+            // Re-setup overlay controls for the new elements
+            setupVideoOverlay();
             
             // Update video info
             if (titleElement) titleElement.textContent = title;
@@ -530,6 +1345,9 @@
             
             // NO SCROLLING - just show success message
             showSuccessMessage(`Now playing: ${title}! 🎉`);
+
+            // Re-apply base filter to new iframe
+            applyBaseVideoFilter();
         }
 
         async function searchVideos() {
@@ -556,21 +1374,21 @@
                     // Fallback to local search
                     console.log('Using local search for:', searchTerm);
                     searchResults = videoData.filter(video => {
-                        const title = video.title.toLowerCase();
-                        const description = video.description.toLowerCase();
-                        const category = video.category.toLowerCase();
-                        
-                        // Direct matches
-                        if (title.includes(searchTerm) || description.includes(searchTerm) || category.includes(searchTerm)) {
-                            return true;
-                        }
-                        
-                        // Partial word matches
-                        const searchWords = searchTerm.split(' ');
-                        return searchWords.some(word => 
-                            title.includes(word) || description.includes(word) || category.includes(word)
-                        );
-                    });
+                const title = video.title.toLowerCase();
+                const description = video.description.toLowerCase();
+                const category = video.category.toLowerCase();
+                
+                // Direct matches
+                if (title.includes(searchTerm) || description.includes(searchTerm) || category.includes(searchTerm)) {
+                    return true;
+                }
+                
+                // Partial word matches
+                const searchWords = searchTerm.split(' ');
+                return searchWords.some(word => 
+                    title.includes(word) || description.includes(word) || category.includes(word)
+                );
+            });
                 }
                 
                 displaySearchResults(searchResults, searchTerm);
@@ -615,7 +1433,15 @@
                 `;
                 showSuccessMessage(`No videos found for "${searchTerm}". Try different keywords!`);
             } else {
-                videosContainer.innerHTML = results.map(video => `
+                // Add safe search indicator
+                const safeSearchIndicator = safeSearchEnabled ? `
+                    <div class="safe-search-indicator">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Safe Search Active - Child-Friendly Content Only</span>
+                    </div>
+                ` : '';
+                
+                videosContainer.innerHTML = safeSearchIndicator + results.map(video => `
                     <div class="video-card" onclick="playVideo('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.description.replace(/'/g, "\\'")}')">
                         <div class="video-thumbnail">
                             <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
@@ -629,7 +1455,7 @@
                         </div>
                     </div>
                 `).join('');
-                showSuccessMessage(`Found ${results.length} video${results.length === 1 ? '' : 's'}! 🎉`);
+                showSuccessMessage(`Found ${results.length} safe video${results.length === 1 ? '' : 's'}! 🛡️🎉`);
             }
         }
 
@@ -820,6 +1646,7 @@
             const bedtimeCheckbox = document.getElementById('bedtimeMode');
             const weekendCheckbox = document.getElementById('weekendMode');
             const breakReminderCheckbox = document.getElementById('breakReminderEnabled');
+            const targetModeSelect = document.getElementById('targetModeSelect');
 
             if (dailyLimitCheckbox) {
                 dailyLimitCheckbox.addEventListener('change', function() {
@@ -866,6 +1693,14 @@
                     parentalSettings.hideParentalBtn = this.checked;
                     saveSettings();
                     updateParentalButtonVisibility();
+                });
+            }
+
+            if (targetModeSelect) {
+                targetModeSelect.addEventListener('change', function() {
+                    parentalSettings.targetMode = this.value;
+                    saveSettings();
+                    applyBaseVideoFilter();
                 });
             }
         }
@@ -955,9 +1790,17 @@
             document.getElementById('weekendMode').checked = parentalSettings.weekendMode;
             document.getElementById('breakReminderEnabled').checked = parentalSettings.breakReminderEnabled;
             document.getElementById('hideParentalBtn').checked = parentalSettings.hideParentalBtn;
+            const targetModeSelect = document.getElementById('targetModeSelect');
+            if (targetModeSelect) targetModeSelect.value = parentalSettings.targetMode || 'none';
             
             // Update parental button visibility
             updateParentalButtonVisibility();
+
+            // Apply base filter on load
+            applyBaseVideoFilter();
+            
+            // Update sidebar active state
+            updateActiveFilterOption();
         }
 
         function toggleTonedown() {
@@ -972,16 +1815,13 @@
                 toggleBtn.innerHTML = '<i class="fas fa-pause"></i> Pause Timer';
                 toggleBtn.classList.add('active');
                 
-                // Apply tone-down effect
-                document.body.classList.add('tonedown-active');
-                
                 // Start timer
                 tonedownTimer = setInterval(updateTonedownProgress, 1000);
                 
                 // Setup break reminders
                 setupBreakReminders();
                 
-                showSuccessMessage('Screen time timer started! 🌙');
+                showSuccessMessage('Screen time timer started! Video will gradually dim! 🌙');
             } else {
                 // Pause tone-down
                 tonedownActive = false;
@@ -989,8 +1829,8 @@
                 toggleBtn.innerHTML = '<i class="fas fa-play"></i> Resume Timer';
                 toggleBtn.classList.remove('active');
                 
-                // Remove tone-down effect
-                document.body.classList.remove('tonedown-active');
+                // Reset video tonedown effect
+                resetVideoTonedown();
                 
                 // Stop timer
                 if (tonedownTimer) {
@@ -1004,7 +1844,7 @@
                     breakReminderInterval = null;
                 }
                 
-                showSuccessMessage('Timer paused! ⏸️');
+                showSuccessMessage('Timer paused! Video colors restored! ⏸️');
             }
         }
 
@@ -1024,9 +1864,550 @@
             // Update time display
             updateTimeDisplay();
             
+            // Apply tonedown effect only to video player
+            applyVideoTonedown(progress);
+            
             // Check if time is up
             if (remaining <= 0) {
                 completeTonedown();
+            }
+        }
+        
+        function applyVideoTonedown(progress) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoIframe = videoPlayer.querySelector('iframe');
+            
+            if (!videoPlayer) return;
+            
+            // Calculate gradual effects based on progress
+            const saturation = calculateGradualSaturation(progress);
+            const brightness = calculateGradualBrightness(progress);
+            const contrast = calculateGradualContrast(progress);
+            
+            // Combine base filter with tonedown overlay
+            const base = computeBaseFilter();
+            const filterValue = `${base} saturate(${saturation}) brightness(${brightness}) contrast(${contrast})`;
+            
+            // Apply tonedown effect only to video player
+            videoPlayer.style.filter = filterValue;
+            
+            // Also apply to iframe if it exists (for YouTube videos)
+            if (videoIframe) {
+                videoIframe.style.filter = filterValue;
+            }
+            
+            // Handle fullscreen mode - check if video is in fullscreen
+            const fullscreenElement = document.fullscreenElement || 
+                                    document.webkitFullscreenElement || 
+                                    document.mozFullScreenElement || 
+                                    document.msFullscreenElement;
+            
+            if (fullscreenElement === videoPlayer) {
+                // Video is in fullscreen, ensure tonedown applies
+                videoPlayer.style.filter = filterValue;
+                if (videoIframe) {
+                    videoIframe.style.filter = filterValue;
+                }
+            }
+        }
+
+        // Compute the base filter from parentalSettings.targetMode
+        function computeBaseFilter() {
+            switch (parentalSettings.targetMode) {
+                case 'reduce_addiction':
+                    // Desaturated, low saturation
+                    return 'saturate(0.6) contrast(0.95) ';
+                case 'sleep_warm':
+                    // Warm amber tone via sepia + hue/rotate + reduced blue
+                    return 'sepia(0.6) hue-rotate(10deg) saturate(0.9) brightness(0.98) ';
+                case 'calm_cool':
+                    // Cool soft tones
+                    return 'hue-rotate(190deg) saturate(0.85) brightness(0.96) ';
+                case 'focus_monotone':
+                    // Monotone/low contrast
+                    return 'grayscale(0.6) contrast(0.9) brightness(0.98) ';
+                case 'memory_balanced':
+                    // Balanced natural tones
+                    return 'saturate(0.9) contrast(0.98) brightness(1.0) ';
+                case 'creativity_soft':
+                    // Soft pastel artistic
+                    return 'saturate(0.85) contrast(0.94) brightness(1.02) ';
+                case 'anxiety_green':
+                    // Calming green/blue tint
+                    return 'hue-rotate(150deg) saturate(0.85) brightness(0.97) ';
+                case 'none':
+                default:
+                    return '';
+            }
+        }
+
+        // Apply only the base filter (used on load, video change, or mode change)
+        function applyBaseVideoFilter() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            if (!videoPlayer) return;
+            const videoIframe = videoPlayer.querySelector('iframe');
+            const base = computeBaseFilter();
+            videoPlayer.style.filter = base.trim();
+            if (videoIframe) videoIframe.style.filter = base.trim();
+        }
+        
+        // Sidebar functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            
+            // Update active filter option
+            updateActiveFilterOption();
+            
+            // Update timer status
+            updateTimerStatus();
+        }
+        
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            
+            // Close all dropdowns when sidebar closes
+            closeAllDropdowns();
+        }
+        
+        function closeAllDropdowns() {
+            // Close Video Filters dropdown
+            const filterDropdown = document.getElementById('filterDropdown');
+            const filterArrow = document.getElementById('dropdownArrow');
+            if (filterDropdown && filterArrow) {
+                filterDropdown.classList.remove('open');
+                filterArrow.classList.remove('rotated');
+            }
+            
+            // Close Screen Time dropdown
+            const screenTimeDropdown = document.getElementById('screenTimeDropdown');
+            const screenTimeArrow = document.getElementById('screenTimeArrow');
+            if (screenTimeDropdown && screenTimeArrow) {
+                screenTimeDropdown.classList.remove('open');
+                screenTimeArrow.classList.remove('rotated');
+            }
+            
+            // Close Parental Controls dropdown
+            const parentalDropdown = document.getElementById('parentalDropdown');
+            const parentalArrow = document.getElementById('parentalArrow');
+            if (parentalDropdown && parentalArrow) {
+                parentalDropdown.classList.remove('open');
+                parentalArrow.classList.remove('rotated');
+            }
+        }
+        
+        function selectFilter(filterMode) {
+            parentalSettings.targetMode = filterMode;
+            saveSettings();
+            applyBaseVideoFilter();
+            updateActiveFilterOption();
+            showSuccessMessage(`Filter applied: ${getFilterDisplayName(filterMode)}! 🎨`);
+        }
+        
+        function updateActiveFilterOption() {
+            // Remove active class from all options
+            document.querySelectorAll('.filter-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            // Add active class to current selection
+            const currentMode = parentalSettings.targetMode || 'none';
+            const activeOption = document.querySelector(`[onclick="selectFilter('${currentMode}')"]`);
+            if (activeOption) {
+                activeOption.classList.add('active');
+            }
+        }
+        
+        function getFilterDisplayName(filterMode) {
+            const names = {
+                'none': 'No Filter',
+                'reduce_addiction': 'Reduce Screen Addiction',
+                'sleep_warm': 'Help with Sleep',
+                'calm_cool': 'Calm Overstimulation',
+                'focus_monotone': 'Improve Focus',
+                'memory_balanced': 'Enhance Memory',
+                'creativity_soft': 'Stimulate Creativity',
+                'anxiety_green': 'Reduce Anxiety'
+            };
+            return names[filterMode] || 'Unknown';
+        }
+        
+        function openParentalControls() {
+            closeSidebar();
+            toggleParentalPanel();
+        }
+        
+        function toggleFilterDropdown() {
+            const dropdown = document.getElementById('filterDropdown');
+            const arrow = document.getElementById('dropdownArrow');
+            
+            dropdown.classList.toggle('open');
+            arrow.classList.toggle('rotated');
+        }
+        
+        function toggleScreenTimeDropdown() {
+            const dropdown = document.getElementById('screenTimeDropdown');
+            const arrow = document.getElementById('screenTimeArrow');
+            
+            dropdown.classList.toggle('open');
+            arrow.classList.toggle('rotated');
+        }
+        
+        function toggleParentalDropdown() {
+            const dropdown = document.getElementById('parentalDropdown');
+            const arrow = document.getElementById('parentalArrow');
+            
+            dropdown.classList.toggle('open');
+            arrow.classList.toggle('rotated');
+        }
+        
+        function startQuickTimer() {
+            // Set a 5-minute timer
+            parentalSettings.timerDuration = 5;
+            parentalSettings.timerActive = true;
+            parentalSettings.timerStartTime = Date.now();
+            saveSettings();
+            
+            // Start the timer
+            startTimer();
+            
+            // Close sidebar
+            closeSidebar();
+            
+            showSuccessMessage('Quick 5-minute timer started! ⏰');
+        }
+        
+        function toggleStatsPanel() {
+            // Close sidebar first
+            closeSidebar();
+            
+            // Toggle stats panel (if it exists) or show a message
+            if (typeof toggleParentalPanel === 'function') {
+                toggleParentalPanel();
+            } else {
+                showSuccessMessage('Statistics feature coming soon! 📊');
+            }
+        }
+        
+        function updateTimerStatus() {
+            const timerIcon = document.getElementById('timerIcon');
+            const timerText = document.getElementById('timerText');
+            const timerStatus = document.getElementById('timerStatus');
+            
+            if (!timerIcon || !timerText || !timerStatus) return;
+            
+            if (parentalSettings.timerActive) {
+                timerIcon.className = 'fas fa-pause';
+                timerText.textContent = 'Pause Timer';
+                timerStatus.textContent = 'Timer is running';
+            } else {
+                timerIcon.className = 'fas fa-play';
+                timerText.textContent = 'Start Timer';
+                timerStatus.textContent = 'Ready to start';
+            }
+        }
+        
+        // Video Overlay Controls
+        function setupVideoOverlay() {
+            const playBtn = document.getElementById('overlayPlayBtn');
+            const progressBar = document.getElementById('overlayProgressBar');
+            const volumeBtn = document.getElementById('overlayVolumeBtn');
+            const volumeSlider = document.getElementById('overlayVolumeSlider');
+            const fullscreenBtn = document.getElementById('overlayFullscreenBtn');
+            const toggleBtn = document.getElementById('overlayToggleBtn');
+            
+            if (playBtn) {
+                playBtn.addEventListener('click', toggleVideoPlayback);
+            }
+            
+            if (progressBar) {
+                progressBar.addEventListener('click', seekVideo);
+            }
+            
+            if (volumeBtn) {
+                volumeBtn.addEventListener('click', toggleVideoMute);
+            }
+            
+            if (volumeSlider) {
+                volumeSlider.addEventListener('click', adjustVolume);
+            }
+            
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', toggleFullscreen);
+            }
+            
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', toggleOverlayVisibility);
+            }
+        }
+        
+        function toggleVideoPlayback() {
+            if (!youtubePlayer) {
+                showSuccessMessage('Video player not ready yet! Please wait... ⏳');
+                return;
+            }
+            
+            const playBtn = document.getElementById('overlayPlayBtn');
+            const icon = playBtn ? playBtn.querySelector('i') : null;
+            
+            try {
+                if (isVideoPlaying) {
+                    // Pause video
+                    youtubePlayer.pauseVideo();
+                    showSuccessMessage('Video paused! ⏸️');
+                } else {
+                    // Play video
+                    youtubePlayer.playVideo();
+                    showSuccessMessage('Video playing! ▶️');
+                }
+            } catch (error) {
+                console.error('Error controlling video:', error);
+                showSuccessMessage('Error controlling video. Please try again! ❌');
+            }
+        }
+        
+        
+        function seekVideo(event) {
+            const progressBar = event.currentTarget;
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const percentage = clickX / rect.width;
+            
+            // Update progress bar visual
+            const progressFill = document.getElementById('overlayProgressFill');
+            if (progressFill) {
+                progressFill.style.width = (percentage * 100) + '%';
+            }
+            
+            // Try to seek in YouTube video
+            const videoPlayer = document.getElementById('videoPlayer');
+            const iframe = videoPlayer.querySelector('iframe');
+            
+            if (iframe) {
+                try {
+                    // Send seek command to YouTube
+                    iframe.contentWindow.postMessage(`{"event":"command","func":"seekTo","args":"${Math.floor(percentage * 100)}"}`, '*');
+                    showSuccessMessage(`Seeked to ${Math.floor(percentage * 100)}%`);
+                } catch (error) {
+                    console.log('Seek not available:', error);
+                }
+            }
+        }
+        
+        function toggleVideoMute() {
+            const volumeBtn = document.getElementById('overlayVolumeBtn');
+            const icon = volumeBtn.querySelector('i');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const iframe = videoPlayer.querySelector('iframe');
+            
+            // Toggle mute state
+            if (icon.classList.contains('fa-volume-up')) {
+                icon.className = 'fas fa-volume-mute';
+                if (iframe) {
+                    try {
+                        iframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+                        showSuccessMessage('Video muted! 🔇');
+                    } catch (error) {
+                        console.log('Mute not available:', error);
+                    }
+                }
+            } else {
+                icon.className = 'fas fa-volume-up';
+                if (iframe) {
+                    try {
+                        iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+                        showSuccessMessage('Video unmuted! 🔊');
+                    } catch (error) {
+                        console.log('Unmute not available:', error);
+                    }
+                }
+            }
+        }
+        
+        function adjustVolume(event) {
+            const volumeSlider = event.currentTarget;
+            const rect = volumeSlider.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const percentage = clickX / rect.width;
+            const volume = Math.floor(percentage * 100);
+            
+            // Update volume slider visual
+            const volumeFill = document.getElementById('overlayVolumeFill');
+            if (volumeFill) {
+                volumeFill.style.width = (percentage * 100) + '%';
+            }
+            
+            // Try to set volume in YouTube video
+            const videoPlayer = document.getElementById('videoPlayer');
+            const iframe = videoPlayer.querySelector('iframe');
+            
+            if (iframe) {
+                try {
+                    iframe.contentWindow.postMessage(`{"event":"command","func":"setVolume","args":"${volume}"}`, '*');
+                    showSuccessMessage(`Volume: ${volume}%`);
+                } catch (error) {
+                    console.log('Volume control not available:', error);
+                }
+            }
+        }
+        
+        function toggleFullscreen() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const fullscreenBtn = document.getElementById('overlayFullscreenBtn');
+            const icon = fullscreenBtn.querySelector('i');
+            
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                if (videoPlayer.requestFullscreen) {
+                    videoPlayer.requestFullscreen();
+                } else if (videoPlayer.webkitRequestFullscreen) {
+                    videoPlayer.webkitRequestFullscreen();
+                } else if (videoPlayer.mozRequestFullScreen) {
+                    videoPlayer.mozRequestFullScreen();
+                } else if (videoPlayer.msRequestFullscreen) {
+                    videoPlayer.msRequestFullscreen();
+                }
+                icon.className = 'fas fa-compress';
+                showSuccessMessage('Fullscreen mode! Use overlay controls. 🖥️');
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                icon.className = 'fas fa-expand';
+                showSuccessMessage('Exited fullscreen mode! 🖥️');
+            }
+        }
+        
+        function toggleOverlayVisibility() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const toggleBtn = document.getElementById('overlayToggleBtn');
+            const icon = toggleBtn.querySelector('i');
+            
+            videoPlayer.classList.toggle('overlay-hidden');
+            
+            if (videoPlayer.classList.contains('overlay-hidden')) {
+                icon.className = 'fas fa-eye';
+            } else {
+                icon.className = 'fas fa-eye-slash';
+            }
+        }
+        
+        function handleVideoClick() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const iframe = videoPlayer.querySelector('iframe');
+            const playBtn = document.getElementById('overlayPlayBtn');
+            const icon = playBtn.querySelector('i');
+            
+            if (!iframe) return;
+            
+            // Temporarily enable iframe interaction
+            iframe.style.pointerEvents = 'auto';
+            
+            // Toggle play/pause state
+            if (icon.classList.contains('fa-play')) {
+                icon.className = 'fas fa-pause';
+                showSuccessMessage('Video playing! ▶️');
+            } else {
+                icon.className = 'fas fa-play';
+                showSuccessMessage('Video paused! ⏸️');
+            }
+            
+            // Restore pointer-events after a short delay
+            setTimeout(() => {
+                iframe.style.pointerEvents = 'none';
+            }, 1000);
+        }
+        
+        // Prevent YouTube redirects and unwanted interactions
+        function preventYouTubeRedirects() {
+            // Block any attempts to navigate away from the page
+            window.addEventListener('beforeunload', function(e) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            });
+            
+            // Block YouTube iframe navigation
+            document.addEventListener('click', function(e) {
+                if (e.target.tagName === 'IFRAME') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            });
+            
+            // Block right-click context menu on iframe
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.tagName === 'IFRAME') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        }
+        
+        function calculateGradualSaturation(progress) {
+            // Very gradual saturation reduction
+            if (progress < 0.1) return 1.0; // No change for first 10%
+            if (progress < 0.3) return 1.0 - (progress - 0.1) * 0.2; // 0.98 to 0.96
+            if (progress < 0.6) return 0.96 - (progress - 0.3) * 0.3; // 0.96 to 0.87
+            if (progress < 0.9) return 0.87 - (progress - 0.6) * 0.4; // 0.87 to 0.75
+            return 0.75 - (progress - 0.9) * 0.65; // 0.75 to 0.1
+        }
+        
+        function calculateGradualBrightness(progress) {
+            // Very gradual brightness reduction
+            if (progress < 0.2) return 1.0; // No change for first 20%
+            if (progress < 0.5) return 1.0 - (progress - 0.2) * 0.1; // 1.0 to 0.97
+            if (progress < 0.8) return 0.97 - (progress - 0.5) * 0.2; // 0.97 to 0.91
+            return 0.91 - (progress - 0.8) * 0.45; // 0.91 to 0.82
+        }
+        
+        function calculateGradualContrast(progress) {
+            // Very gradual contrast reduction
+            if (progress < 0.15) return 1.0; // No change for first 15%
+            if (progress < 0.4) return 1.0 - (progress - 0.15) * 0.05; // 1.0 to 0.9875
+            if (progress < 0.7) return 0.9875 - (progress - 0.4) * 0.1; // 0.9875 to 0.9575
+            return 0.9575 - (progress - 0.7) * 0.3; // 0.9575 to 0.87
+        }
+        
+        function resetVideoTonedown() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoIframe = videoPlayer.querySelector('iframe');
+            
+            if (videoPlayer) {
+                videoPlayer.style.filter = 'none';
+            }
+            
+            if (videoIframe) {
+                videoIframe.style.filter = 'none';
+            }
+            
+            // Handle fullscreen mode - check if video is in fullscreen
+            const fullscreenElement = document.fullscreenElement || 
+                                    document.webkitFullscreenElement || 
+                                    document.mozFullScreenElement || 
+                                    document.msFullscreenElement;
+            
+            if (fullscreenElement === videoPlayer) {
+                // Video is in fullscreen, ensure reset applies
+                videoPlayer.style.filter = 'none';
+                if (videoIframe) {
+                    videoIframe.style.filter = 'none';
+                }
             }
         }
 
@@ -1073,9 +2454,17 @@
                 saveSettings();
             }
             
-            // Apply extreme tone-down effect
-            document.body.classList.remove('tonedown-active');
-            document.body.classList.add('tonedown-extreme');
+            // Apply maximum tone-down effect only to video
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoIframe = videoPlayer.querySelector('iframe');
+            
+            if (videoPlayer) {
+                videoPlayer.style.filter = 'saturate(0.05) brightness(0.6) contrast(0.7)';
+            }
+            
+            if (videoIframe) {
+                videoIframe.style.filter = 'saturate(0.05) brightness(0.6) contrast(0.7)';
+            }
             
             // Stop timer
             if (tonedownTimer) {
@@ -1089,7 +2478,7 @@
                 breakReminderInterval = null;
             }
             
-            showSuccessMessage('Screen time complete! Time for a break! 🌙✨');
+            showSuccessMessage('Screen time complete! Video is now very dim - time for a break! 🌙✨');
         }
 
         function resetTonedown() {
@@ -1108,8 +2497,8 @@
                 progressFill.style.width = '0%';
             }
             
-            // Remove all tone-down effects
-            document.body.classList.remove('tonedown-active', 'tonedown-extreme');
+            // Reset video tonedown effects
+            resetVideoTonedown();
             
             // Stop timer
             if (tonedownTimer) {
@@ -1118,7 +2507,7 @@
             }
             
             updateTimeDisplay();
-            showSuccessMessage('Timer reset! 🔄');
+            showSuccessMessage('Timer reset! Video colors restored! 🔄');
         }
 
         function updateParentalButtonVisibility() {
@@ -1399,6 +2788,15 @@
                 showSuccessMessage('Not quite! Cats say meow! 🐱');
             }
         }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            setupParentalControls();
+            updateTimerStatus();
+            preventYouTubeRedirects();
+            showSuccessMessage('Welcome to Kids Video App! 🎬');
+        });
     </script>
 </body>
 </html>

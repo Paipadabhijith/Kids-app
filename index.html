@@ -334,6 +334,15 @@
             font-weight: bold;
             font-family: 'Fredoka One', cursive;
             color: #2d3748;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .logo:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.05);
         }
         
         .logo i {
@@ -1725,9 +1734,7 @@
         
         /* Video Player Glass Styling */
         .video-player {
-            background: var(--glass-strong);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: transparent;
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
             border-radius: 25px;
@@ -2296,6 +2303,88 @@
             font-size: 1rem;
         }
         
+        /* Parent Welcome Message */
+        .parent-welcome {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .welcome-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .welcome-content h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+        
+        .welcome-content p {
+            color: #4a5568;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+        
+        .welcome-tips {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+        
+        .tip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+        
+        .tip i {
+            color: #667eea;
+            font-size: 1.2rem;
+            width: 20px;
+        }
+        
+        .tip span {
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+        
+        .welcome-close {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .welcome-close:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
         /* Sidebar Styles */
         .sidebar-overlay {
             position: fixed;
@@ -2766,12 +2855,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             z-index: 10;
-            opacity: 1;
+            opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
@@ -2790,7 +2879,7 @@
         
         .video-player:hover .video-overlay {
             opacity: 1;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.3);
         }
         
         .overlay-controls {
@@ -2857,6 +2946,89 @@
             border-radius: 3px;
             width: 0%;
             transition: width 0.1s ease;
+        }
+        
+        /* Blank overlay for end of video */
+        .blank-overlay {
+            background: rgba(0, 0, 0, 0.8) !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            opacity: 1 !important;
+        }
+        
+        .blank-content {
+            text-align: center;
+            color: white;
+        }
+        
+        .blank-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .blank-content p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .blank-play-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .blank-play-btn:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .blank-play-btn i {
+            font-size: 2rem;
+            color: #333;
+            margin-left: 3px; /* Slight offset for visual balance */
+        }
+        
+        /* YouTube-style play button on overlay */
+        .youtube-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+        }
+        
+        .youtube-play-btn:hover {
+            background: white;
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .youtube-play-btn i {
+            font-size: 2.5rem;
+            color: #333;
+            margin-left: 4px; /* Slight offset for visual balance */
         }
         
         .overlay-time {
@@ -2996,19 +3168,19 @@
         }
         
         .video-player.playing .video-overlay {
-            opacity: 1;
-            background: rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            background: rgba(0, 0, 0, 0.1);
         }
         
         .video-player.playing:hover .video-overlay {
             opacity: 1;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.4);
         }
         
         /* When no video is loaded, show overlay prominently */
         .video-player:not(.playing) .video-overlay {
             opacity: 1;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.3);
         }
         
         /* When overlay is hidden */
@@ -3079,7 +3251,7 @@
     <header class="header">
         <div class="header-content">
             <div class="header-left">
-            <div class="logo">
+            <div class="logo" onclick="goToHome()" title="Go to Home">
                 <i class="fas fa-play-circle"></i>
                 <span>KidsTube</span>
             </div>
@@ -3122,7 +3294,7 @@
             <!-- Video Filters Section -->
             <div class="filter-section">
                 <div class="filter-header" onclick="toggleFilterDropdown()">
-                    <h4><i class="fas fa-palette"></i> Video Filters</h4>
+                    <h4><i class="fas fa-palette"></i> Video Colors</h4>
                     <i class="fas fa-chevron-down dropdown-arrow" id="dropdownArrow"></i>
                 </div>
                 
@@ -3135,37 +3307,44 @@
                 </div>
                         <div class="filter-option" onclick="selectFilter('reduce_addiction')" data-filter="reduce_addiction">
                             <div class="filter-info">
-                                <h5>Reduce Screen Addiction</h5>
+                                <h5>Calm Colors</h5>
+                                <p>Less bright to help kids relax</p>
                 </div>
             </div>
                         <div class="filter-option" onclick="selectFilter('sleep_warm')" data-filter="sleep_warm">
                             <div class="filter-info">
-                                <h5>Help with Sleep</h5>
+                                <h5>Bedtime Colors</h5>
+                                <p>Warm colors for sleep time</p>
             </div>
                     </div>
                         <div class="filter-option" onclick="selectFilter('calm_cool')" data-filter="calm_cool">
                             <div class="filter-info">
-                                <h5>Calm Hyperactive Kids</h5>
+                                <h5>Peaceful Colors</h5>
+                                <p>Gentle colors to stay calm</p>
                 </div>
                     </div>
                         <div class="filter-option" onclick="selectFilter('focus_monotone')" data-filter="focus_monotone">
                             <div class="filter-info">
-                                <h5>Improve Focus</h5>
+                                <h5>Focus Colors</h5>
+                                <p>Help your child concentrate</p>
                     </div>
                 </div>
                         <div class="filter-option" onclick="selectFilter('memory_balanced')" data-filter="memory_balanced">
                             <div class="filter-info">
-                                <h5>Enhance Memory</h5>
+                                <h5>Learning Colors</h5>
+                                <p>Colors that help with remembering</p>
                             </div>
                         </div>
                         <div class="filter-option" onclick="selectFilter('creativity_soft')" data-filter="creativity_soft">
                             <div class="filter-info">
-                                <h5>Stimulate Creativity</h5>
+                                <h5>Creative Colors</h5>
+                                <p>Purple tones for imagination</p>
                             </div>
                         </div>
                         <div class="filter-option" onclick="selectFilter('anxiety_green')" data-filter="anxiety_green">
                             <div class="filter-info">
-                                <h5>Reduce Anxiety</h5>
+                                <h5>Calming Colors</h5>
+                                <p>Green tones to feel safe</p>
                             </div>
                         </div>
                     </div>
@@ -3175,9 +3354,9 @@
             <!-- Screen Time Control Section -->
             <div class="control-section">
                 <div class="control-header" onclick="toggleScreenTimeDropdown()">
-                    <h4><i class="fas fa-clock"></i> Screen Time Control</h4>
+                    <h4><i class="fas fa-clock"></i> Break Reminders</h4>
                     <i class="fas fa-chevron-down dropdown-arrow" id="screenTimeArrow"></i>
-                </div>
+            </div>
                 
                 <div class="control-dropdown" id="screenTimeDropdown">
                     <div class="control-options">
@@ -3186,26 +3365,26 @@
                                 <i class="fas fa-play"></i>
                     </div>
                             <div class="control-info">
-                                <h5>Start Timer</h5>
-                                <p>Begin gradual filter application</p>
-                    </div>
+                                <h5>Start Break Timer</h5>
+                                <p>Remind your child to take breaks</p>
                 </div>
+                    </div>
                         <div class="control-option" onclick="startQuickTimer()">
                             <div class="control-icon">
                                 <i class="fas fa-bolt"></i>
-                        </div>
+                    </div>
                             <div class="control-info">
-                                <h5>Quick 5min Timer</h5>
-                                <p>Fast filter application</p>
-                        </div>
+                                <h5>Quick 5-Minute Break</h5>
+                                <p>Short break reminder</p>
+                </div>
                         </div>
                         <div class="control-option" onclick="resetTonedown()">
                             <div class="control-icon">
                                 <i class="fas fa-undo"></i>
                             </div>
                             <div class="control-info">
-                                <h5>Reset Timer</h5>
-                                <p>Stop and reset all filters</p>
+                                <h5>Stop Timer</h5>
+                                <p>Turn off break reminders</p>
                             </div>
                         </div>
                         <div class="control-option" onclick="toggleStatsPanel()">
@@ -3351,14 +3530,14 @@
                                         <span class="radio-title">Baby & Toddler</span>
                                         <span class="radio-subtitle">0-2 years old</span>
                                     </div>
-                                </label>
+                            </label>
                                 <label class="radio-option">
                                     <input type="radio" name="ageGroup" value="3-8" id="ageGroup-3-8" checked>
                                     <span class="radio-custom"></span>
                                     <div class="radio-content">
                                         <span class="radio-title">Little Kid</span>
                                         <span class="radio-subtitle">3-8 years old</span>
-                                    </div>
+                        </div>
                                 </label>
                                 <label class="radio-option">
                                     <input type="radio" name="ageGroup" value="8-12" id="ageGroup-8-12">
@@ -3366,7 +3545,7 @@
                                     <div class="radio-content">
                                         <span class="radio-title">Big Kid</span>
                                         <span class="radio-subtitle">8-12 years old</span>
-                                    </div>
+                    </div>
                                 </label>
                             </div>
                         </div>
@@ -3468,6 +3647,33 @@
 
     <!-- Main Content -->
     <main>
+        <!-- Parent Welcome Message -->
+        <div class="parent-welcome" id="parentWelcome" style="display: none;">
+            <div class="welcome-content">
+                <h2>👋 Welcome, Parent!</h2>
+                <p>This app is designed to be safe and fun for your child. Here's what you can do:</p>
+                <div class="welcome-tips">
+                    <div class="tip">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Click "Parent Settings" to set your child's age and choose video colors</span>
+                    </div>
+                    <div class="tip">
+                        <i class="fas fa-clock"></i>
+                        <span>Use "Break Reminders" to help your child take healthy breaks</span>
+                    </div>
+                    <div class="tip">
+                        <i class="fas fa-heart"></i>
+                        <span>Click the ❤️ on videos to save favorites and get recommendations</span>
+                    </div>
+                    <div class="tip">
+                        <i class="fas fa-plus"></i>
+                        <span>Click the + to create playlists for different times of day</span>
+                    </div>
+                </div>
+                <button class="welcome-close" onclick="closeParentWelcome()">Got it! Let's start</button>
+            </div>
+        </div>
+        
         <!-- Main Content Layout -->
         <div class="main-content">
             <!-- Video Section -->
@@ -3550,7 +3756,7 @@
     <script>
         // Video data - Kid-friendly videos with guaranteed working YouTube IDs
         const videoData = [
-            // Cartoons
+            // Cartoons - Using known working, kid-safe videos
             {
                 id: 'XqZsoesa55w',
                 title: 'Baby Shark Dance',
@@ -3725,19 +3931,29 @@
         // YouTube API functions
         function onYouTubeIframeAPIReady() {
             console.log('YouTube API ready');
+            // Set a flag to indicate API is ready
+            window.youtubeApiReady = true;
         }
         
         function createYouTubePlayer(videoId) {
             try {
+                console.log('Creating YouTube player for video ID:', videoId);
+                
                 if (!videoId) {
                     throw new Error('Video ID is required for YouTube player');
                 }
                 
+                // Wait for YouTube API to be ready
                 if (typeof YT === 'undefined' || !YT.Player) {
-                    throw new Error('YouTube API not loaded');
+                    console.log('YouTube API not ready, waiting...');
+                    setTimeout(() => createYouTubePlayer(videoId), 1000);
+                    return;
                 }
                 
+                console.log('YouTube API is ready, creating player...');
+                
                 if (youtubePlayer) {
+                    console.log('Destroying existing player...');
                     youtubePlayer.destroy();
                 }
                 
@@ -3772,6 +3988,7 @@
         function onPlayerError(event) {
             console.error('YouTube player error:', event.data);
             let errorMessage = 'Video playback error. ';
+            let shouldRetry = false;
             
             switch(event.data) {
                 case 2:
@@ -3779,6 +3996,7 @@
                     break;
                 case 5:
                     errorMessage += 'HTML5 player error.';
+                    shouldRetry = true;
                     break;
                 case 100:
                     errorMessage += 'Video not found or private.';
@@ -3786,13 +4004,36 @@
                 case 101:
                 case 150:
                     errorMessage += 'Video not available for embedding.';
+                    shouldRetry = true;
                     break;
                 default:
                     errorMessage += 'Please try a different video.';
+                    shouldRetry = true;
             }
             
             showMessage(errorMessage, 'error');
+            
+            // If it's an embedding issue, try to load a different video
+            if (shouldRetry) {
+                setTimeout(() => {
+                    loadFallbackVideo();
+                }, 2000);
+            }
         }
+        
+        // Load a fallback video that's known to be embeddable
+        function loadFallbackVideo() {
+            const fallbackVideos = [
+                { id: 'XqZsoesa55w', title: 'Baby Shark Dance', description: 'A fun video for kids' },
+                { id: 'CQ6K6Y2FJ0A', title: 'Peppa Pig', description: 'Educational content' },
+                { id: 'kffacxfA7G4', title: 'Mickey Mouse', description: 'Interactive learning video' }
+            ];
+            
+            const randomVideo = fallbackVideos[Math.floor(Math.random() * fallbackVideos.length)];
+            showMessage('Loading a different video...', 'info');
+            playVideo(randomVideo.id, randomVideo.title, randomVideo.description);
+        }
+        
         
         function onPlayerReady(event) {
             console.log('YouTube player ready');
@@ -3833,11 +4074,44 @@
         function showWelcomeMessage() {
             const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
             if (!hasSeenWelcome) {
-                setTimeout(() => {
-                    showMessage('Welcome to KidsTube! 👋 Click "Parent Settings" to set up your child\'s profile and safety features.', 'info', 8000);
-                    localStorage.setItem('hasSeenWelcome', 'true');
-                }, 3000);
+                document.getElementById('parentWelcome').style.display = 'flex';
             }
+        }
+        
+        // Close parent welcome message
+        function closeParentWelcome() {
+            document.getElementById('parentWelcome').style.display = 'none';
+            localStorage.setItem('hasSeenWelcome', 'true');
+        }
+        
+        // Go to home page (refresh and reset to default state)
+        function goToHome() {
+            // Clear any active video player
+            const videoPlayer = document.getElementById('videoPlayer');
+            if (videoPlayer) {
+                videoPlayer.innerHTML = '<div class="video-placeholder"><i class="fas fa-play-circle"></i><p>Select a video to start watching!</p></div>';
+            }
+            
+            // Reset search input
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            
+            // Reset to "All Videos" tab
+            const allTab = document.querySelector('[data-category="all"]');
+            if (allTab) {
+                // Remove active class from all tabs
+                document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                // Add active class to "All Videos" tab
+                allTab.classList.add('active');
+            }
+            
+            // Load popular videos (mix of local and trending)
+            loadPopularVideos();
+            
+            // Show a brief message
+            showMessage('🏠 Welcome back to KidsTube!', 'info', 3000);
         }
         
         // Check if API key exists
@@ -4375,6 +4649,7 @@
         function playVideo(videoId, title, description) {
             try {
             console.log('Playing video:', title);
+                
                 
                 // Validate inputs
                 if (!videoId) {
@@ -5123,65 +5398,65 @@
             switch(targetMode) {
                 case 'reduce_addiction':
                     // Gradually reduce saturation and brightness to minimize dopamine
-                    gradualSaturation = 1.0 - (progress * 0.15); // 1.0 to 0.85
-                    gradualBrightness = 1.0 - (progress * 0.05); // 1.0 to 0.95
-                    gradualContrast = 1.0 - (progress * 0.08); // 1.0 to 0.92
+                    gradualSaturation = 1.0 - (progress * 0.05); // 1.0 to 0.95
+                    gradualBrightness = 1.0 - (progress * 0.02); // 1.0 to 0.98
+                    gradualContrast = 1.0 - (progress * 0.03); // 1.0 to 0.97
                     gradualHue = 0; // No hue change
                     break;
                     
                 case 'sleep_warm':
                     // Gradually increase warm tones and reduce blue light
-                    gradualSaturation = 0.9 + (progress * 0.05); // 0.9 to 0.95
-                    gradualBrightness = 0.95 + (progress * 0.02); // 0.95 to 0.97
-                    gradualContrast = 0.95 + (progress * 0.03); // 0.95 to 0.98
-                    gradualHue = 8 + (progress * 4); // 8deg to 12deg (slightly warmer)
+                    gradualSaturation = 0.98 + (progress * 0.02); // 0.98 to 1.0
+                    gradualBrightness = 0.99 + (progress * 0.01); // 0.99 to 1.0
+                    gradualContrast = 0.98 + (progress * 0.01); // 0.98 to 0.99
+                    gradualHue = 3 + (progress * 2); // 3deg to 5deg (slightly warmer)
                     break;
                     
                 case 'calm_cool':
                     // Gradually increase cool tones for calming effect
-                    gradualSaturation = 0.9 + (progress * 0.05); // 0.9 to 0.95
-                    gradualBrightness = 0.98 - (progress * 0.02); // 0.98 to 0.96
-                    gradualContrast = 0.96 + (progress * 0.02); // 0.96 to 0.98
-                    gradualHue = 12 + (progress * 6); // 12deg to 18deg (slightly cooler)
+                    gradualSaturation = 0.96 + (progress * 0.02); // 0.96 to 0.98
+                    gradualBrightness = 0.99 - (progress * 0.01); // 0.99 to 0.98
+                    gradualContrast = 0.98 + (progress * 0.01); // 0.98 to 0.99
+                    gradualHue = 5 + (progress * 3); // 5deg to 8deg (slightly cooler)
                     break;
                     
                 case 'focus_monotone':
                     // Gradually increase grayscale for better focus
-                    gradualSaturation = 0.8 + (progress * 0.1); // 0.8 to 0.9
-                    gradualBrightness = 0.98 + (progress * 0.01); // 0.98 to 0.99
-                    gradualContrast = 1.05 - (progress * 0.02); // 1.05 to 1.03
+                    gradualSaturation = 0.92 + (progress * 0.05); // 0.92 to 0.97
+                    gradualBrightness = 0.99 + (progress * 0.005); // 0.99 to 0.995
+                    gradualContrast = 1.02 - (progress * 0.01); // 1.02 to 1.01
                     gradualHue = 0; // No hue change
                     break;
                     
                 case 'memory_balanced':
                     // Gradually enhance memory-friendly colors
-                    gradualSaturation = 1.02 + (progress * 0.03); // 1.02 to 1.05
-                    gradualBrightness = 1.01 + (progress * 0.01); // 1.01 to 1.02
-                    gradualContrast = 1.02 + (progress * 0.02); // 1.02 to 1.04
-                    gradualHue = 5 + (progress * 2); // 5deg to 7deg (slightly warmer)
+                    gradualSaturation = 1.01 + (progress * 0.01); // 1.01 to 1.02
+                    gradualBrightness = 1.005 + (progress * 0.005); // 1.005 to 1.01
+                    gradualContrast = 1.01 + (progress * 0.01); // 1.01 to 1.02
+                    gradualHue = 2 + (progress * 1); // 2deg to 3deg (slightly warmer)
                     break;
                     
                 case 'creativity_soft':
                     // Gradually enhance creative colors without overstimulation
-                    gradualSaturation = 1.05 + (progress * 0.02); // 1.05 to 1.07
-                    gradualBrightness = 1.02 + (progress * 0.01); // 1.02 to 1.03
-                    gradualContrast = 0.98 + (progress * 0.01); // 0.98 to 0.99
-                    gradualHue = 15 + (progress * 3); // 15deg to 18deg (slightly more vibrant)
+                    gradualSaturation = 1.02 + (progress * 0.01); // 1.02 to 1.03
+                    gradualBrightness = 1.01 + (progress * 0.005); // 1.01 to 1.015
+                    gradualContrast = 0.99 + (progress * 0.005); // 0.99 to 0.995
+                    gradualHue = 6 + (progress * 2); // 6deg to 8deg (slightly more vibrant)
                     break;
                     
                 case 'anxiety_green':
                     // Gradually increase calming green tones
-                    gradualSaturation = 0.9 + (progress * 0.05); // 0.9 to 0.95
-                    gradualBrightness = 0.97 + (progress * 0.01); // 0.97 to 0.98
-                    gradualContrast = 0.95 + (progress * 0.02); // 0.95 to 0.97
-                    gradualHue = 20 + (progress * 5); // 20deg to 25deg (slightly greener)
+                    gradualSaturation = 0.96 + (progress * 0.02); // 0.96 to 0.98
+                    gradualBrightness = 0.99 + (progress * 0.005); // 0.99 to 0.995
+                    gradualContrast = 0.98 + (progress * 0.01); // 0.98 to 0.99
+                    gradualHue = 8 + (progress * 2); // 8deg to 10deg (slightly greener)
                     break;
                     
                 default:
                     // Default gradual tonedown
-                    gradualSaturation = 1.0 - (progress * 0.1);
-                    gradualBrightness = 1.0 - (progress * 0.05);
-                    gradualContrast = 1.0 - (progress * 0.08);
+                    gradualSaturation = 1.0 - (progress * 0.03);
+                    gradualBrightness = 1.0 - (progress * 0.02);
+                    gradualContrast = 1.0 - (progress * 0.03);
                     gradualHue = 0;
             }
             
@@ -5231,25 +5506,25 @@
             switch (parentalSettings.targetMode) {
                 case 'reduce_addiction':
                     // Research: Desaturated colors reduce dopamine spikes and screen addiction
-                    return 'saturate(0.85) contrast(0.95) brightness(0.98) hue-rotate(0deg)';
+                    return 'saturate(0.95) contrast(0.98) brightness(0.99) hue-rotate(0deg)';
                 case 'sleep_warm':
                     // Research: Warm amber tones block blue light, promote melatonin production
-                    return 'sepia(0.15) hue-rotate(8deg) saturate(0.92) brightness(0.97)';
+                    return 'sepia(0.05) hue-rotate(3deg) saturate(0.98) brightness(0.99)';
                 case 'calm_cool':
                     // Research: Cool blues and greens calm the nervous system, reduce hyperactivity
-                    return 'hue-rotate(12deg) saturate(0.9) brightness(0.98) contrast(0.96)';
+                    return 'hue-rotate(5deg) saturate(0.96) brightness(0.99) contrast(0.98)';
                 case 'focus_monotone':
                     // Research: Monochrome reduces visual distraction, improves focus
-                    return 'grayscale(0.2) contrast(1.05) brightness(0.98) saturate(0.8)';
+                    return 'grayscale(0.08) contrast(1.02) brightness(0.99) saturate(0.92)';
                 case 'memory_balanced':
                     // Research: Slight yellow tint and balanced contrast improve memory retention
-                    return 'saturate(1.02) hue-rotate(5deg) contrast(1.02) brightness(1.01)';
+                    return 'saturate(1.01) hue-rotate(2deg) contrast(1.01) brightness(1.005)';
                 case 'creativity_soft':
                     // Research: Soft pastels inspire creativity without overstimulation
-                    return 'saturate(1.05) hue-rotate(15deg) brightness(1.02) contrast(0.98)';
+                    return 'saturate(1.02) hue-rotate(6deg) brightness(1.01) contrast(0.99)';
                 case 'anxiety_green':
                     // Research: Green tones promote calm and emotional balance
-                    return 'hue-rotate(20deg) saturate(0.9) brightness(0.97) contrast(0.95)';
+                    return 'hue-rotate(8deg) saturate(0.96) brightness(0.99) contrast(0.98)';
                 case 'none':
                 default:
                     return '';
@@ -5543,6 +5818,7 @@
                 showMessage('Playlist is empty!', 'warning');
                 return;
             }
+            
             
             // Create shuffled or normal order
             let videosToPlay = [...playlist.videos];
@@ -6123,12 +6399,21 @@
             }
         });
         
-        // Close modal with Escape key
+        // Close modal with Escape key and spacebar for video control
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 const modal = document.getElementById('parentalModal');
                 if (modal.classList.contains('show')) {
                     closeParentalModal();
+                }
+            }
+            
+            // Spacebar to play/pause video
+            if (event.key === ' ' || event.key === 'Spacebar') {
+                // Only if not typing in an input field
+                if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
+                    event.preventDefault();
+                    toggleVideoPlayback();
                 }
             }
         });

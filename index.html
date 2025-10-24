@@ -3506,7 +3506,7 @@
                 </button>
                 </div>
                 <div class="header-actions">
-                    <button class="parent-controls-btn" onclick="openParentalControls()" title="Parent Settings">
+                    <button class="parent-controls-btn" onclick="toggleParentalSidebar()" title="Parent Settings">
                         <i class="fas fa-shield-alt"></i>
                         <span>Parent Settings</span>
                     </button>
@@ -3992,6 +3992,92 @@
 
     </main>
 
+    <!-- Parental Controls Sidebar -->
+    <div class="sidebar-overlay" id="parentalSidebarOverlay" onclick="toggleParentalSidebar()"></div>
+    <div class="sidebar" id="parentalSidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-shield-alt"></i> Parent Settings</h3>
+            <button class="close-sidebar" onclick="toggleParentalSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sidebar-content">
+            <!-- Age Group Selection -->
+            <div class="parental-section">
+                <h4><i class="fas fa-child"></i> Child's Age Group</h4>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="ageGroup" value="0-2" onchange="updateAgeGroup()">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">0-2 years (Toddlers)</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="ageGroup" value="3-8" onchange="updateAgeGroup()">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">3-8 years (Preschool & Early Elementary)</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="ageGroup" value="8-12" onchange="updateAgeGroup()">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">8-12 years (Elementary & Middle School)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Default Filter Mode -->
+            <div class="parental-section">
+                <h4><i class="fas fa-palette"></i> Default Video Filter</h4>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="defaultFilter" value="none" onchange="updateDefaultFilter()">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">No Filter</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="defaultFilter" value="reduce_addiction" onchange="updateDefaultFilter()">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">Reduce Screen Addiction</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="defaultFilter" value="sleep_warm" onchange="updateDefaultFilter()">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">Sleep Mode (Warm)</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="defaultFilter" value="focus_monotone" onchange="updateDefaultFilter()">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">Focus Mode (Monotone)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Screen Time Settings -->
+            <div class="parental-section">
+                <h4><i class="fas fa-clock"></i> Screen Time Settings</h4>
+                <div class="setting-item">
+                    <label>Break every:</label>
+                    <div class="setting-input">
+                        <input type="number" id="parentalBreakInterval" min="5" max="60" value="15">
+                        <span>minutes</span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Daily time limit:</label>
+                    <div class="setting-input">
+                        <input type="number" id="dailyTimeLimit" min="30" max="300" value="120">
+                        <span>minutes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="parental-actions">
+                <button class="btn-primary" onclick="saveParentalSettings()">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Safety Notice -->
     <div class="safety-notice">
@@ -5839,21 +5925,6 @@
         }
 
         function setupEventListeners() {
-            // Navigation tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Remove active class from all tabs
-                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                    // Add active class to clicked tab
-                    this.classList.add('active');
-                    
-                    // Get category and filter videos
-                    const category = this.getAttribute('data-category');
-                    currentCategory = category;
-                    loadVideos();
-                });
-            });
-
             // Search input - Enter key listener and real-time search
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
@@ -6017,8 +6088,12 @@
         }
 
         async function searchVideos() {
+            console.log('searchVideos function called');
             const searchInput = document.getElementById('searchInput');
+            console.log('Search input found:', !!searchInput);
+            
             if (!searchInput) {
+                console.error('Search input not found!');
                 handleError(new Error('Search input not found'), 'searchVideos');
                 return;
             }
@@ -6829,6 +6904,20 @@
             
             // Update active filter option
             updateActiveFilterOption();
+        }
+
+        function toggleParentalSidebar() {
+            const sidebar = document.getElementById('parentalSidebar');
+            const overlay = document.getElementById('parentalSidebarOverlay');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            
+            // Load parental settings when opening
+            if (sidebar.classList.contains('open')) {
+                loadParentalSettings();
+            }
+        }
             
             // Update timer status
             updateTimerStatus();
@@ -8627,6 +8716,25 @@
             setTimeout(emergencyLoadVideos, 1000);
             setTimeout(emergencyLoadVideos, 2000);
         })();
+
+        // New functions for sidebar parental controls
+        function updateAgeGroup() {
+            const selectedAgeGroup = document.querySelector('input[name="ageGroup"]:checked');
+            if (selectedAgeGroup) {
+                parentalSettings.ageGroup = selectedAgeGroup.value;
+                localStorage.setItem('ageGroup', selectedAgeGroup.value);
+                console.log('Age group updated to:', selectedAgeGroup.value);
+            }
+        }
+
+        function updateDefaultFilter() {
+            const selectedFilter = document.querySelector('input[name="defaultFilter"]:checked');
+            if (selectedFilter) {
+                parentalSettings.targetMode = selectedFilter.value;
+                localStorage.setItem('defaultFilterMode', selectedFilter.value);
+                console.log('Default filter updated to:', selectedFilter.value);
+            }
+        }
     </script>
 </body>
 </html>

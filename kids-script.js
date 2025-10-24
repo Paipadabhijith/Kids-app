@@ -4,21 +4,57 @@
 const videoData = {
     all: [
         {
-            id: 'jJ4Iu2PMNoc',
-            title: 'Learn Colors with Blippi! 🌈',
-            description: 'Learn about colors in a fun and interactive way with Blippi!',
-            category: 'education',
-            thumbnail: 'https://img.youtube.com/vi/jJ4Iu2PMNoc/maxresdefault.jpg',
-            duration: '3:32',
-            tags: ['colors', 'learning', 'fun', 'kids', 'education', 'blippi']
+            id: 'dQw4w9WgXcQ',
+            title: 'Rick Astley - Never Gonna Give You Up 🎵',
+            description: 'Classic 80s hit that never gets old!',
+            category: 'music',
+            thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+            duration: '3:33',
+            tags: ['music', '80s', 'classic', 'fun', 'dance']
         },
         {
-            id: 'XqZsoesa55w',
+            id: 'jNQXAC9IVRw',
+            title: 'Charlie Bit My Finger - Again! 😂',
+            description: 'The most famous baby video on the internet!',
+            category: 'funny',
+            thumbnail: 'https://img.youtube.com/vi/jNQXAC9IVRw/maxresdefault.jpg',
+            duration: '0:56',
+            tags: ['funny', 'baby', 'cute', 'family', 'laugh']
+        },
+        {
+            id: '9bZkp7q19f0',
+            title: 'PSY - GANGNAM STYLE (강남스타일) M/V 🕺',
+            description: 'The viral dance sensation that took the world by storm!',
+            category: 'music',
+            thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg',
+            duration: '4:12',
+            tags: ['dance', 'korean', 'viral', 'fun', 'music']
+        },
+        {
+            id: 'kJQP7kiw5Fk',
+            title: 'Luis Fonsi - Despacito ft. Daddy Yankee 🎶',
+            description: 'The most viewed video on YouTube!',
+            category: 'music',
+            thumbnail: 'https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg',
+            duration: '4:41',
+            tags: ['spanish', 'latin', 'dance', 'popular', 'music']
+        },
+        {
+            id: 'YQHsXMglC9A',
+            title: 'How to Make Slime! ✨',
+            description: 'Fun and safe slime making for kids!',
+            category: 'education',
+            thumbnail: 'https://img.youtube.com/vi/YQHsXMglC9A/maxresdefault.jpg',
+            duration: '5:55',
+            tags: ['science', 'experiments', 'slime', 'fun', 'kids']
+        },
+        {
+            id: 'M7lc1UVf-VE',
             title: 'Baby Shark Dance! 🦈',
             description: 'Sing and dance along with the Baby Shark family!',
             category: 'music',
-            thumbnail: 'https://img.youtube.com/vi/XqZsoesa55w/maxresdefault.jpg',
-            duration: '4:15',
+            thumbnail: 'https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg',
+            duration: '2:20',
             tags: ['baby', 'shark', 'dance', 'music', 'kids', 'songs']
         },
         {
@@ -31,33 +67,6 @@ const videoData = {
             tags: ['wheels', 'bus', 'nursery', 'rhyme', 'kids', 'songs']
         },
         {
-            id: 'CQY3KSUr4aI',
-            title: 'Peppa Pig - Muddy Puddles! 🐷',
-            description: 'Join Peppa Pig on exciting adventures!',
-            category: 'cartoons',
-            thumbnail: 'https://img.youtube.com/vi/CQY3KSUr4aI/maxresdefault.jpg',
-            duration: '5:20',
-            tags: ['peppa', 'pig', 'cartoon', 'adventure', 'fun', 'muddy']
-        },
-        {
-            id: 'DRxq6KzIthA',
-            title: 'Number Song 1-20! 🔢',
-            description: 'Learn numbers 1-20 with fun songs and animations!',
-            category: 'education',
-            thumbnail: 'https://img.youtube.com/vi/DRxq6KzIthA/maxresdefault.jpg',
-            duration: '6:30',
-            tags: ['numbers', 'counting', 'math', 'learning', 'fun', 'kids']
-        },
-        {
-            id: 'U3W5J3oZ_5M',
-            title: 'Head Shoulders Knees and Toes! 💃',
-            description: 'Get up and dance with this fun action song!',
-            category: 'music',
-            thumbnail: 'https://img.youtube.com/vi/U3W5J3oZ_5M/maxresdefault.jpg',
-            duration: '4:45',
-            tags: ['dancing', 'music', 'moving', 'exercise', 'fun', 'body']
-        },
-        {
             id: 'h6CNvzJhLdE',
             title: 'ABC Song - Alphabet Song! 📚',
             description: 'Learn the alphabet with this classic ABC song!',
@@ -65,15 +74,6 @@ const videoData = {
             thumbnail: 'https://img.youtube.com/vi/h6CNvzJhLdE/maxresdefault.jpg',
             duration: '7:12',
             tags: ['alphabet', 'abc', 'letters', 'learning', 'fun', 'kids']
-        },
-        {
-            id: 'YQHsXMglC9A',
-            title: 'Magic Science Experiments! ✨',
-            description: 'Amazing science experiments that look like magic!',
-            category: 'education',
-            thumbnail: 'https://img.youtube.com/vi/YQHsXMglC9A/maxresdefault.jpg',
-            duration: '5:55',
-            tags: ['science', 'experiments', 'magic', 'learning', 'fun', 'kids']
         },
         {
             id: 'fJ9rUzIMcZQ',
@@ -85,15 +85,6 @@ const videoData = {
             tags: ['farm', 'animals', 'macdonald', 'songs', 'kids', 'music']
         },
         {
-            id: 'kJQP7kiw5Fk',
-            title: 'Twinkle Twinkle Little Star! ⭐',
-            description: 'Beautiful lullaby for bedtime!',
-            category: 'music',
-            thumbnail: 'https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg',
-            duration: '6:15',
-            tags: ['twinkle', 'star', 'lullaby', 'bedtime', 'kids', 'songs']
-        },
-        {
             id: 'L_jWHffIx5E',
             title: 'If You\'re Happy and You Know It! 😊',
             description: 'Clap your hands and sing along!',
@@ -103,13 +94,13 @@ const videoData = {
             tags: ['happy', 'clap', 'hands', 'songs', 'kids', 'music']
         },
         {
-            id: '9bZkp7q19f0',
-            title: 'Paw Patrol - Adventure Bay! 🐕',
-            description: 'Join the Paw Patrol on exciting rescue missions!',
+            id: 'CQY3KSUr4aI',
+            title: 'Peppa Pig - Muddy Puddles! 🐷',
+            description: 'Join Peppa Pig on exciting adventures!',
             category: 'cartoons',
-            thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg',
-            duration: '9:20',
-            tags: ['paw', 'patrol', 'cartoon', 'adventure', 'rescue', 'dogs']
+            thumbnail: 'https://img.youtube.com/vi/CQY3KSUr4aI/maxresdefault.jpg',
+            duration: '5:20',
+            tags: ['peppa', 'pig', 'cartoon', 'adventure', 'fun', 'muddy']
         }
     ],
     cartoons: [

@@ -114,7 +114,7 @@
         body {
             font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding-top: 140px;
+            padding-top: 80px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             background-size: 400% 400%;
             animation: gradientShift 20s ease infinite;
@@ -258,53 +258,6 @@
             transition: all var(--timing-fast) var(--easing-ease);
         }
         
-        /* Navigation Tabs Styling */
-        .nav-tabs {
-            position: fixed !important;
-            top: 80px !important;
-            left: 0 !important;
-            right: 0 !important;
-            z-index: 999 !important;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 15px 0;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 0 !important;
-            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            width: 100% !important;
-            height: 60px !important;
-        }
-        
-        .nav-tab {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #2d3748;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all var(--timing-normal) var(--easing-ease);
-            font-family: 'Fredoka', sans-serif;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        
-        .nav-tab:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .nav-tab.active {
-            background: var(--solid-primary);
-            color: #ffffff;
-            border-color: var(--solid-primary);
-            box-shadow: var(--shadow-md);
-        }
         
         .header-content {
             display: flex;
@@ -1127,7 +1080,7 @@
         /* Mobile Optimization */
         @media (max-width: 768px) {
             body {
-                padding-top: 160px;
+                padding-top: 100px;
             }
             
             .header {
@@ -1162,18 +1115,6 @@
                 font-size: 1rem;
             }
             
-            .nav-tabs {
-                top: 100px !important;
-                height: 60px !important;
-                padding: 10px 0;
-                flex-wrap: wrap;
-                gap: 5px;
-            }
-            
-            .nav-tab {
-                padding: 8px 15px;
-                font-size: 0.8rem;
-            }
             
             .video-player {
                 aspect-ratio: 16/9;
@@ -1191,7 +1132,7 @@
         
         @media (max-width: 480px) {
             body {
-                padding-top: 180px;
+                padding-top: 120px;
             }
             
             .header {
@@ -1206,16 +1147,6 @@
                 margin: 0 var(--space-sm);
             }
             
-            .nav-tabs {
-                top: 120px !important;
-                height: 60px !important;
-                padding: 8px 0;
-            }
-            
-            .nav-tab {
-                padding: 6px 12px;
-                font-size: 0.75rem;
-            }
             
             .video-card {
                 border-radius: var(--radius-lg);
@@ -1905,6 +1836,7 @@
             max-width: 1400px;
             margin: 0 auto;
         }
+
         
         .video-section {
             flex: 1;
@@ -1925,22 +1857,159 @@
             min-height: 400px;
         }
         
-        .recommendations-section {
+        .popular-videos-section {
             flex: 1;
             min-width: 0;
         }
         
-        .recommendations-section h3 {
+        .popular-videos-section h3 {
             color: #4a5568;
             margin-bottom: 15px;
             font-size: 1.2rem;
             font-weight: 600;
         }
         
+        
         .videos-container {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        /* Video cards for main content area */
+        .video-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            transition: all var(--timing-normal) var(--easing-ease);
+            cursor: pointer;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-2xl), 0 0 30px rgba(102, 126, 234, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform var(--timing-normal) var(--easing-ease);
+        }
+
+        .video-card:hover .video-thumbnail img {
+            transform: scale(1.05);
+        }
+
+        .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 3rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            transition: all var(--timing-normal) var(--easing-ease);
+        }
+
+        .video-card:hover .play-icon {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .video-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
             gap: 8px;
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--timing-normal) var(--easing-ease);
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .add-to-playlist-btn {
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+        }
+
+        .add-to-playlist-btn:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.1);
+        }
+
+        .like-btn {
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+        }
+
+        .like-btn:hover {
+            background: rgba(244, 67, 54, 1);
+            transform: scale(1.1);
+        }
+
+        .like-btn.liked {
+            background: rgba(244, 67, 54, 1);
+            animation: heartBeat 0.6s ease-in-out;
+        }
+
+        .video-info {
+            padding: var(--space-lg);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .video-title {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-category {
+            background: var(--solid-primary);
+            color: var(--text-light);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .video-channel {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
         }
         
         /* Extra small video cards for recommendations */
@@ -2071,9 +2140,6 @@
                 order: 1;
             }
             
-            .recommendations-section {
-                order: 2;
-            }
         }
         
         @media (min-width: 769px) and (max-width: 1024px) {
@@ -2090,30 +2156,6 @@
                 height: fit-content;
             }
             
-            .recommendations-section {
-                flex: 0 0 40%;
-                max-height: 80vh;
-                overflow-y: auto;
-                padding-right: 10px;
-            }
-            
-            .recommendations-section::-webkit-scrollbar {
-                width: 6px;
-            }
-            
-            .recommendations-section::-webkit-scrollbar-track {
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 3px;
-            }
-            
-            .recommendations-section::-webkit-scrollbar-thumb {
-                background: rgba(168, 181, 209, 0.5);
-                border-radius: 3px;
-            }
-            
-            .recommendations-section::-webkit-scrollbar-thumb:hover {
-                background: rgba(168, 181, 209, 0.7);
-            }
         }
         
         @media (min-width: 1025px) {
@@ -2130,30 +2172,6 @@
                 height: fit-content;
             }
             
-            .recommendations-section {
-                flex: 0 0 30%;
-                max-height: 85vh;
-                overflow-y: auto;
-                padding-right: 10px;
-            }
-            
-            .recommendations-section::-webkit-scrollbar {
-                width: 8px;
-            }
-            
-            .recommendations-section::-webkit-scrollbar-track {
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 4px;
-            }
-            
-            .recommendations-section::-webkit-scrollbar-thumb {
-                background: rgba(168, 181, 209, 0.5);
-                border-radius: 4px;
-            }
-            
-            .recommendations-section::-webkit-scrollbar-thumb:hover {
-                background: rgba(168, 181, 209, 0.7);
-            }
         }
         
         .video-channel {
@@ -2384,6 +2402,181 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         }
+
+        /* Break Game Container */
+        .break-game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            backdrop-filter: blur(15px);
+        }
+
+        .break-game-overlay {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-2xl);
+            max-width: 90vw;
+            max-height: 90vh;
+            width: 800px;
+            height: 600px;
+            box-shadow: var(--shadow-2xl), 0 0 50px rgba(102, 126, 234, 0.3);
+            display: flex;
+            flex-direction: column;
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        .break-game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .break-game-header h2 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-break-game {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-muted);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--timing-normal) var(--easing-ease);
+        }
+
+        .close-break-game:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .break-game-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* Game-specific styles */
+        .game-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .game-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-md);
+            width: 100%;
+            margin-top: var(--space-lg);
+        }
+
+        .game-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            cursor: pointer;
+            transition: all var(--timing-normal) var(--easing-ease);
+            text-align: center;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .game-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .game-option.correct {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.6);
+            animation: correctAnswer 0.6s ease-in-out;
+        }
+
+        .game-option.incorrect {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: rgba(244, 67, 54, 0.6);
+            animation: incorrectAnswer 0.6s ease-in-out;
+        }
+
+        .game-score {
+            position: absolute;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-full);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .game-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-full);
+            margin-bottom: var(--space-lg);
+            overflow: hidden;
+        }
+
+        .game-progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, var(--solid-primary), var(--solid-secondary));
+            border-radius: var(--radius-full);
+            transition: width 0.3s ease;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes correctAnswer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes incorrectAnswer {
+            0%, 100% { transform: scale(1); }
+            25%, 75% { transform: scale(0.95); }
+            50% { transform: scale(1.05); }
+        }
         
         /* Sidebar Styles */
         .sidebar-overlay {
@@ -2432,6 +2625,55 @@
         
         .sidebar-overlay.show {
             display: block;
+        }
+
+        /* Liked Videos Styling */
+        .no-liked-videos {
+            text-align: center;
+            color: var(--text-muted);
+            padding: var(--space-lg);
+            font-style: italic;
+        }
+
+        .liked-video-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-sm);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--timing-normal) var(--easing-ease);
+            margin-bottom: var(--space-sm);
+        }
+
+        .liked-video-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .liked-video-item img {
+            width: 60px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+        }
+
+        .liked-video-info h5 {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin: 0 0 5px 0;
+            line-height: 1.3;
+        }
+
+        .liked-video-info p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin: 0;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         
         .sidebar-header {
@@ -3268,6 +3510,10 @@
                         <i class="fas fa-shield-alt"></i>
                         <span>Parent Settings</span>
                     </button>
+                    <button class="test-game-btn" onclick="showBreakGame()" title="Test Break Games" style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 15px; margin-right: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Test Games</span>
+                    </button>
                     <button class="kids-menu-toggle" id="menuToggle" onclick="toggleSidebar()">
                         <div class="menu-icon">
                             <div class="menu-dot"></div>
@@ -3636,14 +3882,6 @@
         </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <nav class="nav-tabs">
-        <button class="nav-tab active" data-category="all">All Videos</button>
-        <button class="nav-tab" data-category="cartoons">Cartoons</button>
-        <button class="nav-tab" data-category="education">Learning</button>
-        <button class="nav-tab" data-category="music">Music</button>
-        <button class="nav-tab" data-category="games">Games</button>
-    </nav>
 
     <!-- Main Content -->
     <main>
@@ -3728,16 +3966,30 @@
         </section>
                 </div>
 
-                <!-- Recommendations Section -->
-                <div class="recommendations-section">
-                    <section class="video-grid">
-                        <h3>Popular Videos</h3>
-                        <div class="videos-container" id="videosContainer">
-                            <!-- Videos will be loaded here -->
+                <!-- Break Game Container -->
+                <div class="break-game-container" id="breakGameContainer" style="display: none;">
+                    <div class="break-game-overlay">
+                        <div class="break-game-header">
+                            <h2 id="breakGameTitle">Break Time! 🎮</h2>
+                            <button class="close-break-game" id="closeBreakGame" onclick="closeBreakGame()">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                    </section>
+                        <div class="break-game-content" id="breakGameContent">
+                            <!-- Game content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popular Videos Section -->
+                <div class="popular-videos-section">
+                    <h3>🔥 Popular Videos</h3>
+                    <div class="videos-container" id="videosContainer">
+                        <!-- Videos will be loaded here -->
+                    </div>
                 </div>
             </div>
+
     </main>
 
 
@@ -4053,6 +4305,27 @@
             }
         }
 
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.log('Global error caught:', e.error);
+            console.log('Error details:', e.filename, e.lineno, e.colno);
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.log('Unhandled promise rejection:', e.reason);
+        });
+
+        // DOM Ready fallback
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - attempting video load...');
+            setTimeout(() => {
+                if (!areVideosLoaded()) {
+                    console.log('DOM ready fallback: Loading videos...');
+                    tryLoadVideos();
+                }
+            }, 100);
+        });
+
         // Initialize app
         window.onload = function() {
             console.log('App initialized');
@@ -4061,15 +4334,95 @@
             setupTonedownFeature();
             setupVideoOverlay();
             
+            // Initialize break game system
+            initializeBreakGameSystem();
+            
             // Show welcome message for first-time users
             showWelcomeMessage();
             
-            // Load popular videos (mix of local and trending) with a small delay to ensure page is ready
-            setTimeout(() => {
-                console.log('Loading popular videos on page load...');
-                loadPopularVideos();
-            }, 2000);
+            // Load videos immediately with multiple fallback strategies
+            loadVideosImmediately();
+            
         };
+
+        // New strategy: Load videos immediately with multiple fallback attempts
+        function loadVideosImmediately() {
+            console.log('=== Starting immediate video load strategy ===');
+            
+            // Strategy 1: Try to load videos immediately
+            tryLoadVideos();
+            
+            // Strategy 2: If that fails, try again after 500ms
+            setTimeout(() => {
+                if (!areVideosLoaded()) {
+                    console.log('Strategy 2: Retrying video load...');
+                    tryLoadVideos();
+                }
+            }, 500);
+            
+            // Strategy 3: If still no videos, try again after 1 second
+            setTimeout(() => {
+                if (!areVideosLoaded()) {
+                    console.log('Strategy 3: Final retry for video load...');
+                    tryLoadVideos();
+                }
+            }, 1000);
+        }
+
+        function tryLoadVideos() {
+            console.log('Attempting to load videos...');
+            
+            const videosContainer = document.getElementById('videosContainer');
+            console.log('videosContainer found:', !!videosContainer);
+            
+            if (!videosContainer) {
+                console.error('videosContainer not found!');
+                return false;
+            }
+
+            // Load local videos directly
+            const videosToShow = videoData.slice(0, 8); // Show first 8 videos
+            console.log('Loading', videosToShow.length, 'videos');
+
+            const videosHTML = videosToShow.map(video => `
+                <div class="video-card" onclick="playVideo('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.description.replace(/'/g, "\\'")}')">
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
+                        <i class="fas fa-play-circle play-icon"></i>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn add-to-playlist-btn" onclick="event.stopPropagation(); showPlaylistMenu('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.thumbnail}')" title="Add to Playlist">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="action-btn like-btn" onclick="event.stopPropagation(); toggleLike('${video.id}')" title="Like Video">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-category">${video.category}</div>
+                        <h4 class="video-title">${video.title}</h4>
+                        <p class="video-channel">KidsTube</p>
+                    </div>
+                </div>
+            `).join('');
+
+            videosContainer.innerHTML = videosHTML;
+            console.log('Videos loaded successfully!');
+            
+            // Update like button states
+            setTimeout(() => updateAllLikeButtons(), 100);
+            
+            return true;
+        }
+
+        function areVideosLoaded() {
+            const videosContainer = document.getElementById('videosContainer');
+            if (!videosContainer) return false;
+            
+            const videoCards = videosContainer.querySelectorAll('.video-card');
+            console.log('Video cards found:', videoCards.length);
+            return videoCards.length > 0;
+        }
         
         function showWelcomeMessage() {
             const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
@@ -4082,6 +4435,907 @@
         function closeParentWelcome() {
             document.getElementById('parentWelcome').style.display = 'none';
             localStorage.setItem('hasSeenWelcome', 'true');
+        }
+
+
+        // Break Game System
+        let breakGameTimer = null;
+        let currentGame = null;
+        let gameScore = 0;
+        let gameQuestions = [];
+        let currentQuestionIndex = 0;
+
+        // Initialize break game system
+        function initializeBreakGameSystem() {
+            // Set up break timer based on age group
+            const parentalSettings = JSON.parse(localStorage.getItem('parentalSettings') || '{}');
+            const ageGroup = parentalSettings.ageGroup || '6-8';
+            
+            // Break intervals by age (in minutes)
+            const breakIntervals = {
+                '0-2': 3,    // 3 minutes for toddlers (shorter breaks)
+                '3-5': 8,    // 8 minutes for preschoolers
+                '6-8': 12,   // 12 minutes for early elementary
+                '9-12': 15,  // 15 minutes for elementary
+                '13+': 20    // 20 minutes for teens
+            };
+            
+            const intervalMinutes = breakIntervals[ageGroup] || 15;
+            const intervalMs = intervalMinutes * 60 * 1000;
+            
+            // Start break timer
+            startBreakTimer(intervalMs);
+        }
+
+        // Start break timer
+        function startBreakTimer(intervalMs) {
+            if (breakGameTimer) {
+                clearTimeout(breakGameTimer);
+            }
+            
+            breakGameTimer = setTimeout(() => {
+                showBreakGame();
+            }, intervalMs);
+        }
+
+        // Show break game
+        function showBreakGame() {
+            const breakGameContainer = document.getElementById('breakGameContainer');
+            const gameContent = document.getElementById('breakGameContent');
+            const parentalSettings = JSON.parse(localStorage.getItem('parentalSettings') || '{}');
+            const ageGroup = parentalSettings.ageGroup || '6-8';
+            
+            console.log('Showing break game for age group:', ageGroup);
+            console.log('Break game container:', breakGameContainer);
+            console.log('Game content:', gameContent);
+            
+            if (breakGameContainer) {
+                breakGameContainer.style.display = 'flex';
+                
+                // Show loading message first
+                if (gameContent) {
+                    gameContent.innerHTML = `
+                        <div class="game-score">Score: ${gameScore}</div>
+                        <h3>Loading Game... 🎮</h3>
+                        <p>Please wait while we prepare your game!</p>
+                    `;
+                }
+                
+                // Reset game state
+                gameScore = 0;
+                currentQuestionIndex = 0;
+                gameQuestions = [];
+                
+                // Load game after a short delay
+                setTimeout(() => {
+                    loadAgeAppropriateGame(ageGroup);
+                }, 500);
+            } else {
+                console.error('Break game container not found!');
+            }
+        }
+
+        // Close break game
+        function closeBreakGame() {
+            const breakGameContainer = document.getElementById('breakGameContainer');
+            if (breakGameContainer) {
+                breakGameContainer.style.display = 'none';
+                // Restart break timer
+                initializeBreakGameSystem();
+            }
+        }
+
+        // Load age-appropriate game
+        function loadAgeAppropriateGame(ageGroup) {
+            console.log('Loading game for age group:', ageGroup);
+            
+            // Skip games for toddlers (0-2) - they're too young
+            if (ageGroup === '0-2') {
+                showToddlerBreak();
+                return;
+            }
+            
+            // Multiple game types for each age group
+            const gameTypes = {
+                '3-5': ['space-exploration', 'animal-sounds', 'color-matching', 'shape-recognition'],
+                '6-8': ['space-trivia', 'country-flags', 'animal-facts', 'math-puzzles'],
+                '9-12': ['space-trivia', 'geography-quiz', 'science-experiments', 'word-games'],
+                '13+': ['space-trivia', 'physics-challenges', 'history-quiz', 'logic-puzzles']
+            };
+            
+            const availableGames = gameTypes[ageGroup] || ['space-trivia'];
+            const randomGameType = availableGames[Math.floor(Math.random() * availableGames.length)];
+            
+            console.log('Game type:', randomGameType);
+            
+            switch(randomGameType) {
+                case 'space-exploration':
+                    createSpaceExplorationGame();
+                    break;
+                case 'space-trivia':
+                    createSpaceTriviaGame(ageGroup);
+                    break;
+                case 'animal-sounds':
+                    createAnimalSoundsGame();
+                    break;
+                case 'color-matching':
+                    createColorMatchingGame();
+                    break;
+                case 'shape-recognition':
+                    createShapeRecognitionGame();
+                    break;
+                case 'country-flags':
+                    createCountryFlagsGame();
+                    break;
+                case 'animal-facts':
+                    createAnimalFactsGame();
+                    break;
+                case 'math-puzzles':
+                    createMathPuzzlesGame(ageGroup);
+                    break;
+                case 'geography-quiz':
+                    createGeographyQuizGame();
+                    break;
+                case 'science-experiments':
+                    createScienceExperimentsGame();
+                    break;
+                case 'word-games':
+                    createWordGamesGame();
+                    break;
+                case 'physics-challenges':
+                    createPhysicsChallengesGame();
+                    break;
+                case 'history-quiz':
+                    createHistoryQuizGame();
+                    break;
+                case 'logic-puzzles':
+                    createLogicPuzzlesGame();
+                    break;
+                default:
+                    createSpaceTriviaGame(ageGroup);
+            }
+        }
+
+        // Show special break for toddlers (no games, just fun content)
+        function showToddlerBreak() {
+            const gameContent = document.getElementById('breakGameContent');
+            const funActivities = [
+                "Look at the pretty colors! 🌈",
+                "Time to stretch and wiggle! 🤸‍♀️",
+                "Let's take a deep breath! 😌",
+                "Look around the room! 👀",
+                "Time for a little dance! 💃"
+            ];
+            
+            const randomActivity = funActivities[Math.floor(Math.random() * funActivities.length)];
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Break Time! ⏰</div>
+                <h3>${randomActivity}</h3>
+                <div style="font-size: 4rem; margin: 20px 0;">🎈</div>
+                <p style="font-size: 1.2rem; color: var(--text-secondary);">
+                    Take a little break and have some fun!
+                </p>
+                <div class="game-options">
+                    <div class="game-option" onclick="closeBreakGame()" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
+                        <i class="fas fa-play"></i>
+                        <div>Back to Videos</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create color matching game for toddlers
+        function createColorMatchingGame() {
+            console.log('Creating color matching game');
+            const gameContent = document.getElementById('breakGameContent');
+            
+            if (!gameContent) {
+                console.error('Game content element not found!');
+                return;
+            }
+            
+            const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            console.log('Random color selected:', randomColor);
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Score: ${gameScore}</div>
+                <h3>Find the ${randomColor} color! 🎨</h3>
+                <div class="game-options">
+                    ${colors.map(color => `
+                        <div class="game-option" onclick="checkColorAnswer('${color}', '${randomColor}')" 
+                             style="background-color: ${color}; min-height: 80px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                            ${color.charAt(0).toUpperCase() + color.slice(1)}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            console.log('Color matching game HTML set');
+        }
+
+        // Check color answer
+        function checkColorAnswer(selectedColor, correctColor) {
+            const options = document.querySelectorAll('.game-option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+                if (option.textContent.toLowerCase().includes(correctColor)) {
+                    option.classList.add('correct');
+                } else if (option.textContent.toLowerCase().includes(selectedColor)) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedColor === correctColor) {
+                gameScore += 10;
+                showMessage('Great job! 🎉', 'success');
+            } else {
+                showMessage('Try again! 😊', 'info');
+            }
+            
+            setTimeout(() => {
+                createColorMatchingGame();
+            }, 1000);
+        }
+
+        // Create space exploration game for preschoolers
+        function createSpaceExplorationGame() {
+            const gameContent = document.getElementById('breakGameContent');
+            const spaceObjects = [
+                { id: 'moon', icon: 'fas fa-moon', name: 'Moon', color: '#C0C0C0' },
+                { id: 'sun', icon: 'fas fa-sun', name: 'Sun', color: '#FFD700' },
+                { id: 'star', icon: 'fas fa-star', name: 'Stars', color: '#87CEEB' },
+                { id: 'rocket', icon: 'fas fa-rocket', name: 'Rocket', color: '#FF6B6B' },
+                { id: 'planet', icon: 'fas fa-globe', name: 'Planet', color: '#4ECDC4' },
+                { id: 'comet', icon: 'fas fa-meteor', name: 'Comet', color: '#A8E6CF' }
+            ];
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Score: ${gameScore}</div>
+                <h3>Explore Space! 🚀</h3>
+                <p>Click on different space objects to learn about them!</p>
+                <div class="game-options">
+                    ${spaceObjects.map(obj => `
+                        <div class="game-option" onclick="exploreSpace('${obj.id}')" style="border-color: ${obj.color};">
+                            <i class="${obj.icon}" style="font-size: 2rem; margin-bottom: 10px; color: ${obj.color};"></i>
+                            <div>${obj.name}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Explore space object
+        function exploreSpace(object) {
+            const facts = {
+                moon: "The Moon is Earth's only natural satellite! 🌙",
+                sun: "The Sun is a star that gives us light and warmth! ☀️",
+                star: "Stars are giant balls of hot gas that twinkle at night! ⭐",
+                rocket: "Rockets help us travel to space! 🚀",
+                planet: "Planets are big round objects that orbit around stars! 🌍",
+                comet: "Comets are icy objects that leave beautiful tails when they get close to the Sun! ☄️"
+            };
+            
+            gameScore += 5;
+            showMessage(facts[object], 'success');
+            
+            setTimeout(() => {
+                createSpaceExplorationGame();
+            }, 1500);
+        }
+
+        // Create space trivia game for older kids
+        function createSpaceTriviaGame(ageGroup) {
+            const gameContent = document.getElementById('breakGameContent');
+            
+            // Fetch NASA data for trivia
+            fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY')
+                .then(response => response.json())
+                .then(data => {
+                    const questions = generateSpaceQuestions(data, ageGroup);
+                    gameQuestions = questions;
+                    currentQuestionIndex = 0;
+                    showTriviaQuestion();
+                })
+                .catch(error => {
+                    console.error('Error fetching NASA data:', error);
+                    // Fallback to simple questions
+                    gameQuestions = getFallbackSpaceQuestions(ageGroup);
+                    currentQuestionIndex = 0;
+                    showTriviaQuestion();
+                });
+        }
+
+        // Generate space questions from NASA data
+        function generateSpaceQuestions(nasaData, ageGroup) {
+            const questions = [];
+            
+            if (nasaData.title && nasaData.explanation) {
+                questions.push({
+                    question: `What is this space object called?`,
+                    image: nasaData.url,
+                    options: [nasaData.title, 'A Star', 'A Planet', 'A Galaxy'],
+                    correct: 0,
+                    explanation: nasaData.explanation.substring(0, 200) + '...'
+                });
+            }
+            
+            // Add more questions based on age group
+            const additionalQuestions = getFallbackSpaceQuestions(ageGroup);
+            questions.push(...additionalQuestions);
+            
+            return questions;
+        }
+
+        // Get fallback space questions
+        function getFallbackSpaceQuestions(ageGroup) {
+            const questionSets = {
+                '6-8': [
+                    {
+                        question: "How many planets are in our solar system?",
+                        image: null,
+                        options: ['8', '9', '7', '10'],
+                        correct: 0,
+                        explanation: "There are 8 planets in our solar system: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune."
+                    },
+                    {
+                        question: "What is the closest star to Earth?",
+                        image: null,
+                        options: ['The Sun', 'Alpha Centauri', 'Sirius', 'Betelgeuse'],
+                        correct: 0,
+                        explanation: "The Sun is the closest star to Earth, about 93 million miles away!"
+                    },
+                    {
+                        question: "What do we call the path Earth takes around the Sun?",
+                        image: null,
+                        options: ['Orbit', 'Circle', 'Line', 'Square'],
+                        correct: 0,
+                        explanation: "Earth's orbit is the path it takes around the Sun, which takes one year to complete!"
+                    },
+                    {
+                        question: "What is the name of our galaxy?",
+                        image: null,
+                        options: ['Milky Way', 'Andromeda', 'Solar System', 'Universe'],
+                        correct: 0,
+                        explanation: "Our galaxy is called the Milky Way, and it contains billions of stars!"
+                    },
+                    {
+                        question: "What causes day and night on Earth?",
+                        image: null,
+                        options: ['Earth spinning', 'The Moon', 'The Sun moving', 'Clouds'],
+                        correct: 0,
+                        explanation: "Day and night happen because Earth spins on its axis, turning different parts toward the Sun!"
+                    }
+                ],
+                '9-12': [
+                    {
+                        question: "What is the largest planet in our solar system?",
+                        image: null,
+                        options: ['Jupiter', 'Saturn', 'Neptune', 'Earth'],
+                        correct: 0,
+                        explanation: "Jupiter is the largest planet in our solar system, more than 11 times wider than Earth!"
+                    },
+                    {
+                        question: "How long does it take for light from the Sun to reach Earth?",
+                        image: null,
+                        options: ['8 minutes', '1 hour', '1 day', '1 year'],
+                        correct: 0,
+                        explanation: "Light from the Sun takes about 8 minutes and 20 seconds to reach Earth!"
+                    },
+                    {
+                        question: "What is the Great Red Spot on Jupiter?",
+                        image: null,
+                        options: ['A giant storm', 'A mountain', 'A lake', 'A volcano'],
+                        correct: 0,
+                        explanation: "The Great Red Spot is a giant storm on Jupiter that has been raging for hundreds of years!"
+                    },
+                    {
+                        question: "What is the hottest planet in our solar system?",
+                        image: null,
+                        options: ['Venus', 'Mercury', 'Mars', 'Jupiter'],
+                        correct: 0,
+                        explanation: "Venus is the hottest planet, even hotter than Mercury, because of its thick atmosphere!"
+                    },
+                    {
+                        question: "What are the rings of Saturn made of?",
+                        image: null,
+                        options: ['Ice and rock', 'Gas', 'Metal', 'Dust'],
+                        correct: 0,
+                        explanation: "Saturn's rings are made of billions of pieces of ice and rock that orbit the planet!"
+                    }
+                ],
+                '13+': [
+                    {
+                        question: "What is a black hole?",
+                        image: null,
+                        options: ['A region with intense gravity', 'A dark planet', 'A type of star', 'An empty space'],
+                        correct: 0,
+                        explanation: "A black hole is a region of spacetime where gravity is so strong that nothing can escape, not even light!"
+                    },
+                    {
+                        question: "What is the speed of light in a vacuum?",
+                        image: null,
+                        options: ['299,792,458 m/s', '150,000 m/s', '500,000 m/s', '1,000,000 m/s'],
+                        correct: 0,
+                        explanation: "The speed of light in a vacuum is approximately 299,792,458 meters per second!"
+                    },
+                    {
+                        question: "What is dark matter?",
+                        image: null,
+                        options: ['Invisible matter that affects gravity', 'Black holes', 'Empty space', 'Dark planets'],
+                        correct: 0,
+                        explanation: "Dark matter is invisible matter that makes up about 27% of the universe and affects gravity!"
+                    },
+                    {
+                        question: "What is the Big Bang theory?",
+                        image: null,
+                        options: ['The universe started with an explosion', 'A movie', 'A planet', 'A star'],
+                        correct: 0,
+                        explanation: "The Big Bang theory explains how the universe began with a massive expansion about 13.8 billion years ago!"
+                    },
+                    {
+                        question: "What is a neutron star?",
+                        image: null,
+                        options: ['A collapsed star made of neutrons', 'A new star', 'A planet', 'A galaxy'],
+                        correct: 0,
+                        explanation: "A neutron star is what remains after a massive star collapses, made almost entirely of neutrons!"
+                    }
+                ]
+            };
+            
+            return questionSets[ageGroup] || questionSets['6-8'];
+        }
+
+        // Show trivia question
+        function showTriviaQuestion() {
+            const gameContent = document.getElementById('breakGameContent');
+            const question = gameQuestions[currentQuestionIndex];
+            
+            if (!question) {
+                showGameComplete();
+                return;
+            }
+            
+            const progress = ((currentQuestionIndex + 1) / gameQuestions.length) * 100;
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Score: ${gameScore}</div>
+                <div class="game-progress">
+                    <div class="game-progress-fill" style="width: ${progress}%"></div>
+                </div>
+                <h3>${question.question}</h3>
+                ${question.image ? `<img src="${question.image}" alt="Space object" class="game-image" onerror="this.style.display='none'">` : ''}
+                <div class="game-options">
+                    ${question.options.map((option, index) => `
+                        <div class="game-option" onclick="checkTriviaAnswer(${index}, ${question.correct})">
+                            ${option}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Check trivia answer
+        function checkTriviaAnswer(selectedIndex, correctIndex) {
+            const options = document.querySelectorAll('.game-option');
+            options.forEach((option, index) => {
+                option.style.pointerEvents = 'none';
+                if (index === correctIndex) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedIndex === correctIndex) {
+                gameScore += 20;
+                showMessage('Correct! 🌟', 'success');
+            } else {
+                showMessage('Not quite right, but great try! 😊', 'info');
+            }
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                showTriviaQuestion();
+            }, 1000);
+        }
+
+        // Show game complete
+        function showGameComplete() {
+            const gameContent = document.getElementById('breakGameContent');
+            gameContent.innerHTML = `
+                <div class="game-score">Final Score: ${gameScore}</div>
+                <h3>Great job! 🎉</h3>
+                <p>You earned ${gameScore} points!</p>
+                <div class="game-options">
+                    <div class="game-option" onclick="closeBreakGame()">
+                        <i class="fas fa-play"></i>
+                        <div>Back to Videos</div>
+                    </div>
+                    <div class="game-option" onclick="loadAgeAppropriateGame('${getCurrentAgeGroup()}')">
+                        <i class="fas fa-redo"></i>
+                        <div>Play Again</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get current age group
+        function getCurrentAgeGroup() {
+            const parentalSettings = JSON.parse(localStorage.getItem('parentalSettings') || '{}');
+            return parentalSettings.ageGroup || '6-8';
+        }
+
+        // ===== NEW GAME TYPES WITH REAL API DATA =====
+
+        // Animal Sounds Game (Ages 3-5)
+        function createAnimalSoundsGame() {
+            const gameContent = document.getElementById('breakGameContent');
+            const animals = [
+                { name: 'Lion', sound: 'Roar!', emoji: '🦁', color: '#FF6B6B' },
+                { name: 'Cat', sound: 'Meow!', emoji: '🐱', color: '#4ECDC4' },
+                { name: 'Dog', sound: 'Woof!', emoji: '🐶', color: '#45B7D1' },
+                { name: 'Cow', sound: 'Moo!', emoji: '🐄', color: '#96CEB4' },
+                { name: 'Duck', sound: 'Quack!', emoji: '🦆', color: '#FFEAA7' },
+                { name: 'Owl', sound: 'Hoot!', emoji: '🦉', color: '#DDA0DD' }
+            ];
+            
+            const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Score: ${gameScore}</div>
+                <h3>What sound does this animal make? 🔊</h3>
+                <div style="font-size: 4rem; margin: 20px 0;">${randomAnimal.emoji}</div>
+                <h4 style="color: ${randomAnimal.color}; font-size: 2rem;">${randomAnimal.name}</h4>
+                <div class="game-options">
+                    ${animals.map(animal => `
+                        <div class="game-option" onclick="checkAnimalSound('${animal.sound}', '${randomAnimal.sound}')" 
+                             style="border-color: ${animal.color};">
+                            <div style="font-size: 1.5rem; margin-bottom: 10px;">${animal.emoji}</div>
+                            <div>${animal.sound}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Check animal sound answer
+        function checkAnimalSound(selectedSound, correctSound) {
+            const options = document.querySelectorAll('.game-option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+                if (option.textContent.includes(correctSound)) {
+                    option.classList.add('correct');
+                } else if (option.textContent.includes(selectedSound)) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedSound === correctSound) {
+                gameScore += 10;
+                showMessage('Great job! 🎉', 'success');
+            } else {
+                showMessage('Try again! 😊', 'info');
+            }
+            
+            setTimeout(() => {
+                createAnimalSoundsGame();
+            }, 1000);
+        }
+
+        // Shape Recognition Game (Ages 3-5)
+        function createShapeRecognitionGame() {
+            const gameContent = document.getElementById('breakGameContent');
+            const shapes = [
+                { name: 'Circle', emoji: '⭕', sides: '0', color: '#FF6B6B' },
+                { name: 'Triangle', emoji: '🔺', sides: '3', color: '#4ECDC4' },
+                { name: 'Square', emoji: '⬜', sides: '4', color: '#45B7D1' },
+                { name: 'Pentagon', emoji: '⬟', sides: '5', color: '#96CEB4' },
+                { name: 'Hexagon', emoji: '⬡', sides: '6', color: '#FFEAA7' },
+                { name: 'Star', emoji: '⭐', sides: '5', color: '#DDA0DD' }
+            ];
+            
+            const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Score: ${gameScore}</div>
+                <h3>How many sides does this shape have? 🔢</h3>
+                <div style="font-size: 4rem; margin: 20px 0;">${randomShape.emoji}</div>
+                <h4 style="color: ${randomShape.color}; font-size: 2rem;">${randomShape.name}</h4>
+                <div class="game-options">
+                    ${shapes.map(shape => `
+                        <div class="game-option" onclick="checkShapeSides('${shape.sides}', '${randomShape.sides}')" 
+                             style="border-color: ${shape.color};">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">${shape.sides}</div>
+                            <div>Sides</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Check shape sides answer
+        function checkShapeSides(selectedSides, correctSides) {
+            const options = document.querySelectorAll('.game-option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+                if (option.textContent.includes(correctSides)) {
+                    option.classList.add('correct');
+                } else if (option.textContent.includes(selectedSides)) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedSides === correctSides) {
+                gameScore += 10;
+                showMessage('Excellent! 🌟', 'success');
+            } else {
+                showMessage('Good try! 😊', 'info');
+            }
+            
+            setTimeout(() => {
+                createShapeRecognitionGame();
+            }, 1000);
+        }
+
+        // Country Flags Game (Ages 6-8) - Using REST Countries API
+        function createCountryFlagsGame() {
+            const gameContent = document.getElementById('breakGameContent');
+            
+            // Fetch real country data
+            fetch('https://restcountries.com/v3.1/all')
+                .then(response => response.json())
+                .then(data => {
+                    const countries = data.slice(0, 20); // Get first 20 countries
+                    const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+                    const otherCountries = countries.filter(c => c.name.common !== randomCountry.name.common)
+                        .slice(0, 3);
+                    const allOptions = [randomCountry, ...otherCountries].sort(() => Math.random() - 0.5);
+                    
+                    gameContent.innerHTML = `
+                        <div class="game-score">Score: ${gameScore}</div>
+                        <h3>What country is this flag from? 🏳️</h3>
+                        <div style="font-size: 4rem; margin: 20px 0;">${randomCountry.flag}</div>
+                        <div class="game-options">
+                            ${allOptions.map((country, index) => `
+                                <div class="game-option" onclick="checkCountryFlag('${country.name.common}', '${randomCountry.name.common}')">
+                                    <div style="font-size: 1.2rem; margin-bottom: 5px;">${country.flag}</div>
+                                    <div>${country.name.common}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error fetching countries:', error);
+                    // Fallback to simple country game
+                    createSimpleCountryGame();
+                });
+        }
+
+        // Simple country game fallback
+        function createSimpleCountryGame() {
+            const gameContent = document.getElementById('breakGameContent');
+            const countries = [
+                { name: 'United States', flag: '🇺🇸' },
+                { name: 'France', flag: '🇫🇷' },
+                { name: 'Japan', flag: '🇯🇵' },
+                { name: 'Brazil', flag: '🇧🇷' },
+                { name: 'Germany', flag: '🇩🇪' },
+                { name: 'Australia', flag: '🇦🇺' }
+            ];
+            
+            const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+            const otherCountries = countries.filter(c => c.name !== randomCountry.name).slice(0, 3);
+            const allOptions = [randomCountry, ...otherCountries].sort(() => Math.random() - 0.5);
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Score: ${gameScore}</div>
+                <h3>What country is this flag from? 🏳️</h3>
+                <div style="font-size: 4rem; margin: 20px 0;">${randomCountry.flag}</div>
+                <div class="game-options">
+                    ${allOptions.map(country => `
+                        <div class="game-option" onclick="checkCountryFlag('${country.name}', '${randomCountry.name}')">
+                            <div style="font-size: 1.2rem; margin-bottom: 5px;">${country.flag}</div>
+                            <div>${country.name}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Check country flag answer
+        function checkCountryFlag(selectedCountry, correctCountry) {
+            const options = document.querySelectorAll('.game-option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+                if (option.textContent.includes(correctCountry)) {
+                    option.classList.add('correct');
+                } else if (option.textContent.includes(selectedCountry)) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedCountry === correctCountry) {
+                gameScore += 15;
+                showMessage('Correct! 🌍', 'success');
+            } else {
+                showMessage('Good try! 😊', 'info');
+            }
+            
+            setTimeout(() => {
+                createCountryFlagsGame();
+            }, 1000);
+        }
+
+        // Animal Facts Game (Ages 6-8) - Using Animal API
+        function createAnimalFactsGame() {
+            const gameContent = document.getElementById('breakGameContent');
+            
+            // Simple animal facts (since most animal APIs require keys)
+            const animalFacts = [
+                {
+                    question: "Which animal is known as the 'King of the Jungle'?",
+                    options: ['Lion', 'Tiger', 'Leopard', 'Cheetah'],
+                    correct: 0,
+                    emoji: '🦁'
+                },
+                {
+                    question: "What is the largest animal on Earth?",
+                    options: ['Elephant', 'Blue Whale', 'Giraffe', 'Hippo'],
+                    correct: 1,
+                    emoji: '🐋'
+                },
+                {
+                    question: "Which bird can't fly but can swim very well?",
+                    options: ['Eagle', 'Penguin', 'Ostrich', 'Chicken'],
+                    correct: 1,
+                    emoji: '🐧'
+                },
+                {
+                    question: "What do you call a group of lions?",
+                    options: ['Herd', 'Pride', 'Pack', 'Flock'],
+                    correct: 1,
+                    emoji: '🦁'
+                },
+                {
+                    question: "Which animal sleeps the most?",
+                    options: ['Cat', 'Sloth', 'Koala', 'Panda'],
+                    correct: 1,
+                    emoji: '🦥'
+                }
+            ];
+            
+            const randomFact = animalFacts[Math.floor(Math.random() * animalFacts.length)];
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Score: ${gameScore}</div>
+                <h3>Animal Facts! 🐾</h3>
+                <div style="font-size: 4rem; margin: 20px 0;">${randomFact.emoji}</div>
+                <h4>${randomFact.question}</h4>
+                <div class="game-options">
+                    ${randomFact.options.map((option, index) => `
+                        <div class="game-option" onclick="checkAnimalFact(${index}, ${randomFact.correct})">
+                            ${option}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Check animal fact answer
+        function checkAnimalFact(selectedIndex, correctIndex) {
+            const options = document.querySelectorAll('.game-option');
+            options.forEach((option, index) => {
+                option.style.pointerEvents = 'none';
+                if (index === correctIndex) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedIndex === correctIndex) {
+                gameScore += 15;
+                showMessage('Great animal knowledge! 🐾', 'success');
+            } else {
+                showMessage('Nice try! 😊', 'info');
+            }
+            
+            setTimeout(() => {
+                createAnimalFactsGame();
+            }, 1000);
+        }
+
+        // Math Puzzles Game (Ages 6-8)
+        function createMathPuzzlesGame(ageGroup) {
+            const gameContent = document.getElementById('breakGameContent');
+            
+            let mathProblems = [];
+            
+            if (ageGroup === '6-8') {
+                mathProblems = [
+                    { question: "What is 5 + 3?", answer: 8, options: [6, 7, 8, 9] },
+                    { question: "What is 10 - 4?", answer: 6, options: [4, 5, 6, 7] },
+                    { question: "What is 2 × 3?", answer: 6, options: [5, 6, 7, 8] },
+                    { question: "What is 12 ÷ 3?", answer: 4, options: [3, 4, 5, 6] },
+                    { question: "What is 7 + 8?", answer: 15, options: [14, 15, 16, 17] }
+                ];
+            } else {
+                mathProblems = [
+                    { question: "What is 15 + 27?", answer: 42, options: [40, 41, 42, 43] },
+                    { question: "What is 50 - 23?", answer: 27, options: [25, 26, 27, 28] },
+                    { question: "What is 6 × 7?", answer: 42, options: [40, 41, 42, 43] },
+                    { question: "What is 84 ÷ 12?", answer: 7, options: [6, 7, 8, 9] },
+                    { question: "What is 25 + 38?", answer: 63, options: [61, 62, 63, 64] }
+                ];
+            }
+            
+            const randomProblem = mathProblems[Math.floor(Math.random() * mathProblems.length)];
+            
+            gameContent.innerHTML = `
+                <div class="game-score">Score: ${gameScore}</div>
+                <h3>Math Puzzle! 🧮</h3>
+                <div style="font-size: 3rem; margin: 20px 0;">${randomProblem.question}</div>
+                <div class="game-options">
+                    ${randomProblem.options.map(option => `
+                        <div class="game-option" onclick="checkMathAnswer(${option}, ${randomProblem.answer})">
+                            ${option}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Check math answer
+        function checkMathAnswer(selectedAnswer, correctAnswer) {
+            const options = document.querySelectorAll('.game-option');
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+                if (parseInt(option.textContent) === correctAnswer) {
+                    option.classList.add('correct');
+                } else if (parseInt(option.textContent) === selectedAnswer) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedAnswer === correctAnswer) {
+                gameScore += 20;
+                showMessage('Math genius! 🧮', 'success');
+            } else {
+                showMessage('Keep practicing! 😊', 'info');
+            }
+            
+            setTimeout(() => {
+                createMathPuzzlesGame(getCurrentAgeGroup());
+            }, 1000);
+        }
+
+        // Placeholder functions for other game types
+        function createGeographyQuizGame() {
+            createSpaceTriviaGame('9-12'); // Fallback for now
+        }
+
+        function createScienceExperimentsGame() {
+            createSpaceTriviaGame('9-12'); // Fallback for now
+        }
+
+        function createWordGamesGame() {
+            createSpaceTriviaGame('9-12'); // Fallback for now
+        }
+
+        function createPhysicsChallengesGame() {
+            createSpaceTriviaGame('13+'); // Fallback for now
+        }
+
+        function createHistoryQuizGame() {
+            createSpaceTriviaGame('13+'); // Fallback for now
+        }
+
+        function createLogicPuzzlesGame() {
+            createSpaceTriviaGame('13+'); // Fallback for now
         }
         
         // Go to home page (refresh and reset to default state)
@@ -4107,6 +5361,10 @@
                 allTab.classList.add('active');
             }
             
+            // Reload sidebar content
+            loadPlaylists();
+            loadLikedVideos();
+            
             // Load popular videos (mix of local and trending)
             loadPopularVideos();
             
@@ -4123,6 +5381,15 @@
         function loadPopularVideos() {
             console.log('Loading popular videos...');
             
+            // Check if videosContainer exists
+            const videosContainer = document.getElementById('videosContainer');
+            console.log('videosContainer found:', !!videosContainer);
+            
+            if (!videosContainer) {
+                console.error('videosContainer not found! Cannot load videos.');
+                return;
+            }
+            
             // First load local videos as base
             loadVideos();
             
@@ -4131,7 +5398,7 @@
                 fetchTrendingKidsVideos();
             } else {
                 // If no API, just show local videos with proper title
-                const sectionTitle = document.querySelector('.recommendations-section h3');
+                const sectionTitle = document.querySelector('.popular-videos-section h3');
                 if (sectionTitle) {
                     sectionTitle.innerHTML = '🔥 Popular Videos <button onclick="loadPopularVideos()" style="background: none; border: none; color: #a8b5d1; cursor: pointer; font-size: 0.8rem; margin-left: 10px;" title="Refresh popular videos"><i class="fas fa-sync-alt"></i></button>';
                 }
@@ -4606,6 +5873,11 @@
 
         function loadVideos() {
             const videosContainer = document.getElementById('videosContainer');
+            if (!videosContainer) {
+                console.log('videosContainer not found, skipping video load');
+                return;
+            }
+            
             let videosToShow = videoData;
 
             // Filter by category
@@ -4614,7 +5886,7 @@
             }
 
             // Set the section title if it's not already set by trending videos
-            const sectionTitle = document.querySelector('.recommendations-section h3');
+            const sectionTitle = document.querySelector('.popular-videos-section h3');
             if (sectionTitle && !sectionTitle.innerHTML.includes('🔥')) {
                 sectionTitle.innerHTML = '🔥 Popular Videos <button onclick="loadPopularVideos()" style="background: none; border: none; color: #a8b5d1; cursor: pointer; font-size: 0.8rem; margin-left: 10px;" title="Refresh popular videos"><i class="fas fa-sync-alt"></i></button>';
             }
@@ -5549,6 +6821,12 @@
             sidebar.classList.toggle('open');
             overlay.classList.toggle('show');
             
+            // Load sidebar content when opening
+            if (sidebar.classList.contains('open')) {
+                loadPlaylists();
+                loadLikedVideos();
+            }
+            
             // Update active filter option
             updateActiveFilterOption();
             
@@ -5707,6 +6985,25 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        function loadLikedVideos() {
+            const likedVideosList = document.getElementById('likedVideosList');
+            if (!likedVideosList) return;
+            
+            if (likedVideos.length === 0) {
+                likedVideosList.innerHTML = '<div class="no-liked-videos">No liked videos yet. Like some videos! ❤️</div>';
+            } else {
+                likedVideosList.innerHTML = likedVideos.map(video => `
+                    <div class="liked-video-item" onclick="playVideo('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.description.replace(/'/g, "\\'")}')">
+                        <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
+                        <div class="liked-video-info">
+                            <h5>${video.title}</h5>
+                            <p>${video.description}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
         
         function createNewPlaylist() {
@@ -7261,6 +8558,75 @@
             preventYouTubeRedirects();
             showSuccessMessage('Welcome to Kids Video App! 🎬');
         });
+    </script>
+
+    <!-- Emergency video loader - runs as soon as possible -->
+    <script>
+        // Emergency fallback to ensure videos load
+        (function() {
+            console.log('Emergency video loader starting...');
+            
+            function emergencyLoadVideos() {
+                const videosContainer = document.getElementById('videosContainer');
+                if (videosContainer && videosContainer.children.length === 0) {
+                    console.log('Emergency loader: Loading videos now!');
+                    
+                    const videoData = [
+                        {
+                            id: 'XqZsoesa55w',
+                            title: 'Baby Shark Dance',
+                            description: 'Sing and dance with Baby Shark! 🦈',
+                            thumbnail: 'https://img.youtube.com/vi/XqZsoesa55w/mqdefault.jpg',
+                            category: 'Music'
+                        },
+                        {
+                            id: 'dQw4w9WgXcQ',
+                            title: 'Never Gonna Give You Up',
+                            description: 'Classic song for kids! 🎵',
+                            thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+                            category: 'Music'
+                        },
+                        {
+                            id: 'jNQXAC9IVRw',
+                            title: 'Me at the zoo',
+                            description: 'First YouTube video! 🦁',
+                            thumbnail: 'https://img.youtube.com/vi/jNQXAC9IVRw/mqdefault.jpg',
+                            category: 'Learning'
+                        }
+                    ];
+                    
+                    videosContainer.innerHTML = videoData.map(video => `
+                        <div class="video-card" onclick="playVideo('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.description.replace(/'/g, "\\'")}')">
+                            <div class="video-thumbnail">
+                                <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
+                                <i class="fas fa-play-circle play-icon"></i>
+                            </div>
+                            <div class="video-actions">
+                                <button class="action-btn add-to-playlist-btn" onclick="event.stopPropagation(); showPlaylistMenu('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.thumbnail}')" title="Add to Playlist">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="action-btn like-btn" onclick="event.stopPropagation(); toggleLike('${video.id}')" title="Like Video">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                            <div class="video-info">
+                                <div class="video-category">${video.category}</div>
+                                <h4 class="video-title">${video.title}</h4>
+                                <p class="video-channel">KidsTube</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    console.log('Emergency loader: Videos loaded successfully!');
+                }
+            }
+            
+            // Try multiple times
+            setTimeout(emergencyLoadVideos, 100);
+            setTimeout(emergencyLoadVideos, 500);
+            setTimeout(emergencyLoadVideos, 1000);
+            setTimeout(emergencyLoadVideos, 2000);
+        })();
     </script>
 </body>
 </html>

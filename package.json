@@ -2,7 +2,7 @@
   "name": "kids-video-app",
   "version": "1.0.0",
   "description": "A kid-friendly video platform with screen time controls and educational content",
-  "main": "index.html",
+  "main": "src/index.html",
   "scripts": {
     "start": "npx http-server -p 3000 -o",
     "dev": "npx live-server --port=3000 --open=/",

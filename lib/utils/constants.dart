@@ -1,7 +1,7 @@
 class Constants {
   // TODO: Replace with your YouTube Data API v3 key
   // Get it from: https://console.cloud.google.com/
-  static const String youtubeApiKey = '';
+  static const String youtubeApiKey = 'AIzaSyDdqnaHe2qjRnZWFM2HNYvWxUwxPo07J8g';
   static const String youtubeBaseUrl = 'https://www.googleapis.com/youtube/v3';
   
   // YouTube API endpoints

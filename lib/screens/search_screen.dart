@@ -23,6 +23,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<VideoModel> _searchResults = [];
   bool _isLoading = false;
   String? _errorMessage;
+  bool _hasSearchText = false;
 
   Future<void> _searchVideos(String query) async {
     if (query.trim().isEmpty) {
@@ -41,6 +42,15 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       final results = await _youtubeService.searchVideos(query);
       
+      if (results.isEmpty) {
+        setState(() {
+          _searchResults = [];
+          _errorMessage = 'No videos found. Try a different search term.';
+          _isLoading = false;
+        });
+        return;
+      }
+      
       // Filter videos based on parental controls
       final filteredResults = <VideoModel>[];
       for (final video in results) {
@@ -52,13 +62,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
       setState(() {
         _searchResults = filteredResults;
+        _errorMessage = filteredResults.isEmpty && results.isNotEmpty
+            ? 'All results were filtered by parental controls.'
+            : null;
         _isLoading = false;
       });
     } catch (e) {
+      final errorMsg = e.toString().replaceAll('Exception: ', '');
       setState(() {
-        _errorMessage = 'Failed to search videos. Please check your API key.';
+        _errorMessage = 'Failed to search videos: $errorMsg';
+        _searchResults = [];
         _isLoading = false;
       });
+      // Print error for debugging
+      debugPrint('Search error: $e');
     }
   }
 
@@ -88,6 +105,16 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _hasSearchText = _searchController.text.isNotEmpty;
+      });
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -109,15 +136,28 @@ class _SearchScreenState extends State<SearchScreen> {
               decoration: InputDecoration(
                 hintText: 'Search for videos...',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchResults = [];
-                          });
-                        },
+                suffixIcon: _hasSearchText
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.search),
+                            onPressed: () => _searchVideos(_searchController.text),
+                            tooltip: 'Search',
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchResults = [];
+                                _hasSearchText = false;
+                                _errorMessage = null;
+                              });
+                            },
+                            tooltip: 'Clear',
+                          ),
+                        ],
                       )
                     : null,
                 border: OutlineInputBorder(

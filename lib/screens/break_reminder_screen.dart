@@ -21,6 +21,8 @@ class _BreakReminderScreenState extends State<BreakReminderScreen> {
   List<Color> _colorOptions = [];
   int _correctIndex = 0;
   int _mathAnswer = 0;
+  int _mathNum1 = 0;
+  int _mathNum2 = 0;
   List<int> _mathOptions = [];
   int _correctMathIndex = 0;
 
@@ -65,9 +67,9 @@ class _BreakReminderScreenState extends State<BreakReminderScreen> {
 
   void _setupMathGame() {
     final random = Random();
-    final num1 = random.nextInt(10) + 1;
-    final num2 = random.nextInt(10) + 1;
-    _mathAnswer = num1 + num2;
+    _mathNum1 = random.nextInt(10) + 1;
+    _mathNum2 = random.nextInt(10) + 1;
+    _mathAnswer = _mathNum1 + _mathNum2;
     
     _mathOptions = [_mathAnswer];
     while (_mathOptions.length < 4) {
@@ -159,8 +161,8 @@ class _BreakReminderScreenState extends State<BreakReminderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // Prevent back button
+    return PopScope(
+      canPop: false, // Prevent back button
       child: Scaffold(
         backgroundColor: Colors.blue.shade50,
         body: SafeArea(
@@ -270,9 +272,6 @@ class _BreakReminderScreenState extends State<BreakReminderScreen> {
         ],
       );
     } else if (_currentGame == 'math') {
-      final num1 = _mathAnswer - Random().nextInt(5) - 1;
-      final num2 = _mathAnswer - num1;
-      
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -285,7 +284,7 @@ class _BreakReminderScreenState extends State<BreakReminderScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            '$num1 + $num2 = ?',
+            '$_mathNum1 + $_mathNum2 = ?',
             style: const TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,

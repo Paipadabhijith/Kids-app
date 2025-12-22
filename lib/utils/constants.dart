@@ -1,7 +1,21 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class Constants {
-  // TODO: Replace with your YouTube Data API v3 key
+  // YouTube Data API v3 key loaded from .env file
   // Get it from: https://console.cloud.google.com/
-  static const String youtubeApiKey = 'AIzaSyDdqnaHe2qjRnZWFM2HNYvWxUwxPo07J8g';
+  // Add it to .env file as: YOUTUBE_API_KEY=your_key_here
+  static String get youtubeApiKey {
+    final key = dotenv.env['YOUTUBE_API_KEY'] ?? '';
+    if (key.isEmpty) {
+      throw Exception(
+        'YOUTUBE_API_KEY is not set in .env file. '
+        'Please create a .env file with your YouTube API key. '
+        'See .env.example for reference.'
+      );
+    }
+    return key;
+  }
+  
   static const String youtubeBaseUrl = 'https://www.googleapis.com/youtube/v3';
   
   // YouTube API endpoints

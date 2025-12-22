@@ -5,15 +5,20 @@ class Constants {
   // Get it from: https://console.cloud.google.com/
   // Add it to .env file as: YOUTUBE_API_KEY=your_key_here
   static String get youtubeApiKey {
-    final key = dotenv.env['YOUTUBE_API_KEY'] ?? '';
-    if (key.isEmpty) {
-      throw Exception(
-        'YOUTUBE_API_KEY is not set in .env file. '
-        'Please create a .env file with your YouTube API key. '
-        'See .env.example for reference.'
-      );
+    try {
+      final key = dotenv.env['YOUTUBE_API_KEY'] ?? '';
+      if (key.isEmpty || key == 'your_youtube_api_key_here') {
+        return '';
+      }
+      return key;
+    } catch (e) {
+      return '';
     }
-    return key;
+  }
+  
+  static bool get hasValidApiKey {
+    final key = youtubeApiKey;
+    return key.isNotEmpty && key != 'your_youtube_api_key_here';
   }
   
   static const String youtubeBaseUrl = 'https://www.googleapis.com/youtube/v3';

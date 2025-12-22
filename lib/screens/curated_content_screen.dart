@@ -43,6 +43,15 @@ class _CuratedContentScreenState extends State<CuratedContentScreen> {
       
       // If no curated videos, load educational content
       if (saved.isEmpty) {
+        if (!Constants.hasValidApiKey) {
+          setState(() {
+            _errorMessage = 'YouTube API key is not configured. Please add your API key to the .env file to load curated content.';
+            _curatedVideos = [];
+            _isLoading = false;
+          });
+          return;
+        }
+        
         final educationalVideos = await _youtubeService.searchVideos(
           'educational kids content',
           maxResults: 20,

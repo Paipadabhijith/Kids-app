@@ -40,6 +40,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       _errorMessage = null;
     });
 
+    if (!Constants.hasValidApiKey) {
+      // Use default categories if API key is not configured
+      setState(() {
+        _categories = Constants.categoryNames.entries
+            .map((e) => {'id': e.key, 'title': e.value})
+            .toList();
+        _isLoadingCategories = false;
+        _errorMessage = 'Using default categories. Add YouTube API key to .env for more options.';
+      });
+      return;
+    }
+
     try {
       final categories = await _youtubeService.getCategories();
       setState(() {
@@ -47,8 +59,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         _isLoadingCategories = false;
       });
     } catch (e) {
+      // Fallback to default categories on error
       setState(() {
-        _errorMessage = 'Failed to load categories. Please check your API key.';
+        _categories = Constants.categoryNames.entries
+            .map((e) => {'id': e.key, 'title': e.value})
+            .toList();
+        _errorMessage = 'Failed to load categories. Using default categories.';
         _isLoadingCategories = false;
       });
     }
@@ -61,6 +77,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       _isLoadingVideos = true;
       _errorMessage = null;
     });
+
+    if (!Constants.hasValidApiKey) {
+      setState(() {
+        _errorMessage = 'YouTube API key is not configured. Please add your API key to the .env file.';
+        _isLoadingVideos = false;
+      });
+      return;
+    }
 
     try {
       final videos = await _youtubeService.getVideosByCategory(categoryId);

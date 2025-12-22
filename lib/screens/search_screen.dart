@@ -34,6 +34,14 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
+    if (!Constants.hasValidApiKey) {
+      setState(() {
+        _errorMessage = 'YouTube API key is not configured. Please add your API key to the .env file.';
+        _isLoading = false;
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;

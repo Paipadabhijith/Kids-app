@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/settings_model.dart';
 import '../services/parental_control_service.dart';
+import '../services/video_filter_service.dart';
 
 class ParentalSettingsScreen extends StatefulWidget {
   const ParentalSettingsScreen({super.key});
@@ -114,8 +115,28 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
         breakIntervalMinutes: _selectedBreakInterval,
         breakDurationMinutes: _selectedBreakDuration,
       );
+      
+      // Save calm mode settings
+      await _parentalService.updateCalmModeSettings(
+        enabled: _settings.calmModeEnabled,
+        contrast: _settings.calmModeContrast,
+        saturation: _settings.calmModeSaturation,
+        brightness: _settings.calmModeBrightness,
+        warmth: _settings.calmModeWarmth,
+        preset: _settings.calmModePreset,
+      );
     } else {
       await _parentalService.disableParentalControls();
+      
+      // Still save calm mode settings even if parental controls are disabled
+      await _parentalService.updateCalmModeSettings(
+        enabled: _settings.calmModeEnabled,
+        contrast: _settings.calmModeContrast,
+        saturation: _settings.calmModeSaturation,
+        brightness: _settings.calmModeBrightness,
+        warmth: _settings.calmModeWarmth,
+        preset: _settings.calmModePreset,
+      );
     }
 
     if (mounted) {
@@ -471,6 +492,252 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                               },
                             );
                           }).toList(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Calm Mode
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Calm Mode',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Reduce visual stimulation by lowering contrast and saturation',
+                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: _settings.calmModeEnabled,
+                            onChanged: (value) {
+                              setState(() {
+                                _settings = _settings.copyWith(
+                                  calmModeEnabled: value,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      if (_settings.calmModeEnabled) ...[
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        
+                        // Preset selection
+                        const Text(
+                          'Quick Presets (Research-Backed)',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Select a preset or customize below',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: VideoFilterService.presets.keys.map((presetName) {
+                            final isSelected = _settings.calmModePreset == presetName;
+                            return FilterChip(
+                              label: Text(VideoFilterService.formatPresetName(presetName)),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                if (selected) {
+                                  final preset = VideoFilterService.getPresetValues(presetName);
+                                  if (preset != null) {
+                                    setState(() {
+                                      _settings = _settings.copyWith(
+                                        calmModePreset: presetName,
+                                        calmModeContrast: preset['contrast'],
+                                        calmModeSaturation: preset['saturation'],
+                                        calmModeBrightness: preset['brightness'],
+                                        calmModeWarmth: preset['warmth'],
+                                      );
+                                    });
+                                  }
+                                } else {
+                                  setState(() {
+                                    _settings = _settings.copyWith(calmModePreset: null);
+                                  });
+                                }
+                              },
+                            );
+                          }).toList(),
+                        ),
+                        if (_settings.calmModePreset != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            VideoFilterService.presetDescriptions[_settings.calmModePreset] ?? '',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                        
+                        const SizedBox(height: 24),
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        
+                        const Text(
+                          'Custom Settings',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // Contrast slider
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text('Contrast: ${(_settings.calmModeContrast * 100).toInt()}%'),
+                          subtitle: Slider(
+                            value: _settings.calmModeContrast,
+                            min: 0.5,
+                            max: 1.0,
+                            divisions: 10,
+                            label: '${(_settings.calmModeContrast * 100).toInt()}%',
+                            onChanged: (value) {
+                              setState(() {
+                                _settings = _settings.copyWith(
+                                  calmModeContrast: value,
+                                  calmModePreset: null, // Clear preset when customizing
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                        
+                        // Saturation slider
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text('Saturation: ${(_settings.calmModeSaturation * 100).toInt()}%'),
+                          subtitle: Slider(
+                            value: _settings.calmModeSaturation,
+                            min: 0.0,
+                            max: 1.0,
+                            divisions: 20,
+                            label: '${(_settings.calmModeSaturation * 100).toInt()}%',
+                            onChanged: (value) {
+                              setState(() {
+                                _settings = _settings.copyWith(
+                                  calmModeSaturation: value,
+                                  calmModePreset: null,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                        
+                        // Brightness slider
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text('Brightness: ${(_settings.calmModeBrightness * 100).toInt()}%'),
+                          subtitle: Slider(
+                            value: _settings.calmModeBrightness,
+                            min: -0.3,
+                            max: 0.1,
+                            divisions: 8,
+                            label: '${(_settings.calmModeBrightness * 100).toInt()}%',
+                            onChanged: (value) {
+                              setState(() {
+                                _settings = _settings.copyWith(
+                                  calmModeBrightness: value,
+                                  calmModePreset: null,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                        
+                        // Warmth slider (new - research-backed for blue light reduction)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Row(
+                            children: [
+                              Text('Warmth: ${(_settings.calmModeWarmth * 100).toInt()}%'),
+                              const SizedBox(width: 8),
+                              Tooltip(
+                                message: 'Reduces blue light - better for sleep',
+                                child: Icon(
+                                  Icons.info_outline,
+                                  size: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          subtitle: Slider(
+                            value: _settings.calmModeWarmth,
+                            min: 0.0,
+                            max: 0.5,
+                            divisions: 10,
+                            label: '${(_settings.calmModeWarmth * 100).toInt()}%',
+                            onChanged: (value) {
+                              setState(() {
+                                _settings = _settings.copyWith(
+                                  calmModeWarmth: value,
+                                  calmModePreset: null,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 16),
+                        
+                        // Research info card
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.science_outlined, color: Colors.blue.shade700, size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'These settings are based on research showing reduced saturation and contrast can lower visual stimulation and dopamine response in children.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.blue.shade800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/youtube_service.dart';
 import '../services/parental_control_service.dart';
+import '../services/search_history_service.dart';
 import '../utils/constants.dart';
 import '../widgets/category_card.dart';
 import '../widgets/video_card.dart';
@@ -19,8 +20,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     apiKey: Constants.youtubeApiKey,
   );
   final ParentalControlService _parentalService = ParentalControlService();
+  final SearchHistoryService _searchHistoryService = SearchHistoryService();
   
   List<Map<String, dynamic>> _categories = [];
+  List<Map<String, dynamic>> _personalizedCategories = [];
   String? _selectedCategoryId;
   String? _selectedCategoryName;
   List<VideoModel> _categoryVideos = [];
@@ -32,6 +35,24 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   void initState() {
     super.initState();
     _loadCategories();
+    _loadPersonalizedCategories();
+  }
+
+  Future<void> _loadPersonalizedCategories() async {
+    try {
+      final personalized = await _searchHistoryService.extractCategoriesFromHistory(limit: 10);
+      if (mounted) {
+        setState(() {
+          _personalizedCategories = personalized.map((cat) => {
+            'id': 'personalized_${cat.toLowerCase().replaceAll(' ', '_')}',
+            'title': cat,
+            'isPersonalized': true,
+          }).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading personalized categories: $e');
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -87,7 +108,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
 
     try {
-      final videos = await _youtubeService.getVideosByCategory(categoryId);
+      List<VideoModel> videos;
+      
+      // If it's a personalized category, search by the category name
+      if (categoryId.startsWith('personalized_')) {
+        final searchQuery = categoryName;
+        videos = await _youtubeService.searchVideos(searchQuery);
+      } else {
+        // Regular category
+        videos = await _youtubeService.getVideosByCategory(categoryId);
+      }
       
       // Filter videos based on parental controls
       final filteredVideos = <VideoModel>[];
@@ -192,33 +222,103 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       );
     }
 
-    if (_categories.isEmpty) {
+    if (_categories.isEmpty && _personalizedCategories.isEmpty) {
       return const Center(
         child: Text('No categories available'),
       );
     }
 
-    return GridView.builder(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(8),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-      ),
-      itemCount: _categories.length,
-      itemBuilder: (context, index) {
-        final category = _categories[index];
-        return CategoryCard(
-          categoryId: category['id']!,
-          categoryName: category['title']!,
-          icon: Icons.category,
-          onTap: () => _loadCategoryVideos(
-            category['id']!,
-            category['title']!,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Personalized Categories Section
+          if (_personalizedCategories.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.favorite, color: Colors.pink.shade400, size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Based on Your Searches',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemCount: _personalizedCategories.length,
+              itemBuilder: (context, index) {
+                final category = _personalizedCategories[index];
+                return CategoryCard(
+                  categoryId: category['id']!,
+                  categoryName: category['title']!,
+                  icon: Icons.favorite,
+                  onTap: () => _loadCategoryVideos(
+                    category['id']!,
+                    category['title']!,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            // Divider
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.category, color: Colors.blue.shade400, size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'All Categories',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          // Regular Categories
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: _categories.length,
+            itemBuilder: (context, index) {
+              final category = _categories[index];
+              return CategoryCard(
+                categoryId: category['id']!,
+                categoryName: category['title']!,
+                icon: Icons.category,
+                onTap: () => _loadCategoryVideos(
+                  category['id']!,
+                  category['title']!,
+                ),
+              );
+            },
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 

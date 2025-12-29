@@ -9,6 +9,12 @@ class SettingsModel {
   final bool breakRemindersEnabled;
   final int? breakIntervalMinutes;
   final int? breakDurationMinutes;
+  final bool calmModeEnabled;
+  final double calmModeContrast;
+  final double calmModeSaturation;
+  final double calmModeBrightness;
+  final double calmModeWarmth;
+  final String? calmModePreset;
 
   SettingsModel({
     this.parentalControlsEnabled = false,
@@ -21,6 +27,12 @@ class SettingsModel {
     this.breakRemindersEnabled = false,
     this.breakIntervalMinutes,
     this.breakDurationMinutes,
+    this.calmModeEnabled = false,
+    this.calmModeContrast = 0.75,
+    this.calmModeSaturation = 0.7,
+    this.calmModeBrightness = -0.1,
+    this.calmModeWarmth = 0.15,
+    this.calmModePreset,
   });
 
   factory SettingsModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +49,12 @@ class SettingsModel {
       breakRemindersEnabled: json['breakRemindersEnabled'] ?? false,
       breakIntervalMinutes: json['breakIntervalMinutes'],
       breakDurationMinutes: json['breakDurationMinutes'],
+      calmModeEnabled: json['calmModeEnabled'] ?? false,
+      calmModeContrast: (json['calmModeContrast'] ?? 0.75).toDouble(),
+      calmModeSaturation: (json['calmModeSaturation'] ?? 0.7).toDouble(),
+      calmModeBrightness: (json['calmModeBrightness'] ?? -0.1).toDouble(),
+      calmModeWarmth: (json['calmModeWarmth'] ?? 0.15).toDouble(),
+      calmModePreset: json['calmModePreset'],
     );
   }
 
@@ -52,6 +70,12 @@ class SettingsModel {
       'breakRemindersEnabled': breakRemindersEnabled,
       'breakIntervalMinutes': breakIntervalMinutes,
       'breakDurationMinutes': breakDurationMinutes,
+      'calmModeEnabled': calmModeEnabled,
+      'calmModeContrast': calmModeContrast,
+      'calmModeSaturation': calmModeSaturation,
+      'calmModeBrightness': calmModeBrightness,
+      'calmModeWarmth': calmModeWarmth,
+      'calmModePreset': calmModePreset,
     };
   }
 
@@ -66,6 +90,12 @@ class SettingsModel {
     bool? breakRemindersEnabled,
     int? breakIntervalMinutes,
     int? breakDurationMinutes,
+    bool? calmModeEnabled,
+    double? calmModeContrast,
+    double? calmModeSaturation,
+    double? calmModeBrightness,
+    double? calmModeWarmth,
+    String? calmModePreset,
   }) {
     return SettingsModel(
       parentalControlsEnabled: parentalControlsEnabled ?? this.parentalControlsEnabled,
@@ -78,6 +108,12 @@ class SettingsModel {
       breakRemindersEnabled: breakRemindersEnabled ?? this.breakRemindersEnabled,
       breakIntervalMinutes: breakIntervalMinutes ?? this.breakIntervalMinutes,
       breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
+      calmModeEnabled: calmModeEnabled ?? this.calmModeEnabled,
+      calmModeContrast: calmModeContrast ?? this.calmModeContrast,
+      calmModeSaturation: calmModeSaturation ?? this.calmModeSaturation,
+      calmModeBrightness: calmModeBrightness ?? this.calmModeBrightness,
+      calmModeWarmth: calmModeWarmth ?? this.calmModeWarmth,
+      calmModePreset: calmModePreset ?? this.calmModePreset,
     );
   }
 }

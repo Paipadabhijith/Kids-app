@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "725366238710",
+    "project_id": "kids-attention-app",
+    "storage_bucket": "kids-attention-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725366238710:android:e598c212b4b4f9fc186bd7",
+        "android_client_info": {
+          "package_name": "com.example.kids_tv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "725366238710-rh7esh2p46bivt8qkd4db5dlvaa82oov.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kids_tv",
+            "certificate_hash": "e23c36c56b5bc4229a852b9423b2257bd0345f9c"
+          }
+        },
+        {
+          "client_id": "725366238710-41c9ejsc8gng7pjri5nude0ql0rf31q2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqO4UdEjQYe79XiE9_bGP9o7t7SBXUs4g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "725366238710-41c9ejsc8gng7pjri5nude0ql0rf31q2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

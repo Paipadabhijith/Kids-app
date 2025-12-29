@@ -164,5 +164,27 @@ class ParentalControlService {
     final settings = await getSettings();
     return settings.breakDurationMinutes ?? 5;
   }
+
+  Future<void> updateCalmModeSettings({
+    bool? enabled,
+    double? contrast,
+    double? saturation,
+    double? brightness,
+    double? warmth,
+    String? preset,
+  }) async {
+    final settings = await getSettings();
+    
+    final newSettings = settings.copyWith(
+      calmModeEnabled: enabled ?? settings.calmModeEnabled,
+      calmModeContrast: contrast ?? settings.calmModeContrast,
+      calmModeSaturation: saturation ?? settings.calmModeSaturation,
+      calmModeBrightness: brightness ?? settings.calmModeBrightness,
+      calmModeWarmth: warmth ?? settings.calmModeWarmth,
+      calmModePreset: preset ?? settings.calmModePreset,
+    );
+    
+    await saveSettings(newSettings);
+  }
 }
 

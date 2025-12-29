@@ -171,5 +171,51 @@ class YouTubeService {
       return null;
     }
   }
+
+  // Get trending kids shows by searching popular kids content
+  Future<List<VideoModel>> getTrendingKidsShows({int maxResults = 25}) async {
+    try {
+      // Search for trending kids content with multiple kid-friendly queries
+      final kidsQueries = [
+        'kids shows for children',
+        'educational videos for kids',
+        'kids cartoons',
+        'nursery rhymes for kids',
+        'kids songs',
+      ];
+      
+      final allVideos = <VideoModel>[];
+      
+      // Search with each query to get diverse results
+      for (final query in kidsQueries) {
+        try {
+          final videos = await searchVideos(
+            query,
+            maxResults: (maxResults / kidsQueries.length).ceil() + 2,
+          );
+          allVideos.addAll(videos);
+        } catch (e) {
+          // Continue with other queries if one fails
+          continue;
+        }
+      }
+      
+      // Remove duplicates based on video ID
+      final uniqueVideos = <String, VideoModel>{};
+      for (final video in allVideos) {
+        if (!uniqueVideos.containsKey(video.id)) {
+          uniqueVideos[video.id] = video;
+        }
+      }
+      
+      // Sort by view count (most viewed = most trending)
+      final sortedVideos = uniqueVideos.values.toList()
+        ..sort((a, b) => (b.viewCount ?? 0).compareTo(a.viewCount ?? 0));
+      
+      return sortedVideos.take(maxResults).toList();
+    } catch (e) {
+      throw Exception('Error getting trending kids shows: $e');
+    }
+  }
 }
 

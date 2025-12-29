@@ -39,6 +39,7 @@ class Constants {
   static const String dailyUsageKey = 'daily_usage';
   static const String weeklyUsageKey = 'weekly_usage';
   static const String curatedVideosKey = 'curated_videos';
+  static const String searchHistoryKey = 'search_history';
   
   // Break reminder defaults
   static const int defaultBreakIntervalMinutes = 30;

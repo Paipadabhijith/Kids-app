@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/video_model.dart';
 import '../services/youtube_service.dart';
 import '../services/parental_control_service.dart';
+import '../services/search_history_service.dart';
 import '../utils/constants.dart';
 import '../widgets/video_card.dart';
 import 'video_player_screen.dart';
@@ -19,11 +20,13 @@ class _SearchScreenState extends State<SearchScreen> {
     apiKey: Constants.youtubeApiKey,
   );
   final ParentalControlService _parentalService = ParentalControlService();
+  final SearchHistoryService _searchHistoryService = SearchHistoryService();
   
   List<VideoModel> _searchResults = [];
   bool _isLoading = false;
   String? _errorMessage;
   bool _hasSearchText = false;
+  List<Map<String, dynamic>> _recentSearches = [];
 
   Future<void> _searchVideos(String query) async {
     if (query.trim().isEmpty) {
@@ -31,8 +34,12 @@ class _SearchScreenState extends State<SearchScreen> {
         _searchResults = [];
         _errorMessage = null;
       });
+      await _loadRecentSearches();
       return;
     }
+
+    // Save search to history
+    await _searchHistoryService.saveSearch(query);
 
     if (!Constants.hasValidApiKey) {
       setState(() {
@@ -87,6 +94,15 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  Future<void> _loadRecentSearches() async {
+    final searches = await _searchHistoryService.getSearchHistory(limit: 10);
+    if (mounted) {
+      setState(() {
+        _recentSearches = searches;
+      });
+    }
+  }
+
   Future<void> _playVideo(VideoModel video) async {
     // Check time limit
     final isLimitExceeded = await _parentalService.isTimeLimitExceeded();
@@ -120,6 +136,7 @@ class _SearchScreenState extends State<SearchScreen> {
         _hasSearchText = _searchController.text.isNotEmpty;
       });
     });
+    _loadRecentSearches();
   }
 
   @override
@@ -229,29 +246,76 @@ class _SearchScreenState extends State<SearchScreen> {
                 },
               ),
             )
-          // Empty state
+          // Empty state - show recent searches
           else if (!_isLoading && _searchController.text.isEmpty)
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.search,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Search for videos',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[600],
+              child: _recentSearches.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Search for videos',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
                       ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Recent Searches',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  await _searchHistoryService.clearSearchHistory();
+                                  await _loadRecentSearches();
+                                },
+                                child: const Text('Clear'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: _recentSearches.length,
+                            itemBuilder: (context, index) {
+                              final search = _recentSearches[index];
+                              final query = search['query'] as String? ?? '';
+                              return ListTile(
+                                leading: const Icon(Icons.history),
+                                title: Text(query),
+                                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                                onTap: () {
+                                  _searchController.text = query;
+                                  _searchVideos(query);
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
             )
           else
             Expanded(

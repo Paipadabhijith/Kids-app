@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/home_screen.dart';
 import 'services/storage_service.dart';
 import 'utils/theme.dart';
@@ -14,6 +17,14 @@ void main() async {
     debugPrint('Flutter Error: ${details.exception}');
     debugPrint('Stack trace: ${details.stack}');
   };
+  
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+    debugPrint('Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('Error initializing Firebase: $e');
+  }
   
   // Load environment variables with error handling
   try {
@@ -43,7 +54,21 @@ class KidsTVApp extends StatelessWidget {
       title: 'Kids TV',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      home: const HomeScreen(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          // Firebase handles persistence automatically
+          // User stays signed in until they explicitly sign out
+          return const HomeScreen();
+        },
+      ),
+      builder: (context, child) {
+        // Wrap with error boundary
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+          child: child ?? const HomeScreen(),
+        );
+      },
     );
   }
 }

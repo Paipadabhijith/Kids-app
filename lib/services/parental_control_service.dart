@@ -186,5 +186,23 @@ class ParentalControlService {
     
     await saveSettings(newSettings);
   }
+
+  Future<void> updateBinauralBeatsSettings({
+    bool? enabled,
+    bool? windDownModeEnabled,
+    bool? calmFocusModeEnabled,
+    double? volume,
+  }) async {
+    final settings = await getSettings();
+    
+    final newSettings = settings.copyWith(
+      binauralBeatsEnabled: enabled ?? settings.binauralBeatsEnabled,
+      windDownModeEnabled: windDownModeEnabled ?? settings.windDownModeEnabled,
+      calmFocusModeEnabled: calmFocusModeEnabled ?? settings.calmFocusModeEnabled,
+      binauralBeatsVolume: volume ?? settings.binauralBeatsVolume,
+    );
+    
+    await saveSettings(newSettings);
+  }
 }
 

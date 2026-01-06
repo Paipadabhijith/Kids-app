@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../models/video_model.dart';
 import '../services/storage_service.dart';
 import '../services/parental_control_service.dart';
 import '../services/video_filter_service.dart';
+import '../services/binaural_beats_service.dart';
 import 'break_reminder_screen.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
@@ -26,6 +28,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   final StorageService _storageService = StorageService();
   final ParentalControlService _parentalService = ParentalControlService();
   final VideoFilterService _filterService = VideoFilterService();
+  final BinauralBeatsService _beatsService = BinauralBeatsService();
   DateTime? _startTime;
   bool _isInitialized = false;
   Timer? _breakCheckTimer;
@@ -41,6 +44,42 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _startTime = DateTime.now();
     _startBreakCheckTimer();
     _loadCalmModeFilter();
+    _startBinauralBeats();
+  }
+
+  /// Starts binaural beats based on settings
+  Future<void> _startBinauralBeats() async {
+    try {
+      final settings = await _parentalService.getSettings();
+
+      // Check if binaural beats are enabled (independent of calm mode)
+      if (!settings.binauralBeatsEnabled) {
+        return;
+      }
+
+      // Set volume from settings
+      await _beatsService.setVolume(settings.binauralBeatsVolume);
+
+      // Determine which mode to use
+      if (settings.windDownModeEnabled) {
+        // Use theta waves (4-8 Hz) for wind-down
+        final success = await _beatsService.startBeats(BeatFrequency.theta);
+        if (!success && mounted) {
+          // Could show a snackbar about headphones if needed
+          print('Binaural beats not started - headphones may be required');
+        }
+      } else if (settings.calmFocusModeEnabled) {
+        // Use alpha waves (8-12 Hz) for calm focus
+        final success = await _beatsService.startBeats(BeatFrequency.alpha);
+        if (!success && mounted) {
+          print('Binaural beats not started - headphones may be required');
+        }
+      }
+      // If neither mode is enabled, don't play beats
+    } catch (e) {
+      print('Error starting binaural beats: $e');
+      // Fail silently - don't interrupt video playback
+    }
   }
 
   Future<void> _loadCalmModeFilter() async {
@@ -69,6 +108,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           if (shouldBreak && mounted) {
             _isOnBreak = true;
             _controller.pause();
+            // Pause binaural beats during break
+            await _beatsService.pause();
             
             // Use SchedulerBinding to ensure navigation happens after the current frame
             WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -77,9 +118,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => BreakReminderScreen(
-                      onBreakComplete: () {
+                      onBreakComplete: () async {
                         _isOnBreak = false;
                         _controller.play();
+                        // Resume binaural beats after break
+                        await _beatsService.resume();
                         Navigator.pop(context);
                       },
                     ),
@@ -119,20 +162,33 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
 
   @override
-  void dispose() async {
+  void dispose() {
     _breakCheckTimer?.cancel();
     
-    // Record watch time before disposing
+    // Stop binaural beats
+    _beatsService.dispose();
+    
+    // Record watch time and history asynchronously
+    // Note: dispose() must be synchronous, so these operations run in background
+    // They will complete but won't block disposal
     if (_startTime != null && !_isOnBreak) {
       final watchDuration = DateTime.now().difference(_startTime!);
       final minutesWatched = watchDuration.inMinutes;
       if (minutesWatched > 0) {
-        await _parentalService.recordVideoWatch(minutesWatched);
+        unawaited(
+          _parentalService.recordVideoWatch(minutesWatched).catchError((e) {
+            debugPrint('Error recording watch time: $e');
+          }),
+        );
       }
     }
 
     // Add to watch history
-    await _storageService.addToWatchHistory(widget.video);
+    unawaited(
+      _storageService.addToWatchHistory(widget.video).catchError((e) {
+        debugPrint('Error adding to watch history: $e');
+      }),
+    );
 
     _controller.dispose();
     super.dispose();

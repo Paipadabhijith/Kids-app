@@ -125,3 +125,9 @@ Desktop.ini
 *~
 .directory
 
+# Large audio files (use Git LFS or generate locally)
+assets/audio/*.wav
+assets/audio/*.mp3
+!assets/audio/README.md
+!assets/audio/DOWNLOAD_INSTRUCTIONS.md
+

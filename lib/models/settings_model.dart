@@ -15,6 +15,11 @@ class SettingsModel {
   final double calmModeBrightness;
   final double calmModeWarmth;
   final String? calmModePreset;
+  // Binaural beats settings
+  final bool binauralBeatsEnabled;
+  final bool windDownModeEnabled;
+  final bool calmFocusModeEnabled;
+  final double binauralBeatsVolume;
 
   SettingsModel({
     this.parentalControlsEnabled = false,
@@ -33,6 +38,11 @@ class SettingsModel {
     this.calmModeBrightness = -0.1,
     this.calmModeWarmth = 0.15,
     this.calmModePreset,
+    // Binaural beats defaults
+    this.binauralBeatsEnabled = true,
+    this.windDownModeEnabled = false,
+    this.calmFocusModeEnabled = false,
+    this.binauralBeatsVolume = 0.12,
   });
 
   factory SettingsModel.fromJson(Map<String, dynamic> json) {
@@ -55,6 +65,11 @@ class SettingsModel {
       calmModeBrightness: (json['calmModeBrightness'] ?? -0.1).toDouble(),
       calmModeWarmth: (json['calmModeWarmth'] ?? 0.15).toDouble(),
       calmModePreset: json['calmModePreset'],
+      // Binaural beats
+      binauralBeatsEnabled: json['binauralBeatsEnabled'] ?? true,
+      windDownModeEnabled: json['windDownModeEnabled'] ?? false,
+      calmFocusModeEnabled: json['calmFocusModeEnabled'] ?? false,
+      binauralBeatsVolume: (json['binauralBeatsVolume'] ?? 0.12).toDouble(),
     );
   }
 
@@ -76,6 +91,11 @@ class SettingsModel {
       'calmModeBrightness': calmModeBrightness,
       'calmModeWarmth': calmModeWarmth,
       'calmModePreset': calmModePreset,
+      // Binaural beats
+      'binauralBeatsEnabled': binauralBeatsEnabled,
+      'windDownModeEnabled': windDownModeEnabled,
+      'calmFocusModeEnabled': calmFocusModeEnabled,
+      'binauralBeatsVolume': binauralBeatsVolume,
     };
   }
 
@@ -96,6 +116,11 @@ class SettingsModel {
     double? calmModeBrightness,
     double? calmModeWarmth,
     String? calmModePreset,
+    // Binaural beats
+    bool? binauralBeatsEnabled,
+    bool? windDownModeEnabled,
+    bool? calmFocusModeEnabled,
+    double? binauralBeatsVolume,
   }) {
     return SettingsModel(
       parentalControlsEnabled: parentalControlsEnabled ?? this.parentalControlsEnabled,
@@ -114,6 +139,11 @@ class SettingsModel {
       calmModeBrightness: calmModeBrightness ?? this.calmModeBrightness,
       calmModeWarmth: calmModeWarmth ?? this.calmModeWarmth,
       calmModePreset: calmModePreset ?? this.calmModePreset,
+      // Binaural beats
+      binauralBeatsEnabled: binauralBeatsEnabled ?? this.binauralBeatsEnabled,
+      windDownModeEnabled: windDownModeEnabled ?? this.windDownModeEnabled,
+      calmFocusModeEnabled: calmFocusModeEnabled ?? this.calmFocusModeEnabled,
+      binauralBeatsVolume: binauralBeatsVolume ?? this.binauralBeatsVolume,
     );
   }
 }

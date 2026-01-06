@@ -139,6 +139,14 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
       );
     }
 
+    // Save binaural beats settings (works regardless of parental controls)
+    await _parentalService.updateBinauralBeatsSettings(
+      enabled: _settings.binauralBeatsEnabled,
+      windDownModeEnabled: _settings.windDownModeEnabled,
+      calmFocusModeEnabled: _settings.calmFocusModeEnabled,
+      volume: _settings.binauralBeatsVolume,
+    );
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -733,6 +741,227 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.blue.shade800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Binaural Beats
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Binaural Beats',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Gentle audio tones to encourage calm focus or relaxation',
+                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: _settings.binauralBeatsEnabled,
+                            onChanged: (value) {
+                              setState(() {
+                                _settings = _settings.copyWith(
+                                  binauralBeatsEnabled: value,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      if (_settings.binauralBeatsEnabled) ...[
+                        const SizedBox(height: 16),
+                        
+                        // Headphone warning
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.amber.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.headphones, color: Colors.amber.shade700, size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Binaural beats require stereo headphones to be effective. They will not work through speakers.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.amber.shade800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const SizedBox(height: 16),
+
+                        // Wind-down Mode (Theta beats)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Wind-Down Mode',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Theta waves (6 Hz) for bedtime and relaxation',
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: _settings.windDownModeEnabled,
+                              onChanged: (value) {
+                                setState(() {
+                                  _settings = _settings.copyWith(
+                                    windDownModeEnabled: value,
+                                    // Disable calm focus if wind-down is enabled
+                                    calmFocusModeEnabled: value ? false : _settings.calmFocusModeEnabled,
+                                  );
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const SizedBox(height: 16),
+
+                        // Calm Focus Mode (Alpha beats)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Calm Focus Mode',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Alpha waves (10 Hz) for learning and focus',
+                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: _settings.calmFocusModeEnabled,
+                              onChanged: (value) {
+                                setState(() {
+                                  _settings = _settings.copyWith(
+                                    calmFocusModeEnabled: value,
+                                    // Disable wind-down if calm focus is enabled
+                                    windDownModeEnabled: value ? false : _settings.windDownModeEnabled,
+                                  );
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const SizedBox(height: 16),
+
+                        // Volume slider
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Row(
+                            children: [
+                              Text('Volume: ${(_settings.binauralBeatsVolume * 100).toInt()}%'),
+                              const SizedBox(width: 8),
+                              Tooltip(
+                                message: 'Lower volume ensures beats are subtle and non-intrusive',
+                                child: Icon(
+                                  Icons.info_outline,
+                                  size: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          subtitle: Slider(
+                            value: _settings.binauralBeatsVolume,
+                            min: 0.05,
+                            max: 0.30,
+                            divisions: 25,
+                            label: '${(_settings.binauralBeatsVolume * 100).toInt()}%',
+                            onChanged: (value) {
+                              setState(() {
+                                _settings = _settings.copyWith(
+                                  binauralBeatsVolume: value,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Info card
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.purple.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.science_outlined, color: Colors.purple.shade700, size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Binaural beats work by playing slightly different frequencies in each ear. The brain perceives a third tone that may promote relaxation or focus.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.purple.shade800,
                                   ),
                                 ),
                               ),

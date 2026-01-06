@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class BreakReminderScreen extends StatefulWidget {
-  final VoidCallback onBreakComplete;
+  final Future<void> Function() onBreakComplete;
 
   const BreakReminderScreen({
     super.key,
@@ -145,7 +145,7 @@ class _BreakReminderScreenState extends State<BreakReminderScreen> {
         ),
       );
       await Future.delayed(const Duration(seconds: 1));
-      widget.onBreakComplete();
+      await widget.onBreakComplete();
     }
   }
 

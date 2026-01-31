@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show Timer, unawaited;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -123,7 +123,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                         _controller.play();
                         // Resume binaural beats after break
                         await _beatsService.resume();
-                        Navigator.pop(context);
+                        // Note: Navigator.pop is handled by BreakReminderScreen after callback completes
                       },
                     ),
                   ),

@@ -83,3 +83,4 @@ If you see `❌ Firebase Auth Error:` - check the error code:
 
 **Next Step:** Enable Google Sign-In in Firebase Console (see `COMPLETE_FIX_GUIDE.md`)
 
+

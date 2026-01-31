@@ -75,3 +75,4 @@ If you get stuck:
 - The error message in the app will tell you what's wrong
 - Most common issue: Forgetting to enable Google Sign-In in Step 1
 
+

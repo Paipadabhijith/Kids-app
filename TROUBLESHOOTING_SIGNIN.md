@@ -117,3 +117,4 @@ If sign-in still fails after checking all above:
 
 Check the error message in the app's snackbar - it should provide specific guidance based on the error type.
 
+

@@ -20,6 +20,9 @@ class SettingsModel {
   final bool windDownModeEnabled;
   final bool calmFocusModeEnabled;
   final double binauralBeatsVolume;
+  // Channel whitelist/blacklist
+  final List<String> whitelistedChannels;
+  final List<String> blacklistedChannels;
 
   SettingsModel({
     this.parentalControlsEnabled = false,
@@ -43,6 +46,8 @@ class SettingsModel {
     this.windDownModeEnabled = false,
     this.calmFocusModeEnabled = false,
     this.binauralBeatsVolume = 0.12,
+    this.whitelistedChannels = const [],
+    this.blacklistedChannels = const [],
   });
 
   factory SettingsModel.fromJson(Map<String, dynamic> json) {
@@ -70,6 +75,8 @@ class SettingsModel {
       windDownModeEnabled: json['windDownModeEnabled'] ?? false,
       calmFocusModeEnabled: json['calmFocusModeEnabled'] ?? false,
       binauralBeatsVolume: (json['binauralBeatsVolume'] ?? 0.12).toDouble(),
+      whitelistedChannels: List<String>.from(json['whitelistedChannels'] ?? []),
+      blacklistedChannels: List<String>.from(json['blacklistedChannels'] ?? []),
     );
   }
 
@@ -96,6 +103,8 @@ class SettingsModel {
       'windDownModeEnabled': windDownModeEnabled,
       'calmFocusModeEnabled': calmFocusModeEnabled,
       'binauralBeatsVolume': binauralBeatsVolume,
+      'whitelistedChannels': whitelistedChannels,
+      'blacklistedChannels': blacklistedChannels,
     };
   }
 
@@ -121,6 +130,8 @@ class SettingsModel {
     bool? windDownModeEnabled,
     bool? calmFocusModeEnabled,
     double? binauralBeatsVolume,
+    List<String>? whitelistedChannels,
+    List<String>? blacklistedChannels,
   }) {
     return SettingsModel(
       parentalControlsEnabled: parentalControlsEnabled ?? this.parentalControlsEnabled,
@@ -144,6 +155,8 @@ class SettingsModel {
       windDownModeEnabled: windDownModeEnabled ?? this.windDownModeEnabled,
       calmFocusModeEnabled: calmFocusModeEnabled ?? this.calmFocusModeEnabled,
       binauralBeatsVolume: binauralBeatsVolume ?? this.binauralBeatsVolume,
+      whitelistedChannels: whitelistedChannels ?? this.whitelistedChannels,
+      blacklistedChannels: blacklistedChannels ?? this.blacklistedChannels,
     );
   }
 }

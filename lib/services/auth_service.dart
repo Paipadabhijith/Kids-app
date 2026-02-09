@@ -164,5 +164,33 @@ class AuthService {
 
   // Get user photo URL
   String? get photoURL => _auth.currentUser?.photoURL;
+
+  // Send password reset email
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      debugPrint('✅ Password reset email sent to: $email');
+    } on FirebaseAuthException catch (e) {
+      debugPrint('❌ Error sending password reset email: ${e.code} - ${e.message}');
+      String errorMessage = 'Failed to send password reset email';
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No account found with this email address.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Invalid email address.';
+          break;
+        case 'network-request-failed':
+          errorMessage = 'Network error. Please check your internet connection.';
+          break;
+        default:
+          errorMessage = 'Failed to send password reset email: ${e.message ?? e.code}';
+      }
+      throw Exception(errorMessage);
+    } catch (e) {
+      debugPrint('❌ Error sending password reset email: $e');
+      rethrow;
+    }
+  }
 }
 

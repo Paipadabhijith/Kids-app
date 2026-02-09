@@ -45,7 +45,27 @@ class Constants {
   static const int defaultBreakIntervalMinutes = 30;
   static const int defaultBreakDurationMinutes = 5;
   
-  // YouTube category IDs (common categories)
+  // Kid-friendly categories with search queries
+  static const List<Map<String, String>> kidCategories = [
+    {'id': 'nursery_rhymes', 'title': 'Nursery Rhymes', 'query': 'nursery rhymes for kids', 'icon': 'music_note'},
+    {'id': 'cartoons', 'title': 'Cartoons', 'query': 'cartoons for children safe', 'icon': 'tv'},
+    {'id': 'learning_abc', 'title': 'ABCs & 123s', 'query': 'alphabet and numbers for kids learning', 'icon': 'abc'},
+    {'id': 'animals', 'title': 'Animals', 'query': 'animals for kids educational', 'icon': 'pets'},
+    {'id': 'stories', 'title': 'Stories', 'query': 'bedtime stories for kids', 'icon': 'auto_stories'},
+    {'id': 'science', 'title': 'Science Fun', 'query': 'science experiments for kids easy', 'icon': 'science'},
+    {'id': 'arts_crafts', 'title': 'Arts & Crafts', 'query': 'easy crafts for kids', 'icon': 'palette'},
+    {'id': 'dancing', 'title': 'Dance Along', 'query': 'dance songs for kids', 'icon': 'directions_run'},
+    {'id': 'nature', 'title': 'Nature', 'query': 'nature videos for children', 'icon': 'park'},
+    {'id': 'cooking', 'title': 'Kids Cooking', 'query': 'easy cooking for kids recipes', 'icon': 'restaurant'},
+    {'id': 'superheroes', 'title': 'Superheroes', 'query': 'superhero cartoons for kids', 'icon': 'flash_on'},
+    {'id': 'dinosaurs', 'title': 'Dinosaurs', 'query': 'dinosaurs for kids educational', 'icon': 'egg'},
+    {'id': 'space', 'title': 'Space', 'query': 'space videos for kids planets', 'icon': 'rocket_launch'},
+    {'id': 'vehicles', 'title': 'Cars & Trucks', 'query': 'vehicles for kids trucks cars trains', 'icon': 'directions_car'},
+    {'id': 'princess', 'title': 'Princess', 'query': 'princess stories for kids', 'icon': 'auto_awesome'},
+    {'id': 'funny', 'title': 'Funny Videos', 'query': 'funny videos for kids clean', 'icon': 'sentiment_very_satisfied'},
+  ];
+  
+  // Legacy YouTube category IDs (kept for compatibility)
   static const Map<String, String> categoryNames = {
     '1': 'Film & Animation',
     '2': 'Autos & Vehicles',

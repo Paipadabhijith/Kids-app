@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import '../services/youtube_service.dart';
 import '../services/parental_control_service.dart';
-import '../services/search_history_service.dart';
 import '../utils/constants.dart';
-import '../widgets/category_card.dart';
+import '../utils/page_transitions.dart';
 import '../widgets/video_card.dart';
+import '../widgets/loading_skeleton.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/animated_button.dart';
 import '../models/video_model.dart';
 import 'video_player_screen.dart';
 
@@ -20,81 +22,65 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     apiKey: Constants.youtubeApiKey,
   );
   final ParentalControlService _parentalService = ParentalControlService();
-  final SearchHistoryService _searchHistoryService = SearchHistoryService();
   
-  List<Map<String, dynamic>> _categories = [];
-  List<Map<String, dynamic>> _personalizedCategories = [];
   String? _selectedCategoryId;
   String? _selectedCategoryName;
+  String? _selectedCategoryQuery;
   List<VideoModel> _categoryVideos = [];
-  bool _isLoadingCategories = true;
   bool _isLoadingVideos = false;
   String? _errorMessage;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadCategories();
-    _loadPersonalizedCategories();
-  }
-
-  Future<void> _loadPersonalizedCategories() async {
-    try {
-      final personalized = await _searchHistoryService.extractCategoriesFromHistory(limit: 10);
-      if (mounted) {
-        setState(() {
-          _personalizedCategories = personalized.map((cat) => {
-            'id': 'personalized_${cat.toLowerCase().replaceAll(' ', '_')}',
-            'title': cat,
-            'isPersonalized': true,
-          }).toList();
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading personalized categories: $e');
+  // Icon mapping for categories
+  IconData _getIconForCategory(String iconName) {
+    switch (iconName) {
+      case 'music_note': return Icons.music_note;
+      case 'tv': return Icons.tv;
+      case 'abc': return Icons.abc;
+      case 'pets': return Icons.pets;
+      case 'auto_stories': return Icons.auto_stories;
+      case 'science': return Icons.science;
+      case 'palette': return Icons.palette;
+      case 'directions_run': return Icons.directions_run;
+      case 'park': return Icons.park;
+      case 'restaurant': return Icons.restaurant;
+      case 'flash_on': return Icons.flash_on;
+      case 'egg': return Icons.egg;
+      case 'rocket_launch': return Icons.rocket_launch;
+      case 'directions_car': return Icons.directions_car;
+      case 'auto_awesome': return Icons.auto_awesome;
+      case 'sentiment_very_satisfied': return Icons.sentiment_very_satisfied;
+      default: return Icons.category;
     }
   }
 
-  Future<void> _loadCategories() async {
-    setState(() {
-      _isLoadingCategories = true;
-      _errorMessage = null;
-    });
-
-    if (!Constants.hasValidApiKey) {
-      // Use default categories if API key is not configured
-      setState(() {
-        _categories = Constants.categoryNames.entries
-            .map((e) => {'id': e.key, 'title': e.value})
-            .toList();
-        _isLoadingCategories = false;
-        _errorMessage = 'Using default categories. Add YouTube API key to .env for more options.';
-      });
-      return;
-    }
-
-    try {
-      final categories = await _youtubeService.getCategories();
-      setState(() {
-        _categories = categories;
-        _isLoadingCategories = false;
-      });
-    } catch (e) {
-      // Fallback to default categories on error
-      setState(() {
-        _categories = Constants.categoryNames.entries
-            .map((e) => {'id': e.key, 'title': e.value})
-            .toList();
-        _errorMessage = 'Failed to load categories. Using default categories.';
-        _isLoadingCategories = false;
-      });
-    }
+  // Color palette for kids
+  Color _getColorForIndex(int index) {
+    final colors = [
+      const Color(0xFF4CAF50), // Green
+      const Color(0xFFE91E63), // Pink
+      const Color(0xFF2196F3), // Blue
+      const Color(0xFFFF9800), // Orange
+      const Color(0xFF9C27B0), // Purple
+      const Color(0xFF00BCD4), // Cyan
+      const Color(0xFFFFEB3B), // Yellow
+      const Color(0xFFFF5722), // Deep Orange
+      const Color(0xFF8BC34A), // Light Green
+      const Color(0xFF673AB7), // Deep Purple
+      const Color(0xFF03A9F4), // Light Blue
+      const Color(0xFFF44336), // Red
+      const Color(0xFF009688), // Teal
+      const Color(0xFFCDDC39), // Lime
+      const Color(0xFF3F51B5), // Indigo
+      const Color(0xFFFF4081), // Pink Accent
+    ];
+    return colors[index % colors.length];
   }
 
-  Future<void> _loadCategoryVideos(String categoryId, String categoryName) async {
+  Future<void> _loadCategoryVideos(String categoryId, String categoryName, String searchQuery) async {
     setState(() {
       _selectedCategoryId = categoryId;
       _selectedCategoryName = categoryName;
+      _selectedCategoryQuery = searchQuery;
       _isLoadingVideos = true;
       _errorMessage = null;
     });
@@ -108,16 +94,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
 
     try {
-      List<VideoModel> videos;
-      
-      // If it's a personalized category, search by the category name
-      if (categoryId.startsWith('personalized_')) {
-        final searchQuery = categoryName;
-        videos = await _youtubeService.searchVideos(searchQuery);
-      } else {
-        // Regular category
-        videos = await _youtubeService.getVideosByCategory(categoryId);
-      }
+      final videos = await _youtubeService.searchVideos(searchQuery, maxResults: 30);
       
       // Filter videos based on parental controls
       final filteredVideos = <VideoModel>[];
@@ -134,9 +111,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load videos. Please check your API key.';
+        _errorMessage = 'Failed to load videos. Please try again.';
         _isLoadingVideos = false;
       });
+      debugPrint('Error loading category videos: $e');
     }
   }
 
@@ -158,8 +136,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     if (mounted) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => VideoPlayerScreen(
+        SmoothPageRoute(
+          page: VideoPlayerScreen(
             video: video,
             playlist: _categoryVideos,
           ),
@@ -172,7 +150,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     setState(() {
       _selectedCategoryId = null;
       _selectedCategoryName = null;
+      _selectedCategoryQuery = null;
       _categoryVideos = [];
+      _errorMessage = null;
     });
   }
 
@@ -186,178 +166,146 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: _goBackToCategories,
               )
-            : null,
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
       ),
-      body: _selectedCategoryId == null ? _buildCategoriesView() : _buildVideosView(),
+      body: _selectedCategoryId == null ? _buildCategoriesGrid() : _buildVideosView(),
     );
   }
 
-  Widget _buildCategoriesView() {
-    if (_isLoadingCategories) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildCategoriesGrid() {
+    return GridView.builder(
+      padding: const EdgeInsets.all(12),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.1,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: Constants.kidCategories.length,
+      itemBuilder: (context, index) {
+        final category = Constants.kidCategories[index];
+        final color = _getColorForIndex(index);
+        final icon = _getIconForCategory(category['icon'] ?? 'category');
+        
+        return _buildCategoryTile(
+          title: category['title']!,
+          icon: icon,
+          color: color,
+          onTap: () => _loadCategoryVideos(
+            category['id']!,
+            category['title']!,
+            category['query']!,
+          ),
+        );
+      },
+    );
+  }
 
-    if (_errorMessage != null) {
-      return Center(
-        child: Padding(
+  Widget _buildCategoryTile({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return AnimatedButton(
+      onTap: onTap,
+      child: Material(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+        child: Container(
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red),
+              // Fun shapes behind icon
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Background shapes
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.3),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Positioned(
+                    top: -5,
+                    right: -5,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ),
+                  // Icon
+                  Icon(
+                    icon,
+                    size: 36,
+                    color: color,
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _loadCategories,
-                child: const Text('Retry'),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: color.withOpacity(0.9),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
-      );
-    }
-
-    if (_categories.isEmpty && _personalizedCategories.isEmpty) {
-      return const Center(
-        child: Text('No categories available'),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Personalized Categories Section
-          if (_personalizedCategories.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.favorite, color: Colors.pink.shade400, size: 20),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Based on Your Searches',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 1.2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: _personalizedCategories.length,
-              itemBuilder: (context, index) {
-                final category = _personalizedCategories[index];
-                return CategoryCard(
-                  categoryId: category['id']!,
-                  categoryName: category['title']!,
-                  icon: Icons.favorite,
-                  onTap: () => _loadCategoryVideos(
-                    category['id']!,
-                    category['title']!,
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            // Divider
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.category, color: Colors.blue.shade400, size: 20),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'All Categories',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          // Regular Categories
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1.2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemCount: _categories.length,
-            itemBuilder: (context, index) {
-              final category = _categories[index];
-              return CategoryCard(
-                categoryId: category['id']!,
-                categoryName: category['title']!,
-                icon: Icons.category,
-                onTap: () => _loadCategoryVideos(
-                  category['id']!,
-                  category['title']!,
-                ),
-              );
-            },
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildVideosView() {
     if (_isLoadingVideos) {
-      return const Center(child: CircularProgressIndicator());
+      return GridView.builder(
+        padding: const EdgeInsets.all(8),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.75,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemCount: 6,
+        itemBuilder: (context, index) => const VideoCardSkeleton(),
+      );
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _loadCategoryVideos(
-                  _selectedCategoryId!,
-                  _selectedCategoryName!,
-                ),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+      return EmptyStateError(
+        message: _errorMessage!,
+        onRetry: () => _loadCategoryVideos(
+          _selectedCategoryId!,
+          _selectedCategoryName!,
+          _selectedCategoryQuery!,
         ),
       );
     }
 
     if (_categoryVideos.isEmpty) {
-      return const Center(
-        child: Text('No videos found in this category'),
+      return EmptyStateVideos(
+        customMessage: 'No videos found in $_selectedCategoryName. Try another category!',
+        onRetry: _goBackToCategories,
       );
     }
 
@@ -380,4 +328,3 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 }
-

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/playlist_model.dart';
 import '../models/settings_model.dart';
 import '../models/video_model.dart';
+import '../models/child_profile_model.dart';
 import '../utils/constants.dart';
 
 class StorageService {
@@ -143,6 +144,18 @@ class StorageService {
     await _prefs!.setString(Constants.dailyUsageKey, json.encode(usage));
   }
 
+  Future<int> getTodayUsage() async {
+    final usage = await getDailyUsage();
+    return usage['minutesUsed'] as int? ?? 0;
+  }
+
+  Future<int> getUsageForDate(DateTime date) async {
+    if (_prefs == null) await init();
+    final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final weeklyUsage = await getWeeklyUsage();
+    return weeklyUsage[dateKey] as int? ?? 0;
+  }
+
   // Weekly Usage Tracking
   Future<Map<String, dynamic>> getWeeklyUsage() async {
     if (_prefs == null) await init();
@@ -215,6 +228,37 @@ class StorageService {
     final curated = await getCuratedVideos();
     curated.removeWhere((v) => v.id == videoId);
     await saveCuratedVideos(curated);
+  }
+
+  // Child Profiles
+  Future<List<ChildProfileModel>> getChildProfiles() async {
+    if (_prefs == null) await init();
+    final profilesJson = _prefs!.getString('child_profiles');
+    if (profilesJson == null) return [];
+    
+    try {
+      final List<dynamic> decoded = json.decode(profilesJson);
+      return decoded.map((json) => ChildProfileModel.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> saveChildProfiles(List<ChildProfileModel> profiles) async {
+    if (_prefs == null) await init();
+    final profilesJson = json.encode(
+      profiles.map((p) => p.toJson()).toList(),
+    );
+    await _prefs!.setString('child_profiles', profilesJson);
+  }
+
+  Future<ChildProfileModel?> getActiveProfile() async {
+    final profiles = await getChildProfiles();
+    try {
+      return profiles.firstWhere((p) => p.isActive);
+    } catch (e) {
+      return null;
+    }
   }
 }
 

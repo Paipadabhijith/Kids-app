@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../models/settings_model.dart';
 import '../services/parental_control_service.dart';
 import '../services/video_filter_service.dart';
+import '../services/auth_service.dart';
+import '../services/storage_service.dart';
+import 'usage_dashboard_screen.dart';
+import 'child_profiles_screen.dart';
 
 class ParentalSettingsScreen extends StatefulWidget {
   const ParentalSettingsScreen({super.key});
@@ -12,6 +16,8 @@ class ParentalSettingsScreen extends StatefulWidget {
 
 class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
   final ParentalControlService _parentalService = ParentalControlService();
+  final AuthService _authService = AuthService();
+  final StorageService _storageService = StorageService();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _keywordController = TextEditingController();
@@ -53,44 +59,452 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
 
   Future<bool> _verifyPassword() async {
     final passwordController = TextEditingController();
+    bool showPassword = false;
     
     return await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Enter Parent Password'),
-        content: TextField(
-          controller: passwordController,
-          obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'Password',
-            hintText: 'Enter parent password',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Enter Parent Password'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: passwordController,
+                obscureText: !showPassword,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  hintText: 'Enter parent password',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      showPassword ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setDialogState(() {
+                        showPassword = !showPassword;
+                      });
+                    },
+                  ),
+                ),
+                autofocus: true,
+                onSubmitted: (_) async {
+                  final verified = await _parentalService.checkPassword(
+                    passwordController.text,
+                  );
+                  if (mounted) {
+                    Navigator.pop(context, verified);
+                  }
+                },
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context, false);
+                  await _showForgotPasswordDialog();
+                },
+                child: const Text('Forgot Password?'),
+              ),
+            ],
           ),
-          autofocus: true,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final verified = await _parentalService.checkPassword(
+                  passwordController.text,
+                );
+                if (mounted) {
+                  Navigator.pop(context, verified);
+                }
+              },
+              child: const Text('Verify'),
+            ),
+          ],
         ),
+      ),
+    ) ?? false;
+  }
+
+  Future<void> _showForgotPasswordDialog() async {
+    final emailController = TextEditingController();
+    final userEmail = _authService.email;
+    
+    if (userEmail == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please sign in with Google to use password reset via email'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Password via Email'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'A password reset link will be sent to:',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              userEmail,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Note: This will reset your Firebase account password, not the parental control password. You may need to set a new parental password after resetting.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await _authService.sendPasswordResetEmail(userEmail);
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Password reset email sent! Check your inbox.'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 4),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString().replaceFirst('Exception: ', '')),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Send Reset Email'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showChangePasswordDialog() async {
+    final oldPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    bool showOldPassword = false;
+    bool showNewPassword = false;
+    bool showConfirmPassword = false;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Change Password'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: oldPasswordController,
+                  obscureText: !showOldPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Old Password',
+                    hintText: 'Enter current password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        showOldPassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          showOldPassword = !showOldPassword;
+                        });
+                      },
+                    ),
+                  ),
+                  autofocus: true,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: newPasswordController,
+                  obscureText: !showNewPassword,
+                  decoration: InputDecoration(
+                    labelText: 'New Password',
+                    hintText: 'Enter new password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        showNewPassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          showNewPassword = !showNewPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: confirmPasswordController,
+                  obscureText: !showConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm New Password',
+                    hintText: 'Confirm new password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        showConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          showConfirmPassword = !showConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (newPasswordController.text != confirmPasswordController.text) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('New passwords do not match'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                  return;
+                }
+
+                if (newPasswordController.text.isEmpty) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('New password cannot be empty'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                  return;
+                }
+
+                final success = await _parentalService.changePassword(
+                  oldPasswordController.text,
+                  newPasswordController.text,
+                );
+
+                if (mounted) {
+                  Navigator.pop(context);
+                  if (success) {
+                    // Reload settings to update UI
+                    await _loadSettings();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Password changed successfully'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Old password is incorrect'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              child: const Text('Change Password'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showConfirmationDialog(String title, String message, VoidCallback onConfirm) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const SizedBox(width: 12),
+            Expanded(child: Text(title)),
+          ],
+        ),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () async {
-              final verified = await _parentalService.checkPassword(
-                passwordController.text,
-              );
-              Navigator.pop(context, verified);
-            },
-            child: const Text('Verify'),
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm'),
           ),
         ],
       ),
-    ) ?? false;
+    );
+    
+    if (confirmed == true) {
+      onConfirm();
+    }
+  }
+
+  void _showCalmModePreview() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: 300,
+          height: 400,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.blue.shade200,
+                Colors.purple.shade200,
+                Colors.pink.shade200,
+              ],
+            ),
+          ),
+          child: ColorFiltered(
+            colorFilter: VideoFilterService().createCalmModeFilter(
+              contrast: _settings.calmModeContrast,
+              saturation: _settings.calmModeSaturation,
+              brightness: _settings.calmModeBrightness,
+              warmth: _settings.calmModeWarmth,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.palette, size: 64, color: Colors.white),
+                const SizedBox(height: 16),
+                const Text(
+                  'Calm Mode Preview',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'This is how videos will look with your current Calm Mode settings',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildPreviewStat('Contrast', '${(_settings.calmModeContrast * 100).toInt()}%'),
+                      _buildPreviewStat('Saturation', '${(_settings.calmModeSaturation * 100).toInt()}%'),
+                      _buildPreviewStat('Brightness', '${(_settings.calmModeBrightness * 100).toInt()}%'),
+                      _buildPreviewStat('Warmth', '${(_settings.calmModeWarmth * 100).toInt()}%'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.teal,
+                  ),
+                  child: const Text('Close Preview'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPreviewStat(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _saveSettings() async {
     if (_settings.parentalControlsEnabled) {
-      // Validate password if setting one
-      if (_passwordController.text.isNotEmpty) {
+      // Validate password if setting one for the first time
+      if (_settings.parentPasswordHash == null && _passwordController.text.isNotEmpty) {
         if (_passwordController.text != _confirmPasswordController.text) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -108,9 +522,9 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
         dailyTimeLimitMinutes: _selectedTimeLimit,
         blockedKeywords: _settings.blockedKeywords,
         blockedCategories: _settings.blockedCategories,
-        password: _passwordController.text.isNotEmpty
+        password: (_settings.parentPasswordHash == null && _passwordController.text.isNotEmpty)
             ? _passwordController.text
-            : null,
+            : null, // Don't change password if it already exists (use Change Password dialog instead)
         breakRemindersEnabled: _settings.breakRemindersEnabled,
         breakIntervalMinutes: _selectedBreakInterval,
         breakDurationMinutes: _selectedBreakDuration,
@@ -146,6 +560,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
       calmFocusModeEnabled: _settings.calmFocusModeEnabled,
       volume: _settings.binauralBeatsVolume,
     );
+
+    // Reload settings if password was set for the first time
+    if (_settings.parentPasswordHash == null && _passwordController.text.isNotEmpty) {
+      await _loadSettings();
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -188,6 +607,139 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
     super.dispose();
   }
 
+  Widget _buildUsageStatisticsCard() {
+    // Get today's usage from storage service
+    return FutureBuilder<int>(
+      future: _storageService.getTodayUsage(),
+      builder: (context, snapshot) {
+        final todayMinutes = snapshot.data ?? 0;
+        final timeLimit = _selectedTimeLimit ?? _settings.dailyTimeLimitMinutes ?? 60;
+        final percentUsed = (todayMinutes / timeLimit * 100).clamp(0, 100);
+        
+        Color statusColor;
+        String statusText;
+        IconData statusIcon;
+        
+        if (percentUsed < 50) {
+          statusColor = Colors.green;
+          statusText = 'Good';
+          statusIcon = Icons.check_circle_outline;
+        } else if (percentUsed < 80) {
+          statusColor = Colors.orange;
+          statusText = 'Moderate';
+          statusIcon = Icons.warning_amber_outlined;
+        } else {
+          statusColor = Colors.red;
+          statusText = 'High';
+          statusIcon = Icons.error_outline;
+        }
+        
+        return Card(
+          elevation: 3,
+          color: statusColor.withOpacity(0.05),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.bar_chart, color: statusColor),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Today\'s Usage',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Chip(
+                      avatar: Icon(statusIcon, size: 16, color: statusColor),
+                      label: Text(statusText),
+                      backgroundColor: statusColor.withOpacity(0.1),
+                      labelStyle: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$todayMinutes min',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: statusColor,
+                          ),
+                        ),
+                        Text(
+                          'of $timeLimit min limit',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          CircularProgressIndicator(
+                            value: percentUsed / 100,
+                            strokeWidth: 8,
+                            backgroundColor: Colors.grey[200],
+                            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                          ),
+                          Center(
+                            child: Text(
+                              '${percentUsed.toInt()}%',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: statusColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                LinearProgressIndicator(
+                  value: percentUsed / 100,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -212,9 +764,73 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Usage Statistics Card
+            _buildUsageStatisticsCard(),
+            
+            const SizedBox(height: 8),
+            
+            // Action Buttons Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UsageDashboardScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.dashboard),
+                    label: const Text('Dashboard'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChildProfilesScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.people),
+                    label: const Text('Profiles'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.purple,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
             // Enable/Disable Parental Controls
             Card(
+              elevation: 2,
               child: SwitchListTile(
+                secondary: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _settings.parentalControlsEnabled 
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.shield_outlined,
+                    color: _settings.parentalControlsEnabled 
+                        ? Colors.green 
+                        : Colors.grey,
+                  ),
+                ),
                 title: const Text(
                   'Enable Parental Controls',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -236,17 +852,42 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
 
               // Time Limit
               Card(
+                elevation: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Daily Time Limit',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.timer_outlined, color: Colors.blue),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Daily Time Limit',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (_selectedTimeLimit != null)
+                            Chip(
+                              label: Text('${_selectedTimeLimit}m'),
+                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              labelStyle: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       Wrap(
@@ -296,53 +937,112 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
 
               // Password Protection
               Card(
+                elevation: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Parent Password',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: (_settings.parentPasswordHash != null 
+                                  ? Colors.green 
+                                  : Colors.orange).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.lock_outlined,
+                              color: _settings.parentPasswordHash != null 
+                                  ? Colors.green 
+                                  : Colors.orange,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Parent Password',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Chip(
+                            label: Text(
+                              _settings.parentPasswordHash != null ? 'Protected' : 'Not Set',
+                            ),
+                            backgroundColor: (_settings.parentPasswordHash != null 
+                                ? Colors.green 
+                                : Colors.orange).withOpacity(0.1),
+                            labelStyle: TextStyle(
+                              color: _settings.parentPasswordHash != null 
+                                  ? Colors.green 
+                                  : Colors.orange,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Set a password to protect settings. Leave empty to keep current password.',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: !_showPassword,
-                        decoration: InputDecoration(
-                          labelText: 'New Password',
-                          hintText: 'Enter new password',
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _showPassword
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
+                      // Show different UI based on whether password exists
+                      if (_settings.parentPasswordHash == null) ...[
+                        // First time - Set Password
+                        const Text(
+                          'Set a password to protect settings.',
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: !_showPassword,
+                          decoration: InputDecoration(
+                            labelText: 'New Password',
+                            hintText: 'Enter new password',
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _showPassword = !_showPassword;
-                              });
-                            },
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _confirmPasswordController,
-                        obscureText: !_showPassword,
-                        decoration: const InputDecoration(
-                          labelText: 'Confirm Password',
-                          hintText: 'Confirm new password',
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _confirmPasswordController,
+                          obscureText: !_showPassword,
+                          decoration: const InputDecoration(
+                            labelText: 'Confirm Password',
+                            hintText: 'Confirm new password',
+                          ),
                         ),
-                      ),
+                      ] else ...[
+                        // Password exists - Show Change Password button
+                        const Text(
+                          'Password is set. Click below to change it.',
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: _showChangePasswordDialog,
+                          icon: const Icon(Icons.lock_outline),
+                          label: const Text('Change Password'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -352,17 +1052,42 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
 
               // Blocked Keywords
               Card(
+                elevation: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Blocked Keywords',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.block_outlined, color: Colors.red),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Blocked Keywords',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (_settings.blockedKeywords.isNotEmpty)
+                            Chip(
+                              label: Text('${_settings.blockedKeywords.length}'),
+                              backgroundColor: Colors.red.withOpacity(0.1),
+                              labelStyle: const TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -410,8 +1135,9 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
 
               const SizedBox(height: 16),
 
-              // Break Reminders
+              // Channel Whitelist/Blacklist
               Card(
+                elevation: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -419,6 +1145,241 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                     children: [
                       Row(
                         children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.playlist_add_check, color: Colors.deepPurple),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Channel Control',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Chip(
+                            label: Text(
+                              '${_settings.whitelistedChannels.length + _settings.blacklistedChannels.length}',
+                            ),
+                            backgroundColor: Colors.deepPurple.withOpacity(0.1),
+                            labelStyle: const TextStyle(
+                              color: Colors.deepPurple,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Control which channels are allowed or blocked',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Whitelist section
+                      ExpansionTile(
+                        leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+                        title: const Text('Allowed Channels Only'),
+                        subtitle: Text(
+                          _settings.whitelistedChannels.isEmpty 
+                              ? 'All channels allowed' 
+                              : '${_settings.whitelistedChannels.length} channels',
+                        ),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Only videos from these channels will be shown',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: TextEditingController(),
+                                        decoration: const InputDecoration(
+                                          labelText: 'Channel Name',
+                                          hintText: 'e.g., Sesame Street',
+                                          isDense: true,
+                                        ),
+                                        onSubmitted: (value) {
+                                          if (value.isNotEmpty) {
+                                            setState(() {
+                                              _settings = _settings.copyWith(
+                                                whitelistedChannels: [
+                                                  ..._settings.whitelistedChannels,
+                                                  value,
+                                                ],
+                                              );
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.add, color: Colors.green),
+                                      onPressed: () {
+                                        // Add whitelist channel logic
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                if (_settings.whitelistedChannels.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: _settings.whitelistedChannels.map((channel) {
+                                      return Chip(
+                                        avatar: const Icon(Icons.check_circle, size: 16, color: Colors.green),
+                                        label: Text(channel),
+                                        onDeleted: () {
+                                          setState(() {
+                                            _settings = _settings.copyWith(
+                                              whitelistedChannels: _settings.whitelistedChannels
+                                                  .where((c) => c != channel)
+                                                  .toList(),
+                                            );
+                                          });
+                                        },
+                                        deleteIcon: const Icon(Icons.close, size: 18),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      const Divider(),
+                      
+                      // Blacklist section
+                      ExpansionTile(
+                        leading: const Icon(Icons.cancel_outlined, color: Colors.red),
+                        title: const Text('Blocked Channels'),
+                        subtitle: Text(
+                          _settings.blacklistedChannels.isEmpty 
+                              ? 'No channels blocked' 
+                              : '${_settings.blacklistedChannels.length} channels',
+                        ),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Videos from these channels will be hidden',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: TextEditingController(),
+                                        decoration: const InputDecoration(
+                                          labelText: 'Channel Name',
+                                          hintText: 'Enter channel to block',
+                                          isDense: true,
+                                        ),
+                                        onSubmitted: (value) {
+                                          if (value.isNotEmpty) {
+                                            setState(() {
+                                              _settings = _settings.copyWith(
+                                                blacklistedChannels: [
+                                                  ..._settings.blacklistedChannels,
+                                                  value,
+                                                ],
+                                              );
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.add, color: Colors.red),
+                                      onPressed: () {
+                                        // Add blacklist channel logic
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                if (_settings.blacklistedChannels.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: _settings.blacklistedChannels.map((channel) {
+                                      return Chip(
+                                        avatar: const Icon(Icons.cancel, size: 16, color: Colors.red),
+                                        label: Text(channel),
+                                        onDeleted: () {
+                                          setState(() {
+                                            _settings = _settings.copyWith(
+                                              blacklistedChannels: _settings.blacklistedChannels
+                                                  .where((c) => c != channel)
+                                                  .toList(),
+                                            );
+                                          });
+                                        },
+                                        deleteIcon: const Icon(Icons.close, size: 18),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Break Reminders
+              Card(
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: (_settings.breakRemindersEnabled 
+                                  ? Colors.purple 
+                                  : Colors.grey).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.notifications_active_outlined,
+                              color: _settings.breakRemindersEnabled 
+                                  ? Colors.purple 
+                                  : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -511,6 +1472,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
 
               // Calm Mode
               Card(
+                elevation: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -518,6 +1480,22 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                     children: [
                       Row(
                         children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: (_settings.calmModeEnabled 
+                                  ? Colors.teal 
+                                  : Colors.grey).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.visibility_outlined,
+                              color: _settings.calmModeEnabled 
+                                  ? Colors.teal 
+                                  : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,6 +1588,22 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                             ),
                           ),
                         ],
+                        
+                        const SizedBox(height: 16),
+                        
+                        // Preview Button
+                        Center(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showCalmModePreview(),
+                            icon: const Icon(Icons.preview),
+                            label: const Text('Preview Calm Mode'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            ),
+                          ),
+                        ),
                         
                         const SizedBox(height: 24),
                         const Divider(),
@@ -757,6 +1751,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
 
               // Binaural Beats
               Card(
+                elevation: 2,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -764,6 +1759,22 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                     children: [
                       Row(
                         children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: (_settings.binauralBeatsEnabled 
+                                  ? Colors.indigo 
+                                  : Colors.grey).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.headset_outlined,
+                              color: _settings.binauralBeatsEnabled 
+                                  ? Colors.indigo 
+                                  : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

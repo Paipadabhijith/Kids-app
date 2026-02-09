@@ -39,6 +39,31 @@ class ParentalControlService {
     await saveSettings(settings.copyWith(parentPasswordHash: hashedPassword));
   }
 
+  Future<bool> changePassword(String oldPassword, String newPassword) async {
+    final settings = await getSettings();
+    
+    // Verify old password
+    if (settings.parentPasswordHash == null) {
+      return false; // No password set, can't change
+    }
+    
+    final isOldPasswordCorrect = await verifyPassword(oldPassword, settings.parentPasswordHash);
+    if (!isOldPasswordCorrect) {
+      return false; // Old password incorrect
+    }
+    
+    // Set new password
+    final hashedPassword = hashPassword(newPassword);
+    await saveSettings(settings.copyWith(parentPasswordHash: hashedPassword));
+    return true;
+  }
+
+  bool hasPassword() {
+    // Note: This is synchronous check, but we need async for settings
+    // We'll check in the UI by looking at settings.parentPasswordHash
+    return false; // Placeholder - actual check done in UI
+  }
+
   Future<bool> isTimeLimitExceeded() async {
     final settings = await getSettings();
     if (!settings.parentalControlsEnabled) return false;

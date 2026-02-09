@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import '../models/video_model.dart';
 import '../services/youtube_service.dart';
 import '../services/parental_control_service.dart';
+import '../utils/page_transitions.dart';
 import '../services/search_history_service.dart';
 import '../utils/constants.dart';
 import '../widgets/video_card.dart';
+import '../widgets/loading_skeleton.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/animated_button.dart';
 import 'video_player_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -38,8 +42,10 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    // Save search to history
-    await _searchHistoryService.saveSearch(query);
+    // Save search to history in background (don't block search)
+    _searchHistoryService.saveSearch(query).catchError((e) {
+      debugPrint('Failed to save search history: $e');
+    });
 
     if (!Constants.hasValidApiKey) {
       setState(() {
@@ -95,11 +101,21 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _loadRecentSearches() async {
-    final searches = await _searchHistoryService.getSearchHistory(limit: 10);
-    if (mounted) {
-      setState(() {
-        _recentSearches = searches;
-      });
+    try {
+      final searches = await _searchHistoryService.getSearchHistory(limit: 10);
+      if (mounted) {
+        setState(() {
+          _recentSearches = searches;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load recent searches: $e');
+      // Don't let this break the search screen
+      if (mounted) {
+        setState(() {
+          _recentSearches = [];
+        });
+      }
     }
   }
 
@@ -121,8 +137,8 @@ class _SearchScreenState extends State<SearchScreen> {
     if (mounted) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => VideoPlayerScreen(video: video),
+        SmoothPageRoute(
+          page: VideoPlayerScreen(video: video),
         ),
       );
     }
@@ -218,11 +234,19 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-          // Loading indicator
+          // Loading skeleton
           if (_isLoading)
-            const Expanded(
-              child: Center(
-                child: CircularProgressIndicator(),
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(8),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: 6,
+                itemBuilder: (context, index) => const VideoCardSkeleton(),
               ),
             )
           // Search results
@@ -250,26 +274,7 @@ class _SearchScreenState extends State<SearchScreen> {
           else if (!_isLoading && _searchController.text.isEmpty)
             Expanded(
               child: _recentSearches.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Search for videos',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
+                  ? const EmptyStateSearch()
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -302,14 +307,16 @@ class _SearchScreenState extends State<SearchScreen> {
                             itemBuilder: (context, index) {
                               final search = _recentSearches[index];
                               final query = search['query'] as String? ?? '';
-                              return ListTile(
-                                leading: const Icon(Icons.history),
-                                title: Text(query),
-                                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                              return AnimatedButton(
                                 onTap: () {
                                   _searchController.text = query;
                                   _searchVideos(query);
                                 },
+                                child: ListTile(
+                                  leading: const Icon(Icons.history),
+                                  title: Text(query),
+                                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                                ),
                               );
                             },
                           ),
@@ -319,14 +326,9 @@ class _SearchScreenState extends State<SearchScreen> {
             )
           else
             Expanded(
-              child: Center(
-                child: Text(
-                  'No results found',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey[600],
-                  ),
-                ),
+              child: EmptyStateVideos(
+                customMessage: 'No videos found for "${_searchController.text}". Try a different search!',
+                onRetry: () => _searchVideos(_searchController.text),
               ),
             ),
         ],

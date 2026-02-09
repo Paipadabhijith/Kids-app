@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
 import '../services/user_profile_service.dart';
 import 'parental_settings_screen.dart';
-import 'usage_statistics_screen.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -293,21 +292,6 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const ParentalSettingsScreen(),
-                  ),
-                );
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.bar_chart_outlined),
-              title: const Text('Usage Statistics'),
-              subtitle: const Text('View your watching history'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UsageStatisticsScreen(),
                   ),
                 );
               },

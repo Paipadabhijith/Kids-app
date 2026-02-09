@@ -5,10 +5,15 @@ import '../services/parental_control_service.dart';
 import '../services/auth_service.dart';
 import '../services/user_profile_service.dart';
 import '../services/youtube_service.dart';
+import '../services/storage_service.dart';
 import '../models/video_model.dart';
 import '../utils/constants.dart';
+import '../utils/page_transitions.dart';
 import '../widgets/time_limit_widget.dart';
 import '../widgets/video_card.dart';
+import '../widgets/loading_skeleton.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/animated_button.dart';
 import 'search_screen.dart';
 import 'categories_screen.dart';
 import 'playlists_screen.dart';
@@ -16,6 +21,7 @@ import 'parental_settings_screen.dart';
 import 'curated_content_screen.dart';
 import 'account_settings_screen.dart';
 import 'video_player_screen.dart';
+import 'category_videos_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final ParentalControlService _parentalService = ParentalControlService();
   final AuthService _authService = AuthService();
   final UserProfileService _profileService = UserProfileService();
+  final StorageService _storageService = StorageService();
   final YouTubeService _youtubeService = YouTubeService(
     apiKey: Constants.youtubeApiKey,
   );
@@ -37,13 +44,114 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSigningIn = false;
   List<VideoModel> _trendingShows = [];
   bool _isLoadingTrending = false;
+  List<VideoModel> _recommendedVideos = [];
+  bool _isLoadingRecommendations = false;
 
   @override
   void initState() {
     super.initState();
     _checkTimeLimit();
     _loadTrendingShows();
+    _loadRecommendations();
   }
+
+  Future<void> _loadRecommendations() async {
+    if (!Constants.hasValidApiKey) return;
+
+    setState(() {
+      _isLoadingRecommendations = true;
+    });
+
+    try {
+      // First try to get recommendations based on watch history
+      final watchHistory = await _storageService.getWatchHistory();
+      List<VideoModel> recommendations = [];
+
+      if (watchHistory.isNotEmpty) {
+        // Extract keywords from watch history titles for personalized recommendations
+        final historyKeywords = <String>{};
+        for (final video in watchHistory.take(5)) {
+          // Extract meaningful words from titles
+          final words = video.title.toLowerCase().split(RegExp(r'[\s\-\|]+'));
+          for (final word in words) {
+            if (word.length > 3 && !_commonWords.contains(word)) {
+              historyKeywords.add(word);
+            }
+          }
+        }
+
+        // Search for videos based on extracted keywords
+        if (historyKeywords.isNotEmpty) {
+          final searchQuery = '${historyKeywords.take(3).join(' ')} kids';
+          try {
+            recommendations = await _youtubeService.searchVideos(
+              searchQuery,
+              maxResults: 10,
+            );
+          } catch (e) {
+            debugPrint('Error searching recommendations: $e');
+          }
+        }
+      }
+
+      // If no watch history or search failed, use general kids recommendations
+      if (recommendations.isEmpty) {
+        final generalQueries = [
+          'popular kids videos',
+          'kids learning fun',
+          'children educational',
+        ];
+        
+        for (final query in generalQueries) {
+          try {
+            final videos = await _youtubeService.searchVideos(query, maxResults: 5);
+            recommendations.addAll(videos);
+            if (recommendations.length >= 10) break;
+          } catch (e) {
+            continue;
+          }
+        }
+      }
+
+      // Filter based on parental controls and remove duplicates
+      final uniqueIds = <String>{};
+      final filteredRecommendations = <VideoModel>[];
+      
+      for (final video in recommendations) {
+        if (!uniqueIds.contains(video.id)) {
+          final isAllowed = await _parentalService.isVideoAllowed(video);
+          if (isAllowed) {
+            uniqueIds.add(video.id);
+            filteredRecommendations.add(video);
+          }
+        }
+      }
+
+      // Remove videos that are already in trending
+      final trendingIds = _trendingShows.map((v) => v.id).toSet();
+      filteredRecommendations.removeWhere((v) => trendingIds.contains(v.id));
+
+      if (mounted) {
+        setState(() {
+          _recommendedVideos = filteredRecommendations.take(10).toList();
+          _isLoadingRecommendations = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading recommendations: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingRecommendations = false;
+        });
+      }
+    }
+  }
+
+  // Common words to exclude from keyword extraction
+  static const _commonWords = {
+    'the', 'and', 'for', 'with', 'this', 'that', 'from', 'have', 'will',
+    'video', 'videos', 'kids', 'children', 'episode', 'full', 'official',
+  };
 
   Future<void> _loadTrendingShows() async {
     if (!Constants.hasValidApiKey) return;
@@ -381,15 +489,13 @@ class _HomeScreenState extends State<HomeScreen> {
         final isSignedIn = snapshot.hasData && snapshot.data != null 
             ? true 
             : _authService.isSignedIn;
-        final displayName = _authService.displayName;
-        final email = _authService.email;
         final photoURL = _authService.photoURL;
         
         // Don't show "Signing in..." if user is actually signed in
         final showSigningIn = _isSigningIn && !isSignedIn;
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -400,183 +506,179 @@ class _HomeScreenState extends State<HomeScreen> {
                 Colors.pink.shade300,
               ],
             ),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
-            ),
           ),
-          child: Column(
+          child: Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Kids TV',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      if (isSignedIn)
-                        PopupMenuButton<String>(
-                          icon: FutureBuilder<String?>(
-                            future: _profileService.getProfilePhotoUrl(),
-                            builder: (context, snapshot) {
-                              final photoUrl = snapshot.data ?? photoURL;
-                              return photoUrl != null
-                                  ? CircleAvatar(
-                                      radius: 18,
-                                      backgroundImage: NetworkImage(photoUrl),
-                                      onBackgroundImageError: (exception, stackTrace) {
-                                        debugPrint('Error loading profile image: $exception');
-                                      },
-                                    )
-                                  : const CircleAvatar(
-                                      radius: 18,
-                                      backgroundColor: Colors.white,
-                                      child: Icon(Icons.account_circle, color: Colors.purple, size: 20),
-                                    );
-                            },
-                          ),
-                          color: Colors.white,
-                          onSelected: (value) {
-                            if (value == 'account') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const AccountSettingsScreen(),
-                                ),
-                              );
-                            } else if (value == 'signout') {
-                              _handleSignOut();
-                            }
-                          },
-                          onCanceled: () {
-                            // Menu was dismissed without selection - do nothing
-                            debugPrint('Profile menu dismissed');
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'account',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.settings, color: Colors.blue),
-                                  SizedBox(width: 8),
-                                  Text('Account Settings'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'signout',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.logout, color: Colors.red),
-                                  SizedBox(width: 8),
-                                  Text('Sign Out'),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      else if (showSigningIn)
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          ),
-                        )
-                      else
-                        IconButton(
-                          icon: const Icon(Icons.settings, color: Colors.white, size: 28),
-                          onPressed: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ParentalSettingsScreen(),
-                              ),
-                            );
-                            if (result == true) {
-                              _checkTimeLimit();
-                            }
-                          },
-                          tooltip: 'Parental Settings',
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+              // Kids TV title
               const Text(
-                'Fun & Educational Videos for Kids',
+                'Kids TV',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  fontWeight: FontWeight.w500,
+                  letterSpacing: 1.0,
                 ),
               ),
-              const SizedBox(height: 16),
-              // Google Sign-In Button (only show if not signed in and not currently signing in)
-              if (!isSignedIn && !showSigningIn)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isSigningIn ? null : _handleGoogleSignIn,
-                    icon: _isSigningIn
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Container(
-                            width: 24,
-                            height: 24,
+              const SizedBox(width: 12),
+              // Search button - moved to header
+              GestureDetector(
+                onTap: _isLimitExceeded
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SearchScreen(),
+                          ),
+                        );
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.search,
+                        color: _isLimitExceeded ? Colors.white54 : Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Search',
+                        style: TextStyle(
+                          color: _isLimitExceeded ? Colors.white54 : Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Spacer(),
+              // Right side icons
+              if (isSignedIn)
+                PopupMenuButton<String>(
+                  icon: FutureBuilder<String?>(
+                    future: _profileService.getProfilePhotoUrl(),
+                    builder: (context, snapshot) {
+                      final photoUrl = snapshot.data ?? photoURL;
+                      return photoUrl != null
+                          ? CircleAvatar(
+                              radius: 16,
+                              backgroundImage: NetworkImage(photoUrl),
+                              onBackgroundImageError: (exception, stackTrace) {
+                                debugPrint('Error loading profile image: $exception');
+                              },
+                            )
+                          : const CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.white,
+                              child: Icon(Icons.account_circle, color: Colors.purple, size: 18),
+                            );
+                    },
+                  ),
+                  color: Colors.white,
+                  onSelected: (value) {
+                    if (value == 'account') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AccountSettingsScreen(),
+                        ),
+                      );
+                    } else if (value == 'signout') {
+                      _handleSignOut();
+                    }
+                  },
+                  onCanceled: () {
+                    debugPrint('Profile menu dismissed');
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'account',
+                      child: Row(
+                        children: [
+                          Icon(Icons.settings, color: Colors.blue),
+                          SizedBox(width: 8),
+                          Text('Account Settings'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'signout',
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Sign Out'),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              else if (showSigningIn)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                )
+              else ...[
+                // Sign in button (compact)
+                Material(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    onTap: _isSigningIn ? null : _handleGoogleSignIn,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 18,
+                            height: 18,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(3),
                             ),
                             child: const Center(
                               child: Text(
                                 'G',
                                 style: TextStyle(
                                   color: Colors.blue,
-                                  fontSize: 16,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
-                    label: Text(
-                      showSigningIn ? 'Signing in...' : 'Sign in with Google',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Sign in',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.2),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
-                      ),
-                      elevation: 0,
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+              ],
             ],
           ),
         );
@@ -591,9 +693,9 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback? onTap,
     required String subtitle,
   }) {
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 16),
+    final card = Container(
+      width: 130,
+      margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -603,12 +705,12 @@ class _HomeScreenState extends State<HomeScreen> {
             color.withOpacity(0.7),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -616,35 +718,35 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(14),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.3),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 36, color: Colors.white),
+                  child: Icon(icon, size: 28, color: Colors.white),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: Colors.white.withOpacity(0.9),
                   ),
                   textAlign: TextAlign.center,
@@ -655,6 +757,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+    
+    if (onTap != null) {
+      return AnimatedButton(
+        onTap: onTap,
+        child: card,
+      );
+    }
+    return card;
   }
 
   Widget _buildSection({
@@ -703,7 +813,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required VoidCallback? onTap,
   }) {
-    return Container(
+    final card = Container(
       width: 140,
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
@@ -753,6 +863,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+    
+    if (onTap != null) {
+      return AnimatedButton(
+        onTap: onTap,
+        child: card,
+      );
+    }
+    return card;
   }
 
   @override
@@ -818,31 +936,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 8),
 
-                    // Quick Access Section
+                    // Quick Access Section - Categories and Favorites
                     _buildSection(
                       title: 'Quick Access',
                       child: SizedBox(
-                        height: 180,
+                        height: 160,
                         child: ListView(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           children: [
-                            _buildQuickAccessCard(
-                              title: 'Search',
-                              subtitle: 'Find videos',
-                              icon: Icons.search_rounded,
-                              color: Colors.blue.shade400,
-                              onTap: _isLimitExceeded
-                                  ? null
-                                  : () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => const SearchScreen(),
-                                        ),
-                                      );
-                                    },
-                            ),
                             _buildQuickAccessCard(
                               title: 'Categories',
                               subtitle: 'Browse by type',
@@ -860,8 +962,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                     },
                             ),
                             _buildQuickAccessCard(
+                              title: 'Favorites',
+                              subtitle: 'Saved content',
+                              icon: Icons.favorite_rounded,
+                              color: Colors.red.shade400,
+                              onTap: _isLimitExceeded
+                                  ? null
+                                  : () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const CuratedContentScreen(),
+                                        ),
+                                      );
+                                    },
+                            ),
+                            _buildQuickAccessCard(
                               title: 'Playlists',
-                              subtitle: 'My favorites',
+                              subtitle: 'My collections',
                               icon: Icons.playlist_play_rounded,
                               color: Colors.pink.shade400,
                               onTap: _isLimitExceeded
@@ -871,22 +989,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => const PlaylistsScreen(),
-                                        ),
-                                      );
-                                    },
-                            ),
-                            _buildQuickAccessCard(
-                              title: 'Kid-Safe',
-                              subtitle: 'Curated content',
-                              icon: Icons.favorite_rounded,
-                              color: Colors.orange.shade400,
-                              onTap: _isLimitExceeded
-                                  ? null
-                                  : () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => const CuratedContentScreen(),
                                         ),
                                       );
                                     },
@@ -917,7 +1019,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const CategoriesScreen(),
+                                          builder: (context) => CategoryVideosScreen(
+                                            categoryName: 'Alphabets',
+                                            searchQuery: 'alphabet learning for kids ABC',
+                                          ),
                                         ),
                                       );
                                     },
@@ -932,7 +1037,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const CategoriesScreen(),
+                                          builder: (context) => CategoryVideosScreen(
+                                            categoryName: 'Numbers',
+                                            searchQuery: 'numbers counting for kids 123',
+                                          ),
                                         ),
                                       );
                                     },
@@ -947,7 +1055,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const CategoriesScreen(),
+                                          builder: (context) => CategoryVideosScreen(
+                                            categoryName: 'Colors',
+                                            searchQuery: 'colors learning for kids rainbow',
+                                          ),
                                         ),
                                       );
                                     },
@@ -962,7 +1073,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const CategoriesScreen(),
+                                          builder: (context) => CategoryVideosScreen(
+                                            categoryName: 'Shapes',
+                                            searchQuery: 'shapes learning for kids circle square triangle',
+                                          ),
                                         ),
                                       );
                                     },
@@ -977,7 +1091,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const CategoriesScreen(),
+                                          builder: (context) => CategoryVideosScreen(
+                                            categoryName: 'Animals',
+                                            searchQuery: 'animals for kids learning zoo',
+                                          ),
                                         ),
                                       );
                                     },
@@ -992,7 +1109,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => const CategoriesScreen(),
+                                          builder: (context) => CategoryVideosScreen(
+                                            categoryName: 'Nursery Rhymes',
+                                            searchQuery: 'nursery rhymes for kids songs',
+                                          ),
                                         ),
                                       );
                                     },
@@ -1002,7 +1122,80 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+
+                    // Recommended For You Section
+                    _buildSection(
+                      title: 'Recommended For You',
+                      onSeeAll: _isLimitExceeded || _recommendedVideos.isEmpty
+                          ? null
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SearchScreen(),
+                                ),
+                              );
+                            },
+                      child: _isLoadingRecommendations
+                          ? SizedBox(
+                              height: 180,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                children: List.generate(
+                                  3,
+                                  (index) => Container(
+                                    width: 150,
+                                    margin: const EdgeInsets.only(right: 12),
+                                    child: const VideoCardSkeleton(),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : _recommendedVideos.isEmpty
+                              ? SizedBox(
+                                  height: 180,
+                                  child: Center(
+                                    child: EmptyStateWidget(
+                                      title: 'No Recommendations Yet',
+                                      message: 'Watch some videos to get personalized recommendations!',
+                                      icon: Icons.recommend,
+                                      iconColor: Colors.blue,
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(
+                                  height: 180,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    children: _recommendedVideos.map((video) {
+                                      return Container(
+                                        width: 150,
+                                        margin: const EdgeInsets.only(right: 12),
+                                        child: VideoCard(
+                                          video: video,
+                                          onTap: _isLimitExceeded
+                                              ? null
+                                              : () {
+                                                  Navigator.push(
+                                                    context,
+                                                    SmoothPageRoute(
+                                                      page: VideoPlayerScreen(
+                                                        video: video,
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                    ),
+
+                    const SizedBox(height: 16),
 
                     // Trending Kids Shows Section
                     _buildSection(
@@ -1018,31 +1211,30 @@ class _HomeScreenState extends State<HomeScreen> {
                               );
                             },
                       child: _isLoadingTrending
-                          ? const SizedBox(
+                          ? SizedBox(
                               height: 200,
-                              child: Center(child: CircularProgressIndicator()),
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                children: List.generate(
+                                  3,
+                                  (index) => Container(
+                                    width: 160,
+                                    margin: const EdgeInsets.only(right: 12),
+                                    child: const VideoCardSkeleton(),
+                                  ),
+                                ),
+                              ),
                             )
                           : _trendingShows.isEmpty
                               ? SizedBox(
                                   height: 200,
                                   child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.trending_up,
-                                          size: 48,
-                                          color: Colors.grey[400],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          'No trending shows available',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
+                                    child: EmptyStateWidget(
+                                      title: 'No Trending Shows',
+                                      message: 'Check back later for trending kids content!',
+                                      icon: Icons.trending_up,
+                                      iconColor: Colors.orange,
                                     ),
                                   ),
                                 )
@@ -1062,8 +1254,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               : () {
                                                   Navigator.push(
                                                     context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) => VideoPlayerScreen(
+                                                    SmoothPageRoute(
+                                                      page: VideoPlayerScreen(
                                                         video: video,
                                                       ),
                                                     ),

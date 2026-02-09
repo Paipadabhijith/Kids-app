@@ -1,47 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Kid-friendly color palette
-  static const Color primaryColor = Color(0xFF4CAF50); // Green
-  static const Color secondaryColor = Color(0xFF2196F3); // Blue
-  static const Color accentColor = Color(0xFFFF9800); // Orange
-  static const Color errorColor = Color(0xFFF44336); // Red
-  static const Color backgroundColor = Color(0xFFF5F5F5);
+  // Vibrant kid-friendly color palette (Duolingo-inspired)
+  static const Color primaryColor = Color(0xFF58CC02); // Bright Green
+  static const Color secondaryColor = Color(0xFF1CB0F6); // Bright Blue
+  static const Color accentColor = Color(0xFFFF9600); // Vibrant Orange
+  static const Color purpleAccent = Color(0xFFCE82FF); // Purple for variety
+  static const Color pinkAccent = Color(0xFFFF4B4B); // Pink/Red
+  static const Color yellowAccent = Color(0xFFFFC800); // Yellow
+  static const Color errorColor = Color(0xFFFF4B4B); // Bright Red
+  static const Color backgroundColor = Color(0xFFF7F7F7);
   static const Color cardColor = Colors.white;
-  static const Color textColor = Color(0xFF212121);
-  static const Color textSecondaryColor = Color(0xFF757575);
+  static const Color textColor = Color(0xFF3C3C3C);
+  static const Color textSecondaryColor = Color(0xFF777777);
 
   static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        primary: primaryColor,
-        secondary: secondaryColor,
-        error: errorColor,
-        background: backgroundColor,
-        surface: cardColor,
-      ),
-      scaffoldBackgroundColor: backgroundColor,
-      cardTheme: CardThemeData(
-        color: cardColor,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      textTheme: const TextTheme(
+    // Base text theme with Nunito font
+    final textTheme = GoogleFonts.nunitoTextTheme(
+      const TextTheme(
         displayLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
@@ -83,6 +60,39 @@ class AppTheme {
         bodySmall: TextStyle(
           fontSize: 12,
           color: textSecondaryColor,
+        ),
+      ),
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColor,
+        primary: primaryColor,
+        secondary: secondaryColor,
+        error: errorColor,
+        background: backgroundColor,
+        surface: cardColor,
+      ),
+      scaffoldBackgroundColor: backgroundColor,
+      textTheme: textTheme,
+      cardTheme: CardThemeData(
+        color: cardColor,
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        shadowColor: Colors.black.withOpacity(0.1),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: GoogleFonts.nunito(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

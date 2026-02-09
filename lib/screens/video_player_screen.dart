@@ -1,13 +1,17 @@
 import 'dart:async' show Timer, unawaited;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../models/video_model.dart';
 import '../services/storage_service.dart';
 import '../services/parental_control_service.dart';
 import '../services/video_filter_service.dart';
 import '../services/binaural_beats_service.dart';
+import '../services/youtube_service.dart';
 import 'break_reminder_screen.dart';
+import 'shorts_player_screen.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final VideoModel video;
@@ -36,15 +40,87 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   bool _isOnBreak = false;
   ColorFilter? _calmModeFilter;
   bool _isFullScreen = false;
+  late VideoModel _currentVideo;
+
+  bool _redirectedToShorts = false;
 
   @override
   void initState() {
     super.initState();
+    _currentVideo = widget.video;
     _initializePlayer();
     _startTime = DateTime.now();
     _startBreakCheckTimer();
     _loadCalmModeFilter();
     _startBinauralBeats();
+
+    // If already detected as Short (e.g. from title heuristic), redirect
+    if (widget.video.isShort) {
+      _redirectToShorts();
+    } else {
+      // Fetch details to check if it's a Short (duration-based detection)
+      _fetchVideoDetails();
+    }
+
+    // Allow all orientations for regular videos
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  /// Redirect to ShortsPlayerScreen for Short videos
+  void _redirectToShorts() {
+    if (_redirectedToShorts) return;
+    _redirectedToShorts = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShortsPlayerScreen(
+              initialVideo: widget.video,
+              relatedVideos: widget.playlist,
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  /// Fetch full video details (including duration) to detect Shorts
+  Future<void> _fetchVideoDetails() async {
+    try {
+      final apiKey = dotenv.env['YOUTUBE_API_KEY'] ?? '';
+      if (apiKey.isEmpty) return;
+      
+      final youtubeService = YouTubeService(apiKey: apiKey);
+      final details = await youtubeService.getVideoDetails(widget.video.id);
+      
+      if (details != null && mounted) {
+        final updatedVideo = widget.video.copyWith(
+          duration: details.duration,
+          viewCount: details.viewCount,
+          description: details.description.isNotEmpty 
+              ? details.description 
+              : widget.video.description,
+        );
+        
+        // If it turns out to be a Short, redirect
+        if (updatedVideo.isShort) {
+          _redirectToShorts();
+          return;
+        }
+        
+        setState(() {
+          _currentVideo = updatedVideo;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching video details: $e');
+    }
   }
 
   /// Starts binaural beats based on settings
@@ -121,9 +197,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                       onBreakComplete: () async {
                         _isOnBreak = false;
                         _controller.play();
-                        // Resume binaural beats after break
+                        // Resume binaural beats after break - ensure this completes before navigation
                         await _beatsService.resume();
-                        // Note: Navigator.pop is handled by BreakReminderScreen after callback completes
+                        // Pop navigation after all async operations complete
+                        if (mounted) {
+                          Navigator.pop(context);
+                        }
                       },
                     ),
                   ),
@@ -190,6 +269,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       }),
     );
 
+    // Stop binaural beats when leaving video player
+    unawaited(_beatsService.stopBeats());
+
+    // Reset orientation to allow all orientations
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.portraitDown,
+    ]);
+
     _controller.dispose();
     super.dispose();
   }
@@ -212,19 +302,39 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         return player;
       },
     );
+
+    // Regular videos: 16:9 aspect ratio with Hero animation
+    Widget result = Hero(
+      tag: 'video-${widget.video.id}',
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: playerWidget,
+      ),
+    );
     
-    // Apply filter if available, otherwise show player directly
+    // Apply calm mode filter if available
     if (_calmModeFilter != null) {
       return ColorFiltered(
         colorFilter: _calmModeFilter!,
-        child: playerWidget,
+        child: result,
       );
     }
-    return playerWidget;
+    return result;
   }
 
   @override
   Widget build(BuildContext context) {
+    // If redirecting to Shorts player, show loading
+    if (_redirectedToShorts) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
+    // Regular videos use the standard layout
     return Scaffold(
       backgroundColor: _isFullScreen ? Colors.black : null,
       body: _isFullScreen
@@ -249,7 +359,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.video.title,
+                                _currentVideo.title,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -259,7 +369,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                widget.video.channelTitle,
+                                _currentVideo.channelTitle,
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 12,
@@ -286,7 +396,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.video.title,
+                          _currentVideo.title,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -294,8 +404,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          widget.video.description.isNotEmpty
-                              ? widget.video.description
+                          _currentVideo.description.isNotEmpty
+                              ? _currentVideo.description
                               : 'No description available',
                           style: TextStyle(
                             fontSize: 14,

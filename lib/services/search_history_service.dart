@@ -22,9 +22,9 @@ class SearchHistoryService {
     final searchQuery = query.trim().toLowerCase();
     final timestamp = DateTime.now();
 
-    try {
-      // Save to Firestore if user is signed in
-      if (user != null) {
+    // Save to Firestore if user is signed in (with timeout to prevent hanging)
+    if (user != null) {
+      try {
         await _firestore
             .collection('users')
             .doc(user.uid)
@@ -33,6 +33,9 @@ class SearchHistoryService {
           'query': searchQuery,
           'timestamp': Timestamp.fromDate(timestamp),
           'created_at': FieldValue.serverTimestamp(),
+        }).timeout(const Duration(seconds: 3), onTimeout: () {
+          debugPrint('Firestore save timed out');
+          throw Exception('Firestore timeout');
         });
 
         // Also update search count for this query
@@ -45,15 +48,20 @@ class SearchHistoryService {
           'query': searchQuery,
           'count': FieldValue.increment(1),
           'last_searched': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+        }, SetOptions(merge: true)).timeout(const Duration(seconds: 3), onTimeout: () {
+          debugPrint('Firestore stats save timed out');
+          throw Exception('Firestore timeout');
+        });
+      } catch (e) {
+        debugPrint('Error saving search to Firestore: $e');
       }
+    }
 
-      // Also save locally for offline access
+    // Also save locally for offline access
+    try {
       await _saveSearchLocally(searchQuery, timestamp);
     } catch (e) {
-      debugPrint('Error saving search: $e');
-      // Fallback to local storage only
-      await _saveSearchLocally(searchQuery, timestamp);
+      debugPrint('Error saving search locally: $e');
     }
   }
 
@@ -96,14 +104,18 @@ class SearchHistoryService {
     
     try {
       if (user != null) {
-        // Try to get from Firestore first
+        // Try to get from Firestore first (with timeout)
         final snapshot = await _firestore
             .collection('users')
             .doc(user.uid)
             .collection('search_history')
             .orderBy('timestamp', descending: true)
             .limit(limit)
-            .get();
+            .get()
+            .timeout(const Duration(seconds: 3), onTimeout: () {
+              debugPrint('Firestore get history timed out');
+              throw Exception('Firestore timeout');
+            });
 
         if (snapshot.docs.isNotEmpty) {
           return snapshot.docs.map((doc) {
@@ -121,12 +133,23 @@ class SearchHistoryService {
     }
 
     // Fallback to local storage
-    await init();
-    final historyJson = _prefs!.getString(Constants.searchHistoryKey);
-    if (historyJson == null) return [];
-    
-    final List<dynamic> decoded = json.decode(historyJson);
-    return decoded.cast<Map<String, dynamic>>();
+    try {
+      await init();
+      final historyJson = _prefs!.getString(Constants.searchHistoryKey);
+      if (historyJson == null) return [];
+      
+      final List<dynamic> decoded = json.decode(historyJson);
+      return decoded.cast<Map<String, dynamic>>();
+    } catch (e) {
+      debugPrint('Error decoding local search history: $e');
+      // If JSON is corrupted, clear it and return empty list
+      try {
+        await _prefs?.remove(Constants.searchHistoryKey);
+      } catch (_) {
+        // Ignore errors when clearing
+      }
+      return [];
+    }
   }
 
   // Get popular search terms (most searched)

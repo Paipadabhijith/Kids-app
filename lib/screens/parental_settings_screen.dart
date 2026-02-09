@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/settings_model.dart';
+import '../models/subscription_model.dart';
 import '../services/parental_control_service.dart';
 import '../services/video_filter_service.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
+import '../services/subscription_service.dart';
+import '../widgets/upgrade_dialog.dart';
 import 'usage_dashboard_screen.dart';
 import 'child_profiles_screen.dart';
 
@@ -18,6 +21,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
   final ParentalControlService _parentalService = ParentalControlService();
   final AuthService _authService = AuthService();
   final StorageService _storageService = StorageService();
+  final SubscriptionService _subscriptionService = SubscriptionService();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _keywordController = TextEditingController();
@@ -1517,7 +1521,20 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                           ),
                           Switch(
                             value: _settings.calmModeEnabled,
-                            onChanged: (value) {
+                            onChanged: (value) async {
+                              if (value) {
+                                // Check if user can enable Calm Mode
+                                final canUse = await _subscriptionService.canUseCalmMode();
+                                if (!canUse && mounted) {
+                                  final remaining = await _subscriptionService.getRemainingCalmModeMinutes();
+                                  UpgradeDialog.show(
+                                    context,
+                                    feature: 'Calm Mode',
+                                    description: 'You\'ve used your 2-hour daily Calm Mode limit. Upgrade to Zen Kids for unlimited access!',
+                                  );
+                                  return;
+                                }
+                              }
                               setState(() {
                                 _settings = _settings.copyWith(
                                   calmModeEnabled: value,
@@ -1531,6 +1548,70 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                         const SizedBox(height: 16),
                         const Divider(),
                         const SizedBox(height: 16),
+                        
+                        // Free tier usage indicator
+                        FutureBuilder<bool>(
+                          future: _subscriptionService.isPremium(),
+                          builder: (context, snapshot) {
+                            if (snapshot.data == true) {
+                              return const SizedBox.shrink(); // Premium users don't see this
+                            }
+                            return FutureBuilder<int>(
+                              future: _subscriptionService.getRemainingCalmModeMinutes(),
+                              builder: (context, minutesSnapshot) {
+                                final remaining = minutesSnapshot.data ?? 120;
+                                final used = 120 - remaining;
+                                final percentage = (used / 120 * 100).toInt();
+                                return Container(
+                                  padding: const EdgeInsets.all(12),
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.orange.withOpacity(0.3),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.timer, color: Colors.orange.shade700, size: 20),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Free Tier: $remaining mins remaining today',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.orange.shade700,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            LinearProgressIndicator(
+                                              value: used / 120,
+                                              backgroundColor: Colors.grey.shade200,
+                                              color: Colors.orange,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Upgrade to Zen Kids for unlimited Calm Mode',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
                         
                         // Preset selection
                         const Text(
@@ -1796,7 +1877,21 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                           ),
                           Switch(
                             value: _settings.binauralBeatsEnabled,
-                            onChanged: (value) {
+                            onChanged: (value) async {
+                              if (value) {
+                                // Binaural Beats is premium-only
+                                final canAccess = await _subscriptionService.canAccessFeature(
+                                  PremiumFeature.binauralBeats,
+                                );
+                                if (!canAccess && mounted) {
+                                  UpgradeDialog.show(
+                                    context,
+                                    feature: 'Binaural Beats',
+                                    description: 'Access calming audio tones with Zen Kids premium!',
+                                  );
+                                  return;
+                                }
+                              }
                               setState(() {
                                 _settings = _settings.copyWith(
                                   binauralBeatsEnabled: value,

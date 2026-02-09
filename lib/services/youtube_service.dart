@@ -8,16 +8,56 @@ class YouTubeService {
 
   YouTubeService({required this.apiKey});
 
+  /// Sanitize search query to remove inappropriate terms and add "for kids" modifier
+  static String sanitizeSearchQuery(String query) {
+    // Remove inappropriate terms
+    final inappropriateTerms = [
+      'violence', 'adult', 'explicit', 'nsfw', 'horror', 'scary',
+      'drugs', 'alcohol', '18+', 'mature', 'curse', 'swear',
+      'gun', 'weapon', 'kill', 'death', 'blood', 'gore',
+    ];
+    
+    String sanitized = query.toLowerCase();
+    
+    // Remove inappropriate terms
+    for (final term in inappropriateTerms) {
+      sanitized = sanitized.replaceAll(term, '');
+    }
+    
+    // Clean up extra spaces
+    sanitized = sanitized.replaceAll(RegExp(r'\s+'), ' ').trim();
+    
+    // If query is empty after sanitization, use default
+    if (sanitized.isEmpty) {
+      sanitized = 'kids videos';
+    }
+    
+    // Add "for kids" modifier if not already present
+    if (!sanitized.contains('kids') && 
+        !sanitized.contains('children') && 
+        !sanitized.contains('child')) {
+      sanitized = '$sanitized for kids';
+    }
+    
+    return sanitized;
+  }
+
   Future<List<VideoModel>> searchVideos(String query, {int maxResults = 25}) async {
     try {
+      // Sanitize the query first
+      final sanitizedQuery = sanitizeSearchQuery(query);
+      
+      // Request more results to account for filtering
+      final requestCount = (maxResults * 1.5).toInt();
+      
       final uri = Uri.parse(
         '${Constants.youtubeBaseUrl}${Constants.searchEndpoint}'
         '?part=snippet'
-        '&q=${Uri.encodeComponent(query)}'
+        '&q=${Uri.encodeComponent(sanitizedQuery)}'
         '&type=video'
         '&videoEmbeddable=true'
         '&safeSearch=strict'
-        '&maxResults=$maxResults'
+        '&maxResults=$requestCount'
         '&key=$apiKey',
       );
 
@@ -58,6 +98,8 @@ class YouTubeService {
         '?part=snippet'
         '&videoCategoryId=$categoryId'
         '&type=video'
+        '&videoEmbeddable=true'
+        '&safeSearch=strict'
         '&maxResults=$maxResults'
         '&order=viewCount'
         '&key=$apiKey',
@@ -149,6 +191,15 @@ class YouTubeService {
           final snippet = item['snippet'] ?? {};
           final contentDetails = item['contentDetails'] ?? {};
           final statistics = item['statistics'] ?? {};
+          
+          // Check for age restriction
+          final contentRating = snippet['contentRating'] ?? {};
+          final ytRating = contentRating['ytRating'] ?? '';
+          
+          // Block age-restricted content
+          if (ytRating == 'ytAgeRestricted') {
+            return null; // Don't return age-restricted videos
+          }
           
           return VideoModel(
             id: videoId,

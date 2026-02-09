@@ -161,11 +161,20 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
 
       final videos = await youtubeService.searchVideos(
         query,
-        maxResults: 10,
+        maxResults: 15, // Get more to account for filtering
       );
 
+      // Filter videos based on parental controls
+      final filteredVideos = <VideoModel>[];
+      for (final video in videos) {
+        final isAllowed = await _parentalService.isVideoAllowed(video);
+        if (isAllowed) {
+          filteredVideos.add(video);
+        }
+      }
+
       // Filter out duplicates
-      final newVideos = videos
+      final newVideos = filteredVideos
           .where((v) => !_videos.any((existing) => existing.id == v.id))
           .toList();
 

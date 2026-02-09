@@ -7,6 +7,25 @@ import '../services/storage_service.dart';
 class ParentalControlService {
   final StorageService _storageService = StorageService();
 
+  // Default inappropriate keywords - always filtered (even if parental controls disabled)
+  // This ensures basic kid-safety for all users
+  static const List<String> _defaultInappropriateKeywords = [
+    // Violence
+    'violence', 'fight', 'war', 'gun', 'weapon', 'kill', 'death', 'murder', 'blood', 'gore',
+    // Adult content
+    'adult', 'mature', 'explicit', 'nsfw', 'sexy', 'nude', 'naked', 'porn', 'xxx',
+    // Inappropriate language
+    'curse', 'swear', 'bad words', 'profanity', 'damn', 'hell',
+    // Scary content
+    'horror', 'scary', 'frightening', 'terrifying', 'ghost', 'zombie', 'demon', 'monster',
+    // Inappropriate topics
+    'drugs', 'alcohol', 'smoking', 'gambling', 'casino', 'beer', 'wine', 'cigarette',
+    // Age-restricted indicators
+    '18+', 'adults only', 'not for kids', 'parental guidance', 'rated r', 'mature content',
+    // Other inappropriate
+    'suicide', 'self harm', 'hate', 'racism',
+  ];
+
   Future<SettingsModel> getSettings() async {
     return await _storageService.getSettings();
   }
@@ -121,21 +140,54 @@ class ParentalControlService {
 
   Future<bool> isVideoAllowed(VideoModel video) async {
     final settings = await getSettings();
-    if (!settings.parentalControlsEnabled) return true;
-
-    // Check blocked keywords
+    
+    // Always apply default filtering, even if parental controls are disabled
+    // This ensures basic kid-safety for all users
+    
     final titleLower = video.title.toLowerCase();
     final descriptionLower = video.description.toLowerCase();
+    final channelLower = video.channelTitle.toLowerCase();
+    final combinedText = '$titleLower $descriptionLower $channelLower';
     
-    for (final keyword in settings.blockedKeywords) {
-      if (titleLower.contains(keyword.toLowerCase()) ||
-          descriptionLower.contains(keyword.toLowerCase())) {
+    // Check default inappropriate keywords (always active)
+    for (final keyword in _defaultInappropriateKeywords) {
+      if (combinedText.contains(keyword.toLowerCase())) {
         return false;
       }
     }
-
-    // Note: Category filtering would require additional API calls
-    // This is a simplified version
+    
+    // If parental controls are enabled, apply additional filtering
+    if (settings.parentalControlsEnabled) {
+      // Check user-configured blocked keywords
+      for (final keyword in settings.blockedKeywords) {
+        if (combinedText.contains(keyword.toLowerCase())) {
+          return false;
+        }
+      }
+      
+      // Check channel blacklist
+      if (settings.blacklistedChannels.isNotEmpty) {
+        for (final blockedChannel in settings.blacklistedChannels) {
+          if (channelLower.contains(blockedChannel.toLowerCase())) {
+            return false;
+          }
+        }
+      }
+      
+      // Check channel whitelist (if enabled, only allow whitelisted channels)
+      if (settings.whitelistedChannels.isNotEmpty) {
+        bool isWhitelisted = false;
+        for (final allowedChannel in settings.whitelistedChannels) {
+          if (channelLower.contains(allowedChannel.toLowerCase())) {
+            isWhitelisted = true;
+            break;
+          }
+        }
+        if (!isWhitelisted) {
+          return false; // Not in whitelist, block it
+        }
+      }
+    }
     
     return true;
   }

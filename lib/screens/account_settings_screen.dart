@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
 import '../services/user_profile_service.dart';
+import '../services/subscription_service.dart';
+import '../models/subscription_model.dart';
+import '../widgets/tier_badge.dart';
+import '../widgets/upgrade_dialog.dart';
 import 'parental_settings_screen.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
@@ -15,14 +19,26 @@ class AccountSettingsScreen extends StatefulWidget {
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   final AuthService _authService = AuthService();
   final UserProfileService _profileService = UserProfileService();
+  final SubscriptionService _subscriptionService = SubscriptionService();
   final ImagePicker _imagePicker = ImagePicker();
   String? _profilePhotoUrl;
   bool _isLoading = false;
+  SubscriptionModel _subscription = SubscriptionModel();
 
   @override
   void initState() {
     super.initState();
     _loadProfilePhoto();
+    _loadSubscription();
+  }
+
+  Future<void> _loadSubscription() async {
+    final subscription = await _subscriptionService.getSubscription();
+    if (mounted) {
+      setState(() {
+        _subscription = subscription;
+      });
+    }
   }
 
   Future<void> _loadProfilePhoto() async {
@@ -35,6 +51,24 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
 
   Future<void> _pickAndUploadImage(ImageSource source) async {
+    // Check if user has premium access for custom profile pictures
+    final canAccess = await _subscriptionService.canAccessFeature(
+      PremiumFeature.customProfilePicture,
+    );
+
+    if (!canAccess && mounted) {
+      UpgradeDialog.show(
+        context,
+        feature: 'Custom Profile Pictures',
+        description: 'Upload custom profile pictures with Zen Kids premium!',
+        onUpgrade: () async {
+          await _subscriptionService.upgradeToPremium();
+          await _loadSubscription();
+        },
+      );
+      return;
+    }
+
     try {
       final XFile? image = await _imagePicker.pickImage(
         source: source,
@@ -256,6 +290,44 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const Divider(height: 1),
+
+            // Subscription Tier Section
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  TierIndicator(subscription: _subscription),
+                  if (!_subscription.isPremium) ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          UpgradeDialog.show(
+                            context,
+                            feature: 'Unlock All Features',
+                            description: 'Get unlimited access to Calm Mode, Binaural Beats, all categories, and more!',
+                            onUpgrade: () async {
+                              await _subscriptionService.upgradeToPremium();
+                              await _loadSubscription();
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.auto_awesome),
+                        label: const Text('Upgrade to Zen Kids'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.purple.shade600,
+                          foregroundColor: Colors.white,
+                        ),
                       ),
                     ),
                   ],

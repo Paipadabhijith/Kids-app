@@ -6,7 +6,9 @@ import '../services/auth_service.dart';
 import '../services/user_profile_service.dart';
 import '../services/youtube_service.dart';
 import '../services/storage_service.dart';
+import '../services/subscription_service.dart';
 import '../models/video_model.dart';
+import '../models/subscription_model.dart';
 import '../utils/constants.dart';
 import '../utils/page_transitions.dart';
 import '../widgets/time_limit_widget.dart';
@@ -14,6 +16,7 @@ import '../widgets/video_card.dart';
 import '../widgets/loading_skeleton.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/animated_button.dart';
+import '../widgets/tier_badge.dart';
 import 'search_screen.dart';
 import 'categories_screen.dart';
 import 'playlists_screen.dart';
@@ -35,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   final UserProfileService _profileService = UserProfileService();
   final StorageService _storageService = StorageService();
+  final SubscriptionService _subscriptionService = SubscriptionService();
   final YouTubeService _youtubeService = YouTubeService(
     apiKey: Constants.youtubeApiKey,
   );
@@ -46,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoadingTrending = false;
   List<VideoModel> _recommendedVideos = [];
   bool _isLoadingRecommendations = false;
+  SubscriptionModel _subscription = SubscriptionModel();
 
   @override
   void initState() {
@@ -53,6 +58,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkTimeLimit();
     _loadTrendingShows();
     _loadRecommendations();
+    _loadSubscription();
+  }
+
+  Future<void> _loadSubscription() async {
+    final subscription = await _subscriptionService.getSubscription();
+    if (mounted) {
+      setState(() {
+        _subscription = subscription;
+      });
+    }
   }
 
   Future<void> _loadRecommendations() async {
@@ -518,6 +533,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.white,
                   letterSpacing: 1.0,
                 ),
+              ),
+              const SizedBox(width: 8),
+              // Tier badge
+              TierBadge(
+                subscription: _subscription,
+                size: 16,
               ),
               const SizedBox(width: 12),
               // Search button - moved to header

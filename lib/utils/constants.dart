@@ -6,11 +6,18 @@ class Constants {
   // Add it to .env file as: YOUTUBE_API_KEY=your_key_here
   static String get youtubeApiKey {
     try {
-      final key = dotenv.env['YOUTUBE_API_KEY'] ?? '';
-      if (key.isEmpty || key == 'your_youtube_api_key_here') {
-        return '';
+      final envKey = dotenv.env['YOUTUBE_API_KEY'] ?? '';
+
+      // Prefer key from .env if present and not the placeholder
+      if (envKey.isNotEmpty && envKey != 'your_youtube_api_key_here') {
+        return envKey;
       }
-      return key;
+
+      // Fallback: hard-coded key provided for local testing ONLY.
+      // NOTE: Before committing or sharing the repo, remove this fallback
+      // and keep the key only in the .env file.
+      const fallbackKey = 'AIzaSyAjrv50h1xxXY96CsJ2xvliYhMNpepyewo';
+      return fallbackKey;
     } catch (e) {
       return '';
     }

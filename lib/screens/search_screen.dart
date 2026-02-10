@@ -89,7 +89,17 @@ class _SearchScreenState extends State<SearchScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      final errorMsg = e.toString().replaceAll('Exception: ', '');
+      String errorMsg = e.toString().replaceAll('Exception: ', '');
+      
+      // User-friendly error messages for common issues
+      if (errorMsg.contains('quota') || errorMsg.contains('403')) {
+        errorMsg = 'YouTube API quota exceeded. Please try again later or contact support.';
+      } else if (errorMsg.contains('401') || errorMsg.contains('Invalid API key')) {
+        errorMsg = 'Invalid API key. Please check your configuration.';
+      } else if (errorMsg.contains('network') || errorMsg.contains('timeout')) {
+        errorMsg = 'Network error. Please check your internet connection.';
+      }
+      
       setState(() {
         _errorMessage = 'Failed to search videos: $errorMsg';
         _searchResults = [];

@@ -246,7 +246,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         color: color.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                    ),
+            ),
                   ),
                   // Icon
                   Icon(
@@ -267,10 +267,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-              ),
+                ),
             ],
           ),
-        ),
+          ),
         ),
       ),
     );
@@ -295,8 +295,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       return EmptyStateError(
         message: _errorMessage!,
         onRetry: () => _loadCategoryVideos(
-          _selectedCategoryId!,
-          _selectedCategoryName!,
+                  _selectedCategoryId!,
+                  _selectedCategoryName!,
           _selectedCategoryQuery!,
         ),
       );

@@ -223,6 +223,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         mute: false,
         enableCaption: true,
         controlsVisibleAtStart: true,
+        // Disable comments and related videos
+        hideControls: false,
+        loop: false,
+        isLive: false,
+        startAt: 0,
+        // Minimize YouTube UI elements
+        modestBranding: true,
+        showVideoAnnotations: false,
       ),
     );
 

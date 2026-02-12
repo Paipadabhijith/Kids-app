@@ -94,6 +94,13 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
         enableCaption: true,
         hideControls: false,
         controlsVisibleAtStart: true,
+        // Disable comments and related videos
+        loop: false,
+        isLive: false,
+        startAt: 0,
+        // Minimize YouTube UI elements
+        modestBranding: true,
+        showVideoAnnotations: false,
       ),
     );
     _controllers[index] = controller;

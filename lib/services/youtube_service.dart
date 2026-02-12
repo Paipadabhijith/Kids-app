@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/video_model.dart';
 import '../utils/constants.dart';
@@ -226,13 +227,10 @@ class YouTubeService {
   // Get trending kids shows by searching popular kids content
   Future<List<VideoModel>> getTrendingKidsShows({int maxResults = 25}) async {
     try {
-      // Search for trending kids content with multiple kid-friendly queries
+      // Reduced to 2 queries for faster loading
       final kidsQueries = [
-        'kids shows for children',
-        'educational videos for kids',
-        'kids cartoons',
-        'nursery rhymes for kids',
-        'kids songs',
+        'popular kids shows educational',
+        'trending kids cartoons nursery rhymes',
       ];
       
       final allVideos = <VideoModel>[];
@@ -242,10 +240,11 @@ class YouTubeService {
         try {
           final videos = await searchVideos(
             query,
-            maxResults: (maxResults / kidsQueries.length).ceil() + 2,
+            maxResults: (maxResults / kidsQueries.length).ceil() + 5,
           );
           allVideos.addAll(videos);
         } catch (e) {
+          debugPrint('Query failed: $query - $e');
           // Continue with other queries if one fails
           continue;
         }

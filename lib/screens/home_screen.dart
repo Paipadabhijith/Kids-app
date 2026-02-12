@@ -56,9 +56,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _checkTimeLimit();
-    _loadTrendingShows();
-    _loadRecommendations();
     _loadSubscription();
+    // Load videos in background without blocking UI
+    Future.microtask(() {
+      _loadTrendingShows();
+      _loadRecommendations();
+    });
   }
 
   Future<void> _loadSubscription() async {
@@ -77,6 +80,23 @@ class _HomeScreenState extends State<HomeScreen> {
       _isLoadingRecommendations = true;
     });
 
+    try {
+      // Add timeout to prevent hanging
+      await Future.any([
+        _loadRecommendationsInternal(),
+        Future.delayed(const Duration(seconds: 10)),
+      ]);
+    } catch (e) {
+      debugPrint('Error loading recommendations: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingRecommendations = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadRecommendationsInternal() async {
     try {
       // First try to get recommendations based on watch history
       final watchHistory = await _storageService.getWatchHistory();
@@ -111,20 +131,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // If no watch history or search failed, use general kids recommendations
       if (recommendations.isEmpty) {
-        final generalQueries = [
-          'popular kids videos',
-          'kids learning fun',
-          'children educational',
-        ];
-        
-        for (final query in generalQueries) {
-          try {
-            final videos = await _youtubeService.searchVideos(query, maxResults: 5);
-            recommendations.addAll(videos);
-            if (recommendations.length >= 10) break;
-          } catch (e) {
-            continue;
-          }
+        try {
+          // Single query for faster loading
+          recommendations = await _youtubeService.searchVideos(
+            'popular educational kids videos',
+            maxResults: 10,
+          );
+        } catch (e) {
+          debugPrint('Error loading general recommendations: $e');
         }
       }
 
@@ -176,7 +190,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final shows = await _youtubeService.getTrendingKidsShows(maxResults: 10);
+      // Add timeout to prevent hanging
+      final shows = await _youtubeService.getTrendingKidsShows(maxResults: 10)
+          .timeout(const Duration(seconds: 10));
       
       // Filter based on parental controls
       final filteredShows = <VideoModel>[];

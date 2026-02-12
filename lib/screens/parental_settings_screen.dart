@@ -875,11 +875,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                           const SizedBox(width: 12),
                           const Expanded(
                             child: Text(
-                              'Daily Time Limit',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        'Daily Time Limit',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                             ),
                           ),
                           if (_selectedTimeLimit != null)
@@ -967,11 +967,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                           const SizedBox(width: 12),
                           const Expanded(
                             child: Text(
-                              'Parent Password',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        'Parent Password',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                             ),
                           ),
                           Chip(
@@ -1075,11 +1075,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                           const SizedBox(width: 12),
                           const Expanded(
                             child: Text(
-                              'Blocked Keywords',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        'Blocked Keywords',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                             ),
                           ),
                           if (_settings.blockedKeywords.isNotEmpty)
@@ -1350,7 +1350,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                             ),
                           ),
                         ],
-                      ),
+                        ),
                     ],
                   ),
                 ),

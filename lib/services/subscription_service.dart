@@ -45,17 +45,35 @@ class SubscriptionService {
       tier: SubscriptionTier.zenKids,
       isActive: true,
       expiryDate: DateTime.now().add(const Duration(days: 365)), // 1 year
+      cancelAtPeriodEnd: false,
     );
     await saveSubscription(subscription);
   }
 
-  /// Downgrade to free (Bright Kids)
+  /// Immediate downgrade to free (Bright Kids).
+  /// Use [scheduleDowngradeAtPeriodEnd] for normal user flow.
   Future<void> downgradeToFree() async {
     final subscription = SubscriptionModel(
       tier: SubscriptionTier.brightKids,
       isActive: true,
+      cancelAtPeriodEnd: false,
     );
     await saveSubscription(subscription);
+  }
+
+  /// User chooses "Switch to Basic Version".
+  ///
+  /// Behaviour:
+  /// - Keep current premium access until the end of the billing cycle
+  ///   (represented by [expiryDate]).
+  /// - Mark the subscription as cancelled at period end so UI can show
+  ///   correct messaging.
+  /// - In a real backend, this is where we'd notify the billing system
+  ///   to move the plan to BASIC at renewal.
+  Future<void> scheduleDowngradeAtPeriodEnd() async {
+    final current = await getSubscription();
+    final updated = current.copyWith(cancelAtPeriodEnd: true);
+    await saveSubscription(updated);
   }
 
   /// Check if user has premium access

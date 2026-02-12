@@ -330,6 +330,23 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         ),
                       ),
                     ),
+                  ] else ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _showDowngradeDialog(),
+                        icon: const Icon(Icons.arrow_downward, color: Colors.orange),
+                        label: const Text(
+                          'Switch to Basic Version',
+                          style: TextStyle(color: Colors.orange),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: Colors.orange.shade400),
+                        ),
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -394,6 +411,104 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             const SizedBox(height: 32),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showDowngradeDialog() async {
+    if (!_subscription.isPremium) return;
+
+    final expiry = _subscription.expiryDate;
+    final expiryText = expiry != null
+        ? '${expiry.day}/${expiry.month}/${expiry.year}'
+        : 'the end of your current billing period';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Switch to Basic Version?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'If you switch to the Bright Kids (basic) plan:\n',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const Text('These premium features will be disabled after your current billing cycle:'),
+              const SizedBox(height: 8),
+              const _DowngradeFeatureBullet('Unlimited Calm Mode minutes'),
+              const _DowngradeFeatureBullet('Binaural Beats'),
+              const _DowngradeFeatureBullet('Break reminder games'),
+              const _DowngradeFeatureBullet('Multiple child profiles'),
+              const _DowngradeFeatureBullet('Channel whitelist / blacklist controls'),
+              const _DowngradeFeatureBullet('Full usage dashboard & advanced stats'),
+              const _DowngradeFeatureBullet('Custom profile pictures'),
+              const SizedBox(height: 12),
+              Text(
+                'You will keep full Zen Kids premium access until $expiryText. '
+                'After that, your plan will automatically move to the Bright Kids basic version.',
+                style: const TextStyle(fontSize: 13),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Keep Zen Kids'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade600,
+              ),
+              child: const Text('Confirm Switch'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await _subscriptionService.scheduleDowngradeAtPeriodEnd();
+      await _loadSubscription();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Your plan will switch to Bright Kids at the end of the current billing cycle. '
+              'You keep Zen Kids benefits until then.',
+            ),
+          ),
+        );
+      }
+    }
+  }
+}
+
+class _DowngradeFeatureBullet extends StatelessWidget {
+  final String text;
+
+  const _DowngradeFeatureBullet(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('• ', style: TextStyle(fontSize: 13)),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+        ],
       ),
     );
   }

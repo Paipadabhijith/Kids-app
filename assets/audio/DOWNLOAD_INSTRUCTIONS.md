@@ -101,3 +101,4 @@ After adding files, test by:
 - Adjust volume in Parental Settings → Binaural Beats → Volume slider
 
 
+

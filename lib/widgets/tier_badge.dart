@@ -91,6 +91,7 @@ class TierIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPremium = subscription.isPremium;
+    final isCancelling = subscription.cancelAtPeriodEnd && isPremium;
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -125,8 +126,10 @@ class TierIndicator extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   isPremium
-                      ? 'Unlimited access to all features'
-                      : 'Upgrade to Zen Kids for unlimited wellness',
+                      ? (isCancelling
+                          ? 'You keep Zen Kids until the end of your current billing cycle.'
+                          : 'Unlimited access to all features.')
+                      : 'Upgrade to Zen Kids for unlimited wellness.',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade600,

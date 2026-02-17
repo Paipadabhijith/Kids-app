@@ -73,11 +73,13 @@ class _SearchScreenState extends State<SearchScreen> {
       }
       
       // Filter videos based on parental controls
+      final allowChecks = await Future.wait(
+        results.map((video) => _parentalService.isVideoAllowed(video)),
+      );
       final filteredResults = <VideoModel>[];
-      for (final video in results) {
-        final isAllowed = await _parentalService.isVideoAllowed(video);
-        if (isAllowed) {
-          filteredResults.add(video);
+      for (int i = 0; i < results.length; i++) {
+        if (allowChecks[i]) {
+          filteredResults.add(results[i]);
         }
       }
 

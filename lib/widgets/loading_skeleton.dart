@@ -67,11 +67,15 @@ class VideoCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final base = Theme.of(context).colorScheme.primary.withOpacity(0.08);
+    final highlight = Theme.of(context).colorScheme.secondary.withOpacity(0.10);
     return ShimmerEffect(
+      baseColor: base,
+      highlightColor: highlight,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(16),
+          color: base,
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,9 +85,9 @@ class VideoCardSkeleton extends StatelessWidget {
             Container(
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: base,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
+                  top: Radius.circular(18),
                 ),
               ),
             ),
@@ -97,7 +101,7 @@ class VideoCardSkeleton extends StatelessWidget {
                     height: 14,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: base,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -106,7 +110,7 @@ class VideoCardSkeleton extends StatelessWidget {
                     height: 14,
                     width: 100,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: base,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -126,11 +130,15 @@ class CategoryCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final base = Theme.of(context).colorScheme.primary.withOpacity(0.08);
+    final highlight = Theme.of(context).colorScheme.secondary.withOpacity(0.10);
     return ShimmerEffect(
+      baseColor: base,
+      highlightColor: highlight,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(20),
+          color: base,
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -141,7 +149,7 @@ class CategoryCardSkeleton extends StatelessWidget {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: Colors.grey[400],
+                  color: highlight,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -150,7 +158,7 @@ class CategoryCardSkeleton extends StatelessWidget {
                 height: 15,
                 width: 80,
                 decoration: BoxDecoration(
-                  color: Colors.grey[400],
+                  color: highlight,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -170,13 +178,17 @@ class ListItemSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final base = Theme.of(context).colorScheme.primary.withOpacity(0.08);
+    final highlight = Theme.of(context).colorScheme.secondary.withOpacity(0.10);
     return ShimmerEffect(
+      baseColor: base,
+      highlightColor: highlight,
       child: Container(
         height: height ?? 60,
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(12),
+          color: base,
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -186,7 +198,7 @@ class ListItemSkeleton extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.grey[400],
+                  color: highlight,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -200,7 +212,7 @@ class ListItemSkeleton extends StatelessWidget {
                       height: 14,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.grey[400],
+                        color: highlight,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -209,7 +221,7 @@ class ListItemSkeleton extends StatelessWidget {
                       height: 12,
                       width: 150,
                       decoration: BoxDecoration(
-                        color: Colors.grey[400],
+                        color: highlight,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),

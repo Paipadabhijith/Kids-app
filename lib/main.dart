@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/home_screen.dart';
+import 'services/app_theme_service.dart';
 import 'services/storage_service.dart';
 import 'utils/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   
   // Set up error handling
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -37,6 +43,7 @@ void main() async {
   // Initialize storage service
   try {
     await StorageService.init();
+    await AppThemeService.init();
   } catch (e) {
     debugPrint('Error initializing storage: $e');
     // Continue anyway - storage will be initialized on first use
@@ -50,23 +57,30 @@ class KidsTVApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Kids TV',
-      theme: AppTheme.lightTheme,
-      debugShowCheckedModeBanner: false,
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          // Firebase handles persistence automatically
-          // User stays signed in until they explicitly sign out
-          return const HomeScreen();
-        },
-      ),
-      builder: (context, child) {
-        // Wrap with error boundary
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
-          child: child ?? const HomeScreen(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: AppThemeService.themeMode,
+      builder: (context, themeMode, _) {
+        return MaterialApp(
+          title: 'Kids TV',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
+          debugShowCheckedModeBanner: false,
+          home: StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              // Firebase handles persistence automatically
+              // User stays signed in until they explicitly sign out
+              return const HomeScreen();
+            },
+          ),
+          builder: (context, child) {
+            // Wrap with error boundary
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+              child: child ?? const HomeScreen(),
+            );
+          },
         );
       },
     );

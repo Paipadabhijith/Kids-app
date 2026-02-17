@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
+import '../services/app_theme_service.dart';
 import '../services/user_profile_service.dart';
 import '../services/subscription_service.dart';
 import '../models/subscription_model.dart';
@@ -219,6 +220,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final isDark = theme.brightness == Brightness.dark;
     final displayName = _profileService.getDisplayName();
     final email = _profileService.getEmail();
 
@@ -239,12 +244,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     children: [
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: Colors.grey[300],
+                        backgroundColor: colorScheme.surfaceContainerHighest,
                         backgroundImage: _profilePhotoUrl != null
                             ? NetworkImage(_profilePhotoUrl!)
                             : null,
                         child: _profilePhotoUrl == null
-                            ? const Icon(Icons.person, size: 60, color: Colors.grey)
+                            ? Icon(
+                                Icons.person,
+                                size: 60,
+                                color: colorScheme.onSurfaceVariant,
+                              )
                             : null,
                       ),
                       if (_isLoading)
@@ -263,8 +272,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         bottom: 0,
                         right: 0,
                         child: Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.blue,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
@@ -278,18 +287,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   const SizedBox(height: 16),
                   Text(
                     displayName ?? 'User',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                    style: textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   if (email != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       email,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -325,8 +332,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         label: const Text('Upgrade to Zen Kids'),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Colors.purple.shade600,
-                          foregroundColor: Colors.white,
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
                         ),
                       ),
                     ),
@@ -336,14 +343,20 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () => _showDowngradeDialog(),
-                        icon: const Icon(Icons.arrow_downward, color: Colors.orange),
-                        label: const Text(
+                        icon: Icon(Icons.arrow_downward, color: colorScheme.secondary),
+                        label: Text(
                           'Switch to Basic Version',
-                          style: TextStyle(color: Colors.orange),
+                          style: TextStyle(color: colorScheme.secondary),
                         ),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: BorderSide(color: Colors.orange.shade400),
+                          side: BorderSide(
+                            color: colorScheme.secondary,
+                            width: 1.6,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
                         ),
                       ),
                     ),
@@ -386,6 +399,29 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               },
             ),
 
+            ValueListenableBuilder<ThemeMode>(
+              valueListenable: AppThemeService.themeMode,
+              builder: (context, themeMode, _) {
+                final isDarkMode = themeMode == ThemeMode.dark;
+                return SwitchListTile(
+                  secondary: const Icon(Icons.dark_mode_outlined),
+                  title: const Text('Dark Mode'),
+                  subtitle: Text(
+                    isDarkMode ? 'On' : 'Off',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  value: isDarkMode,
+                  onChanged: (enabled) async {
+                    await AppThemeService.setThemeMode(
+                      enabled ? ThemeMode.dark : ThemeMode.light,
+                    );
+                  },
+                );
+              },
+            ),
+
             const Divider(height: 1),
 
             // Sign Out Section
@@ -395,14 +431,21 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _handleSignOut,
-                  icon: const Icon(Icons.logout, color: Colors.red),
-                  label: const Text(
+                  icon: Icon(Icons.logout, color: colorScheme.error),
+                  label: Text(
                     'Sign Out',
-                    style: TextStyle(color: Colors.red),
+                    style: TextStyle(color: colorScheme.error),
                   ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Colors.red),
+                    side: BorderSide(
+                      color: colorScheme.error,
+                      width: 1.6,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    backgroundColor: isDark ? colorScheme.error.withOpacity(0.08) : null,
                   ),
                 ),
               ),
@@ -462,7 +505,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange.shade600,
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                foregroundColor: Theme.of(context).colorScheme.onSecondary,
               ),
               child: const Text('Confirm Switch'),
             ),

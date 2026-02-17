@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/playlist_model.dart';
 import '../models/settings_model.dart';
@@ -8,6 +9,11 @@ import '../utils/constants.dart';
 
 class StorageService {
   static SharedPreferences? _prefs;
+  static final StreamController<ChildProfileModel?> _activeProfileController =
+      StreamController<ChildProfileModel?>.broadcast();
+
+  static Stream<ChildProfileModel?> get activeProfileChanges =>
+      _activeProfileController.stream;
 
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
@@ -67,18 +73,31 @@ class StorageService {
     await _prefs!.setString(Constants.settingsKey, settingsJson);
   }
 
-  // Watch History
-  Future<List<VideoModel>> getWatchHistory() async {
+  Future<String?> getThemeModePreference() async {
     if (_prefs == null) await init();
-    final historyJson = _prefs!.getString(Constants.watchHistoryKey);
+    return _prefs!.getString(Constants.themeModeKey);
+  }
+
+  Future<void> saveThemeModePreference(String themeMode) async {
+    if (_prefs == null) await init();
+    await _prefs!.setString(Constants.themeModeKey, themeMode);
+  }
+
+  // Watch History
+  Future<List<VideoModel>> getWatchHistory({String? profileId}) async {
+    if (_prefs == null) await init();
+    final scopedKey = _getWatchHistoryKey(profileId);
+    String? historyJson = _prefs!.getString(scopedKey);
+    // Backward compatibility: if this profile has no history yet, reuse legacy shared history.
+    historyJson ??= profileId != null ? _prefs!.getString(Constants.watchHistoryKey) : null;
     if (historyJson == null) return [];
     
     final List<dynamic> decoded = json.decode(historyJson);
     return decoded.map((json) => VideoModel.fromJson(json)).toList();
   }
 
-  Future<void> addToWatchHistory(VideoModel video) async {
-    final history = await getWatchHistory();
+  Future<void> addToWatchHistory(VideoModel video, {String? profileId}) async {
+    final history = await getWatchHistory(profileId: profileId);
     // Remove if already exists (to move to top)
     history.removeWhere((v) => v.id == video.id);
     // Add to beginning
@@ -92,12 +111,12 @@ class StorageService {
     final historyJson = json.encode(
       history.map((v) => v.toJson()).toList(),
     );
-    await _prefs!.setString(Constants.watchHistoryKey, historyJson);
+    await _prefs!.setString(_getWatchHistoryKey(profileId), historyJson);
   }
 
-  Future<void> clearWatchHistory() async {
+  Future<void> clearWatchHistory({String? profileId}) async {
     if (_prefs == null) await init();
-    await _prefs!.remove(Constants.watchHistoryKey);
+    await _prefs!.remove(_getWatchHistoryKey(profileId));
   }
 
   // Daily Usage Tracking
@@ -250,6 +269,7 @@ class StorageService {
       profiles.map((p) => p.toJson()).toList(),
     );
     await _prefs!.setString('child_profiles', profilesJson);
+    _emitActiveProfile(profiles);
   }
 
   Future<ChildProfileModel?> getActiveProfile() async {
@@ -258,6 +278,20 @@ class StorageService {
       return profiles.firstWhere((p) => p.isActive);
     } catch (e) {
       return null;
+    }
+  }
+
+  String _getWatchHistoryKey(String? profileId) {
+    if (profileId == null || profileId.isEmpty) return Constants.watchHistoryKey;
+    return '${Constants.watchHistoryKey}_$profileId';
+  }
+
+  void _emitActiveProfile(List<ChildProfileModel> profiles) {
+    try {
+      final active = profiles.firstWhere((p) => p.isActive);
+      _activeProfileController.add(active);
+    } catch (_) {
+      _activeProfileController.add(null);
     }
   }
 }

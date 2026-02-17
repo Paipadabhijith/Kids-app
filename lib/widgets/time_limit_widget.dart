@@ -48,8 +48,8 @@ class TimeLimitWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: textColor.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: textColor.withOpacity(0.3), width: 1.6),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

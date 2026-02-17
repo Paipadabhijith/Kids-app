@@ -7,6 +7,7 @@ class ChildProfileModel {
   final String? avatarUrl;
   final int dailyTimeLimitMinutes;
   final List<String> blockedKeywords;
+  final List<String> preferredTopics;
   final List<String> whitelistedChannels;
   final List<String> blacklistedChannels;
   final bool calmModeEnabled;
@@ -20,6 +21,7 @@ class ChildProfileModel {
     this.avatarUrl,
     this.dailyTimeLimitMinutes = 60,
     this.blockedKeywords = const [],
+    this.preferredTopics = const [],
     this.whitelistedChannels = const [],
     this.blacklistedChannels = const [],
     this.calmModeEnabled = false,
@@ -35,6 +37,7 @@ class ChildProfileModel {
       avatarUrl: json['avatarUrl'],
       dailyTimeLimitMinutes: json['dailyTimeLimitMinutes'] ?? 60,
       blockedKeywords: List<String>.from(json['blockedKeywords'] ?? []),
+      preferredTopics: List<String>.from(json['preferredTopics'] ?? []),
       whitelistedChannels: List<String>.from(json['whitelistedChannels'] ?? []),
       blacklistedChannels: List<String>.from(json['blacklistedChannels'] ?? []),
       calmModeEnabled: json['calmModeEnabled'] ?? false,
@@ -53,6 +56,7 @@ class ChildProfileModel {
       'avatarUrl': avatarUrl,
       'dailyTimeLimitMinutes': dailyTimeLimitMinutes,
       'blockedKeywords': blockedKeywords,
+      'preferredTopics': preferredTopics,
       'whitelistedChannels': whitelistedChannels,
       'blacklistedChannels': blacklistedChannels,
       'calmModeEnabled': calmModeEnabled,
@@ -68,6 +72,7 @@ class ChildProfileModel {
     String? avatarUrl,
     int? dailyTimeLimitMinutes,
     List<String>? blockedKeywords,
+    List<String>? preferredTopics,
     List<String>? whitelistedChannels,
     List<String>? blacklistedChannels,
     bool? calmModeEnabled,
@@ -81,6 +86,7 @@ class ChildProfileModel {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       dailyTimeLimitMinutes: dailyTimeLimitMinutes ?? this.dailyTimeLimitMinutes,
       blockedKeywords: blockedKeywords ?? this.blockedKeywords,
+      preferredTopics: preferredTopics ?? this.preferredTopics,
       whitelistedChannels: whitelistedChannels ?? this.whitelistedChannels,
       blacklistedChannels: blacklistedChannels ?? this.blacklistedChannels,
       calmModeEnabled: calmModeEnabled ?? this.calmModeEnabled,

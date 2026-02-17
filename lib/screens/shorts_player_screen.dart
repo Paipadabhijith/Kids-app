@@ -1,4 +1,4 @@
-import 'dart:async' show Timer, unawaited;
+import 'dart:async' show Timer, unawaited, StreamSubscription;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +10,7 @@ import '../services/parental_control_service.dart';
 import '../services/video_filter_service.dart';
 import '../services/binaural_beats_service.dart';
 import '../services/youtube_service.dart';
+import 'break_reminder_screen.dart';
 
 /// Fullscreen portrait Shorts player with swipe-up navigation.
 /// Uses YoutubePlayer directly (not YoutubePlayerBuilder) to avoid
@@ -44,6 +45,10 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   Timer? _breakCheckTimer;
   int _totalMinutesWatched = 0;
   bool _isOnBreak = false;
+  StreamSubscription? _settingsSubscription;
+  bool _showPlaybackFeedback = false;
+  IconData _playbackFeedbackIcon = Icons.play_arrow_rounded;
+  Timer? _playbackFeedbackTimer;
 
   @override
   void initState() {
@@ -75,6 +80,9 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
     _startBreakCheckTimer();
     _loadCalmModeFilter();
     _startBinauralBeats();
+    _settingsSubscription = _parentalService.settingsChanges.listen((_) {
+      unawaited(_loadCalmModeFilter());
+    });
     _loadRelatedShorts();
 
     // Hide swipe hint after 3 seconds
@@ -91,16 +99,14 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
       flags: YoutubePlayerFlags(
         autoPlay: index == _currentPage,
         mute: false,
-        enableCaption: true,
-        hideControls: false,
-        controlsVisibleAtStart: true,
+        enableCaption: false,
+        hideControls: true,
+        controlsVisibleAtStart: false,
+        disableDragSeek: true,
         // Disable comments and related videos
         loop: false,
         isLive: false,
         startAt: 0,
-        // Minimize YouTube UI elements
-        modestBranding: true,
-        showVideoAnnotations: false,
       ),
     );
     _controllers[index] = controller;
@@ -127,7 +133,7 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
 
     // Record history for previous video
     unawaited(
-      _storageService.addToWatchHistory(_videos[_currentPage]).catchError((e) {
+      _addToHistoryForActiveProfile(_videos[_currentPage]).catchError((e) {
         debugPrint('Error adding to watch history: $e');
       }),
     );
@@ -147,6 +153,33 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
       _controllers[key]?.dispose();
       _controllers.remove(key);
     }
+  }
+
+  void _togglePlayback(int index) {
+    final controller = _controllers[index];
+    if (controller == null) return;
+
+    final isPlaying = controller.value.isPlaying;
+    if (isPlaying) {
+      controller.pause();
+      _playbackFeedbackIcon = Icons.pause_rounded;
+    } else {
+      controller.play();
+      _playbackFeedbackIcon = Icons.play_arrow_rounded;
+    }
+
+    setState(() {
+      _showPlaybackFeedback = true;
+    });
+
+    _playbackFeedbackTimer?.cancel();
+    _playbackFeedbackTimer = Timer(const Duration(milliseconds: 450), () {
+      if (mounted) {
+        setState(() {
+          _showPlaybackFeedback = false;
+        });
+      }
+    });
   }
 
   Future<void> _loadRelatedShorts() async {
@@ -228,6 +261,27 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
           if (shouldBreak && mounted) {
             _isOnBreak = true;
             _controllers[_currentPage]?.pause();
+            await _beatsService.pause();
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (!mounted) return;
+              final breakMinutes = await _parentalService.getBreakDurationMinutes();
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BreakReminderScreen(
+                    breakMinutes: breakMinutes,
+                    onBreakComplete: () async {
+                      _isOnBreak = false;
+                      _controllers[_currentPage]?.play();
+                      await _beatsService.resume();
+                      if (mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                ),
+              );
+            });
           }
         }
       }
@@ -237,6 +291,8 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   @override
   void dispose() {
     _breakCheckTimer?.cancel();
+    _playbackFeedbackTimer?.cancel();
+    _settingsSubscription?.cancel();
     _beatsService.dispose();
 
     // Record watch time
@@ -254,7 +310,7 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
 
     // Add current video to watch history
     unawaited(
-      _storageService.addToWatchHistory(_videos[_currentPage]).catchError((e) {
+      _addToHistoryForActiveProfile(_videos[_currentPage]).catchError((e) {
         debugPrint('Error adding to watch history: $e');
       }),
     );
@@ -280,6 +336,11 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
     );
 
     super.dispose();
+  }
+
+  Future<void> _addToHistoryForActiveProfile(VideoModel video) async {
+    final activeProfile = await _storageService.getActiveProfile();
+    await _storageService.addToWatchHistory(video, profileId: activeProfile?.id);
   }
 
   @override
@@ -392,12 +453,15 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   Widget _buildVideoPage(int index) {
     final video = _videos[index];
     final controller = _getOrCreateController(index);
+    final screenSize = MediaQuery.of(context).size;
+    final basePlayerWidth = screenSize.width;
+    final basePlayerHeight = basePlayerWidth * 9 / 16;
 
     Widget playerWidget = YoutubePlayer(
       controller: controller,
-      showVideoProgressIndicator: true,
+      showVideoProgressIndicator: false,
       aspectRatio: 16 / 9,
-      width: MediaQuery.of(context).size.width,
+      width: basePlayerWidth,
       progressColors: const ProgressBarColors(
         playedColor: Colors.red,
         handleColor: Colors.redAccent,
@@ -416,95 +480,133 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
 
     return Container(
       color: Colors.black,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Video player - centered vertically, fills width
-          Center(child: playerWidget),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _togglePlayback(index),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Render 16:9 video as "cover" so Shorts fills the full portrait screen.
+            SizedBox.expand(
+              child: ClipRect(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: basePlayerWidth,
+                    height: basePlayerHeight,
+                    child: playerWidget,
+                  ),
+                ),
+              ),
+            ),
 
-          // Bottom info overlay
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 60, // Leave space for page indicator dots
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 60, 16, 32),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.85),
-                    Colors.black.withOpacity(0.4),
-                    Colors.transparent,
+            // Small tap feedback icon
+            IgnorePointer(
+              child: AnimatedOpacity(
+                opacity: _showPlaybackFeedback ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 140),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.45),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _playbackFeedbackIcon,
+                      color: Colors.white,
+                      size: 34,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom info overlay
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 60, // Leave space for page indicator dots
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 60, 16, 32),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.85),
+                      Colors.black.withOpacity(0.4),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Channel name with Short badge
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.play_arrow, color: Colors.white, size: 14),
+                              SizedBox(width: 2),
+                              Text(
+                                'Short',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            video.channelTitle,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Video title
+                    Text(
+                      video.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Channel name with Short badge
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.play_arrow, color: Colors.white, size: 14),
-                            SizedBox(width: 2),
-                            Text(
-                              'Short',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          video.channelTitle,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  // Video title
-                  Text(
-                    video.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      height: 1.3,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

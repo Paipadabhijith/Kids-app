@@ -85,7 +85,7 @@ class EmptyStateWidget extends StatelessWidget {
                     vertical: 12,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                 ),
               ),

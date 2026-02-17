@@ -21,6 +21,7 @@ class UpgradeDialog extends StatelessWidget {
       ),
       child: Container(
         padding: const EdgeInsets.all(24),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
@@ -138,10 +139,10 @@ class UpgradeDialog extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.purple.shade50,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: Colors.purple.shade200,
-                  width: 2,
+                  width: 1.6,
                 ),
               ),
               child: Row(
@@ -186,9 +187,9 @@ class UpgradeDialog extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: BorderSide(color: Colors.grey.shade400),
+                      side: BorderSide(color: Colors.grey.shade400, width: 1.6),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                     ),
                     child: Text(
@@ -216,7 +217,7 @@ class UpgradeDialog extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       backgroundColor: Colors.purple.shade600,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       elevation: 4,
                     ),

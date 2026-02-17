@@ -118,99 +118,176 @@ class _ChildProfilesScreenState extends State<ChildProfilesScreen> {
   }
 
   void _showAddProfileDialog() {
-    final nameController = TextEditingController();
-    final ageController = TextEditingController();
-    final timeLimitController = TextEditingController(text: '60');
+    _showProfileDialog();
+  }
+
+  void _showEditProfileDialog(ChildProfileModel profile) {
+    _showProfileDialog(existingProfile: profile);
+  }
+
+  void _showProfileDialog({ChildProfileModel? existingProfile}) {
+    final isEdit = existingProfile != null;
+    final nameController = TextEditingController(text: existingProfile?.name ?? '');
+    final ageController = TextEditingController(
+      text: existingProfile != null ? '${existingProfile.age}' : '',
+    );
+    final timeLimitController = TextEditingController(
+      text: '${existingProfile?.dailyTimeLimitMinutes ?? 60}',
+    );
+    final topicsController = TextEditingController(
+      text: existingProfile?.preferredTopics.join(', ') ?? '',
+    );
+    final blockedController = TextEditingController(
+      text: existingProfile?.blockedKeywords.join(', ') ?? '',
+    );
+    bool calmModeEnabled = existingProfile?.calmModeEnabled ?? false;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Child Profile'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'Enter child\'s name',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(isEdit ? 'Edit Child Profile' : 'Add Child Profile'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    hintText: 'Enter child\'s name',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: ageController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Age',
-                  hintText: 'Enter age',
+                const SizedBox(height: 16),
+                TextField(
+                  controller: ageController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Age',
+                    hintText: 'Enter age',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: timeLimitController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Daily Time Limit (minutes)',
-                  hintText: 'e.g., 60',
+                const SizedBox(height: 16),
+                TextField(
+                  controller: timeLimitController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Daily Time Limit (minutes)',
+                    hintText: 'e.g., 60',
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                TextField(
+                  controller: topicsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Preferred Topics',
+                    hintText: 'e.g., math, animals, drawing',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: blockedController,
+                  decoration: const InputDecoration(
+                    labelText: 'Blocked Keywords',
+                    hintText: 'e.g., scary, horror, fight',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Enable Calm Mode'),
+                  subtitle: const Text('Lower visual stimulation for this child'),
+                  value: calmModeEnabled,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      calmModeEnabled = value;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.trim().isEmpty || ageController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please fill in name and age'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                final parsedAge = int.tryParse(ageController.text.trim()) ?? 5;
+                final parsedLimit = int.tryParse(timeLimitController.text.trim()) ?? 60;
+                final preferredTopics = topicsController.text
+                    .split(',')
+                    .map((topic) => topic.trim().toLowerCase())
+                    .where((topic) => topic.isNotEmpty)
+                    .toSet()
+                    .toList();
+                final blockedKeywords = blockedController.text
+                    .split(',')
+                    .map((word) => word.trim().toLowerCase())
+                    .where((word) => word.isNotEmpty)
+                    .toSet()
+                    .toList();
+
+                final profile = ChildProfileModel(
+                  id: existingProfile?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+                  name: nameController.text.trim(),
+                  age: parsedAge,
+                  dailyTimeLimitMinutes: parsedLimit,
+                  preferredTopics: preferredTopics,
+                  blockedKeywords: blockedKeywords,
+                  calmModeEnabled: calmModeEnabled,
+                  createdAt: existingProfile?.createdAt,
+                  isActive: existingProfile?.isActive ?? _profiles.isEmpty,
+                );
+
+                try {
+                  late final List<ChildProfileModel> updatedProfiles;
+                  if (isEdit) {
+                    updatedProfiles = _profiles
+                        .map((p) => p.id == profile.id ? profile : p)
+                        .toList();
+                  } else {
+                    updatedProfiles = [..._profiles, profile];
+                  }
+                  await _storageService.saveChildProfiles(updatedProfiles);
+                  setState(() {
+                    _profiles = updatedProfiles;
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isEdit
+                            ? '${profile.name}\'s profile updated'
+                            : '${profile.name}\'s profile created',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error saving profile: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: Text(isEdit ? 'Save' : 'Add'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.isEmpty || ageController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please fill in all fields'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                return;
-              }
-
-              final newProfile = ChildProfileModel(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                name: nameController.text,
-                age: int.tryParse(ageController.text) ?? 5,
-                dailyTimeLimitMinutes: int.tryParse(timeLimitController.text) ?? 60,
-                isActive: _profiles.isEmpty, // First profile is active by default
-              );
-
-              try {
-                final updatedProfiles = [..._profiles, newProfile];
-                await _storageService.saveChildProfiles(updatedProfiles);
-                
-                setState(() {
-                  _profiles = updatedProfiles;
-                });
-                
-                Navigator.pop(context);
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${newProfile.name}\'s profile created'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error creating profile: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
       ),
     );
   }
@@ -288,14 +365,14 @@ class _ChildProfilesScreenState extends State<ChildProfilesScreen> {
       elevation: profile.isActive ? 4 : 2,
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         side: profile.isActive
-            ? BorderSide(color: profile.profileColor, width: 3)
+            ? BorderSide(color: profile.profileColor, width: 2.5)
             : BorderSide.none,
       ),
       child: InkWell(
         onTap: () => _switchProfile(profile),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -359,7 +436,7 @@ class _ChildProfilesScreenState extends State<ChildProfilesScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: Colors.green,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: const Text(
                                   'ACTIVE',
@@ -385,25 +462,43 @@ class _ChildProfilesScreenState extends State<ChildProfilesScreen> {
                     ),
                   ),
                   // Delete Button
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    onPressed: () => _deleteProfile(profile),
-                    tooltip: 'Delete Profile',
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                        onPressed: () => _showEditProfileDialog(profile),
+                        tooltip: 'Edit Profile',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () => _deleteProfile(profile),
+                        tooltip: 'Delete Profile',
+                      ),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 8),
-              // Profile Stats
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              // Profile options summary (dynamic, not fixed/hardcoded to 3 tiles)
+              Wrap(
+                spacing: 20,
+                runSpacing: 10,
+                alignment: WrapAlignment.spaceAround,
                 children: [
                   _buildStatChip(
                     Icons.timer,
                     '${profile.dailyTimeLimitMinutes}m',
                     'Daily Limit',
                     Colors.blue,
+                  ),
+                  _buildStatChip(
+                    Icons.interests_outlined,
+                    '${profile.preferredTopics.length}',
+                    'Interests',
+                    Colors.purple,
                   ),
                   _buildStatChip(
                     Icons.block,

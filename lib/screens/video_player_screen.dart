@@ -1,4 +1,4 @@
-import 'dart:async' show Timer, unawaited;
+import 'dart:async' show Timer, unawaited, StreamSubscription;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,6 +41,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   ColorFilter? _calmModeFilter;
   bool _isFullScreen = false;
   late VideoModel _currentVideo;
+  StreamSubscription? _settingsSubscription;
 
   bool _redirectedToShorts = false;
 
@@ -53,6 +54,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _startBreakCheckTimer();
     _loadCalmModeFilter();
     _startBinauralBeats();
+    _settingsSubscription = _parentalService.settingsChanges.listen((_) {
+      unawaited(_loadCalmModeFilter());
+    });
 
     // If already detected as Short (e.g. from title heuristic), redirect
     if (widget.video.isShort) {
@@ -62,11 +66,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       _fetchVideoDetails();
     }
 
-    // Allow all orientations for regular videos
+    // Keep screen portrait in normal mode; fullscreen will temporarily switch to landscape.
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
       DeviceOrientation.portraitDown,
     ]);
   }
@@ -190,10 +192,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             // Use SchedulerBinding to ensure navigation happens after the current frame
             WidgetsBinding.instance.addPostFrameCallback((_) async {
               if (mounted) {
+                final breakMinutes = await _parentalService.getBreakDurationMinutes();
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => BreakReminderScreen(
+                      breakMinutes: breakMinutes,
                       onBreakComplete: () async {
                         _isOnBreak = false;
                         _controller.play();
@@ -228,9 +232,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         loop: false,
         isLive: false,
         startAt: 0,
-        // Minimize YouTube UI elements
-        modestBranding: true,
-        showVideoAnnotations: false,
       ),
     );
 
@@ -242,15 +243,37 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       final wasFullScreen = _isFullScreen;
       _isFullScreen = _controller.value.isFullScreen;
       if (wasFullScreen != _isFullScreen && mounted) {
+        unawaited(_syncOrientationWithFullscreen(_isFullScreen));
         setState(() {});
       }
     });
+  }
+
+  Future<void> _syncOrientationWithFullscreen(bool isFullscreen) async {
+    if (isFullscreen) {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      return;
+    }
+
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
   }
 
 
   @override
   void dispose() {
     _breakCheckTimer?.cancel();
+    _settingsSubscription?.cancel();
     
     // Stop binaural beats
     _beatsService.dispose();
@@ -272,7 +295,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     // Add to watch history
     unawaited(
-      _storageService.addToWatchHistory(widget.video).catchError((e) {
+      _addToHistoryForActiveProfile(_currentVideo).catchError((e) {
         debugPrint('Error adding to watch history: $e');
       }),
     );
@@ -280,11 +303,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     // Stop binaural beats when leaving video player
     unawaited(_beatsService.stopBeats());
 
-    // Reset orientation to allow all orientations
+    // Restore portrait lock for the app interface.
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
       DeviceOrientation.portraitDown,
     ]);
 
@@ -292,42 +313,68 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     super.dispose();
   }
 
-  Widget _buildPlayerWidget() {
-    final playerWidget = YoutubePlayerBuilder(
-      onExitFullScreen: () {
-        // Handle exit fullscreen
-      },
-      player: YoutubePlayer(
-        controller: _controller,
-        showVideoProgressIndicator: true,
-        progressIndicatorColor: Theme.of(context).colorScheme.primary,
-        progressColors: ProgressBarColors(
-          playedColor: Theme.of(context).colorScheme.primary,
-          handleColor: Theme.of(context).colorScheme.primary,
-        ),
-      ),
-      builder: (context, player) {
-        return player;
-      },
-    );
+  Future<void> _addToHistoryForActiveProfile(VideoModel video) async {
+    final activeProfile = await _storageService.getActiveProfile();
+    await _storageService.addToWatchHistory(video, profileId: activeProfile?.id);
+  }
 
-    // Regular videos: 16:9 aspect ratio with Hero animation
+  Widget _buildYoutubePlayerCore() {
+    return YoutubePlayer(
+      controller: _controller,
+      showVideoProgressIndicator: true,
+      progressIndicatorColor: Theme.of(context).colorScheme.primary,
+      progressColors: ProgressBarColors(
+        playedColor: Theme.of(context).colorScheme.primary,
+        handleColor: Theme.of(context).colorScheme.primary,
+      ),
+    );
+  }
+
+  Widget _buildPlayerWidget() {
     Widget result = Hero(
       tag: 'video-${widget.video.id}',
       child: AspectRatio(
         aspectRatio: 16 / 9,
-        child: playerWidget,
+        child: _buildYoutubePlayerCore(),
       ),
     );
-    
-    // Apply calm mode filter if available
+
     if (_calmModeFilter != null) {
-      return ColorFiltered(
+      result = ColorFiltered(
         colorFilter: _calmModeFilter!,
         child: result,
       );
     }
     return result;
+  }
+
+  Widget _buildFullscreenPlayer() {
+    final size = MediaQuery.of(context).size;
+    final baseWidth = size.width;
+    final baseHeight = baseWidth * 9 / 16;
+
+    Widget player = SizedBox.expand(
+      child: ClipRect(
+        child: FittedBox(
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: baseWidth,
+            height: baseHeight,
+            child: _buildYoutubePlayerCore(),
+          ),
+        ),
+      ),
+    );
+
+    if (_calmModeFilter != null) {
+      player = ColorFiltered(
+        colorFilter: _calmModeFilter!,
+        child: player,
+      );
+    }
+
+    return player;
   }
 
   @override
@@ -347,7 +394,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       backgroundColor: _isFullScreen ? Colors.black : null,
       body: _isFullScreen
           ? // Fullscreen mode - show only the player
-          _buildPlayerWidget()
+          _buildFullscreenPlayer()
           : // Normal mode - show app bar, player, and description
           SafeArea(
               child: Column(

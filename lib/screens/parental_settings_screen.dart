@@ -505,6 +505,36 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
     );
   }
 
+  Widget _buildStatusPill({
+    required String label,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.32), width: 1.6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _saveSettings() async {
     if (_settings.parentalControlsEnabled) {
       // Validate password if setting one for the first time
@@ -612,6 +642,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
   }
 
   Widget _buildUsageStatisticsCard() {
+    final colorScheme = Theme.of(context).colorScheme;
     // Get today's usage from storage service
     return FutureBuilder<int>(
       future: _storageService.getTodayUsage(),
@@ -666,14 +697,10 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                         ),
                       ),
                     ),
-                    Chip(
-                      avatar: Icon(statusIcon, size: 16, color: statusColor),
-                      label: Text(statusText),
-                      backgroundColor: statusColor.withOpacity(0.1),
-                      labelStyle: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    _buildStatusPill(
+                      label: statusText,
+                      color: statusColor,
+                      icon: statusIcon,
                     ),
                   ],
                 ),
@@ -696,7 +723,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                           'of $timeLimit min limit',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -710,7 +737,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                           CircularProgressIndicator(
                             value: percentUsed / 100,
                             strokeWidth: 8,
-                            backgroundColor: Colors.grey[200],
+                            backgroundColor: colorScheme.surfaceContainerHighest,
                             valueColor: AlwaysStoppedAnimation<Color>(statusColor),
                           ),
                           Center(
@@ -731,7 +758,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                 const SizedBox(height: 12),
                 LinearProgressIndicator(
                   value: percentUsed / 100,
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: colorScheme.surfaceContainerHighest,
                   valueColor: AlwaysStoppedAnimation<Color>(statusColor),
                   minHeight: 8,
                   borderRadius: BorderRadius.circular(4),
@@ -746,6 +773,10 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final isDark = theme.brightness == Brightness.dark;
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -778,36 +809,41 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
-                  child: TextButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const UsageDashboardScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.dashboard),
-                    label: const Text('Dashboard'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.blue,
+                  child: Card(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const UsageDashboardScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.dashboard),
+                      label: const Text('Dashboard'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.blue,
+                      ),
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: TextButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ChildProfilesScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.people),
-                    label: const Text('Profiles'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.purple,
+                  child: Card(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ChildProfilesScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.people),
+                      label: const Text('Profiles'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.purple,
+                      ),
                     ),
                   ),
                 ),
@@ -823,9 +859,9 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                 secondary: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _settings.parentalControlsEnabled 
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.1),
+                        color: _settings.parentalControlsEnabled
+                            ? Colors.green.withOpacity(0.1)
+                            : colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -835,11 +871,32 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                         : Colors.grey,
                   ),
                 ),
-                title: const Text(
+                title: Text(
                   'Enable Parental Controls',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: textTheme.titleMedium?.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                subtitle: const Text('Control time limits and content filtering'),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Control time limits and content filtering',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    _buildStatusPill(
+                      label: _settings.parentalControlsEnabled ? 'Enabled' : 'Disabled',
+                      color: _settings.parentalControlsEnabled ? Colors.green : Colors.grey,
+                      icon: _settings.parentalControlsEnabled
+                          ? Icons.verified_user_outlined
+                          : Icons.remove_circle_outline,
+                    ),
+                  ],
+                ),
                 value: _settings.parentalControlsEnabled,
                 onChanged: (value) {
                   setState(() {
@@ -873,12 +930,12 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                             child: const Icon(Icons.timer_outlined, color: Colors.blue),
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                         'Daily Time Limit',
-                        style: TextStyle(
+                        style: textTheme.titleMedium?.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                         ),
                             ),
                           ),
@@ -965,28 +1022,23 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                         'Parent Password',
-                        style: TextStyle(
+                        style: textTheme.titleMedium?.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                         ),
                             ),
                           ),
-                          Chip(
-                            label: Text(
-                              _settings.parentPasswordHash != null ? 'Protected' : 'Not Set',
-                            ),
-                            backgroundColor: (_settings.parentPasswordHash != null 
-                                ? Colors.green 
-                                : Colors.orange).withOpacity(0.1),
-                            labelStyle: TextStyle(
-                              color: _settings.parentPasswordHash != null 
-                                  ? Colors.green 
-                                  : Colors.orange,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          _buildStatusPill(
+                            label: _settings.parentPasswordHash != null ? 'Protected' : 'Not Set',
+                            color: _settings.parentPasswordHash != null
+                                ? Colors.green
+                                : Colors.orange,
+                            icon: _settings.parentPasswordHash != null
+                                ? Icons.lock
+                                : Icons.lock_open,
                           ),
                         ],
                       ),
@@ -994,9 +1046,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                       // Show different UI based on whether password exists
                       if (_settings.parentPasswordHash == null) ...[
                         // First time - Set Password
-                        const Text(
+                        Text(
                           'Set a password to protect settings.',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         TextField(
@@ -1030,9 +1084,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                         ),
                       ] else ...[
                         // Password exists - Show Change Password button
-                        const Text(
+                        Text(
                           'Password is set. Click below to change it.',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
@@ -1073,12 +1129,12 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                             child: const Icon(Icons.block_outlined, color: Colors.red),
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                         'Blocked Keywords',
-                        style: TextStyle(
+                        style: textTheme.titleMedium?.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                         ),
                             ),
                           ),
@@ -1094,9 +1150,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Videos containing these keywords will be blocked',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -1180,9 +1238,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         'Control which channels are allowed or blocked',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       
@@ -1201,9 +1261,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Only videos from these channels will be shown',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Row(
@@ -1285,9 +1347,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Videos from these channels will be hidden',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                                 const SizedBox(height: 12),
                                 Row(
@@ -1396,9 +1460,19 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
+                                Text(
                                   'Interactive games during break times',
-                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                _buildStatusPill(
+                                  label: _settings.breakRemindersEnabled ? 'Active' : 'Inactive',
+                                  color: _settings.breakRemindersEnabled ? Colors.purple : Colors.grey,
+                                  icon: _settings.breakRemindersEnabled
+                                      ? Icons.notifications_active_outlined
+                                      : Icons.notifications_off_outlined,
                                 ),
                               ],
                             ),
@@ -1512,9 +1586,19 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
+                                Text(
                                   'Reduce visual stimulation by lowering contrast and saturation',
-                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                _buildStatusPill(
+                                  label: _settings.calmModeEnabled ? 'On' : 'Off',
+                                  color: _settings.calmModeEnabled ? Colors.teal : Colors.grey,
+                                  icon: _settings.calmModeEnabled
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
                                 ),
                               ],
                             ),
@@ -1599,7 +1683,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                               'Upgrade to Zen Kids for unlimited Calm Mode',
                                               style: TextStyle(
                                                 fontSize: 11,
-                                                color: Colors.grey.shade600,
+                                              color: colorScheme.onSurfaceVariant,
                                               ),
                                             ),
                                           ],
@@ -1622,9 +1706,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Select a preset or customize below',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
@@ -1774,7 +1860,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                 child: Icon(
                                   Icons.info_outline,
                                   size: 16,
-                                  color: Colors.grey[600],
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -1802,20 +1888,22 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
+                            color: colorScheme.primary.withOpacity(isDark ? 0.20 : 0.10),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blue.shade200),
+                            border: Border.all(
+                              color: colorScheme.primary.withOpacity(isDark ? 0.35 : 0.22),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.science_outlined, color: Colors.blue.shade700, size: 20),
+                              Icon(Icons.science_outlined, color: colorScheme.primary, size: 20),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   'These settings are based on research showing reduced saturation and contrast can lower visual stimulation and dopamine response in children.',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.blue.shade800,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                               ),
@@ -1868,9 +1956,19 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
+                                Text(
                                   'Gentle audio tones to encourage calm focus or relaxation',
-                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                _buildStatusPill(
+                                  label: _settings.binauralBeatsEnabled ? 'On' : 'Off',
+                                  color: _settings.binauralBeatsEnabled ? Colors.indigo : Colors.grey,
+                                  icon: _settings.binauralBeatsEnabled
+                                      ? Icons.headset_outlined
+                                      : Icons.headset_off_outlined,
                                 ),
                               ],
                             ),
@@ -1948,9 +2046,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  const Text(
+                                  Text(
                                     'Theta waves (6 Hz) for bedtime and relaxation',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1989,9 +2089,11 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  const Text(
+                                  Text(
                                     'Alpha waves (10 Hz) for learning and focus',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -2027,7 +2129,7 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                                 child: Icon(
                                   Icons.info_outline,
                                   size: 16,
-                                  color: Colors.grey[600],
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -2054,20 +2156,22 @@ class _ParentalSettingsScreenState extends State<ParentalSettingsScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.purple.shade50,
+                            color: colorScheme.secondary.withOpacity(isDark ? 0.20 : 0.10),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.purple.shade200),
+                            border: Border.all(
+                              color: colorScheme.secondary.withOpacity(isDark ? 0.35 : 0.24),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.science_outlined, color: Colors.purple.shade700, size: 20),
+                              Icon(Icons.science_outlined, color: colorScheme.secondary, size: 20),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   'Binaural beats work by playing slightly different frequencies in each ear. The brain perceives a third tone that may promote relaxation or focus.',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.purple.shade800,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                               ),

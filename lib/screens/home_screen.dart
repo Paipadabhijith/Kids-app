@@ -9,6 +9,7 @@ import '../services/storage_service.dart';
 import '../services/subscription_service.dart';
 import '../models/video_model.dart';
 import '../models/subscription_model.dart';
+import '../models/child_profile_model.dart';
 import '../utils/constants.dart';
 import '../utils/page_transitions.dart';
 import '../widgets/time_limit_widget.dart';
@@ -51,16 +52,31 @@ class _HomeScreenState extends State<HomeScreen> {
   List<VideoModel> _recommendedVideos = [];
   bool _isLoadingRecommendations = false;
   SubscriptionModel _subscription = SubscriptionModel();
+  StreamSubscription<ChildProfileModel?>? _activeProfileSubscription;
+  String? _activeProfileId;
 
   @override
   void initState() {
     super.initState();
     _checkTimeLimit();
     _loadSubscription();
+    _setupActiveProfileListener();
     // Load videos in background without blocking UI
     Future.microtask(() {
       _loadTrendingShows();
       _loadRecommendations();
+    });
+  }
+
+  Future<void> _setupActiveProfileListener() async {
+    final active = await _storageService.getActiveProfile();
+    _activeProfileId = active?.id;
+    _activeProfileSubscription = StorageService.activeProfileChanges.listen((profile) {
+      final newId = profile?.id;
+      if (!mounted || newId == _activeProfileId) return;
+      _activeProfileId = newId;
+      _loadRecommendations();
+      _loadTrendingShows();
     });
   }
 
@@ -99,8 +115,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadRecommendationsInternal() async {
     try {
       // First try to get recommendations based on watch history
-      final watchHistory = await _storageService.getWatchHistory();
+      final activeProfile = await _storageService.getActiveProfile();
+      _activeProfileId = activeProfile?.id;
+      final watchHistory = await _storageService.getWatchHistory(
+        profileId: activeProfile?.id,
+      );
       List<VideoModel> recommendations = [];
+      final profileTopics = activeProfile?.preferredTopics ?? const <String>[];
+      final ageTopic = _getAgeRecommendationTopic(activeProfile?.age);
 
       if (watchHistory.isNotEmpty) {
         // Extract keywords from watch history titles for personalized recommendations
@@ -117,7 +139,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Search for videos based on extracted keywords
         if (historyKeywords.isNotEmpty) {
-          final searchQuery = '${historyKeywords.take(3).join(' ')} kids';
+          final profileTerms = <String>{
+            ...profileTopics.take(2),
+            if (ageTopic.isNotEmpty) ageTopic,
+          };
+          final searchQuery =
+              '${historyKeywords.take(3).join(' ')} ${profileTerms.join(' ')} kids'
+                  .trim();
           try {
             recommendations = await _youtubeService.searchVideos(
               searchQuery,
@@ -129,7 +157,25 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
 
-      // If no watch history or search failed, use general kids recommendations
+      // If personalized history-based search failed, use profile preferences.
+      if (recommendations.isEmpty) {
+        final profileQueryTerms = <String>{
+          ...profileTopics.take(3),
+          if (ageTopic.isNotEmpty) ageTopic,
+        };
+        if (profileQueryTerms.isNotEmpty) {
+          try {
+            recommendations = await _youtubeService.searchVideos(
+              '${profileQueryTerms.join(' ')} kids videos',
+              maxResults: 10,
+            );
+          } catch (e) {
+            debugPrint('Error loading profile-based recommendations: $e');
+          }
+        }
+      }
+
+      // Final fallback: use general kids recommendations
       if (recommendations.isEmpty) {
         try {
           // Single query for faster loading
@@ -146,13 +192,14 @@ class _HomeScreenState extends State<HomeScreen> {
       final uniqueIds = <String>{};
       final filteredRecommendations = <VideoModel>[];
       
-      for (final video in recommendations) {
-        if (!uniqueIds.contains(video.id)) {
-          final isAllowed = await _parentalService.isVideoAllowed(video);
-          if (isAllowed) {
-            uniqueIds.add(video.id);
-            filteredRecommendations.add(video);
-          }
+      final allowChecks = await Future.wait(
+        recommendations.map((video) => _parentalService.isVideoAllowed(video)),
+      );
+      for (int i = 0; i < recommendations.length; i++) {
+        final video = recommendations[i];
+        if (!uniqueIds.contains(video.id) && allowChecks[i]) {
+          uniqueIds.add(video.id);
+          filteredRecommendations.add(video);
         }
       }
 
@@ -182,6 +229,14 @@ class _HomeScreenState extends State<HomeScreen> {
     'video', 'videos', 'kids', 'children', 'episode', 'full', 'official',
   };
 
+  String _getAgeRecommendationTopic(int? age) {
+    if (age == null) return '';
+    if (age <= 4) return 'toddler learning';
+    if (age <= 7) return 'early learning';
+    if (age <= 12) return 'kids educational';
+    return 'teen learning';
+  }
+
   Future<void> _loadTrendingShows() async {
     if (!Constants.hasValidApiKey) return;
     
@@ -196,10 +251,12 @@ class _HomeScreenState extends State<HomeScreen> {
       
       // Filter based on parental controls
       final filteredShows = <VideoModel>[];
-      for (final show in shows) {
-        final isAllowed = await _parentalService.isVideoAllowed(show);
-        if (isAllowed) {
-          filteredShows.add(show);
+      final allowChecks = await Future.wait(
+        shows.map((show) => _parentalService.isVideoAllowed(show)),
+      );
+      for (int i = 0; i < shows.length; i++) {
+        if (allowChecks[i]) {
+          filteredShows.add(shows[i]);
         }
       }
 
@@ -221,6 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _activeProfileSubscription?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -525,6 +583,8 @@ class _HomeScreenState extends State<HomeScreen> {
         // Don't show "Signing in..." if user is actually signed in
         final showSigningIn = _isSigningIn && !isSignedIn;
 
+        final textTheme = Theme.of(context).textTheme;
+        final colorScheme = Theme.of(context).colorScheme;
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -541,13 +601,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             children: [
               // Kids TV title
-              const Text(
+              Text(
                 'Kids TV',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                style: textTheme.displaySmall?.copyWith(
                   color: Colors.white,
-                  letterSpacing: 1.0,
+                  letterSpacing: 0.8,
                 ),
               ),
               const SizedBox(width: 8),
@@ -573,7 +631,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -586,9 +644,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 6),
                       Text(
                         'Search',
-                        style: TextStyle(
+                        style: textTheme.bodyMedium?.copyWith(
                           color: _isLimitExceeded ? Colors.white54 : Colors.white,
-                          fontSize: 14,
                         ),
                       ),
                     ],
@@ -618,7 +675,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                     },
                   ),
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   onSelected: (value) {
                     if (value == 'account') {
                       Navigator.push(
@@ -635,23 +692,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     debugPrint('Profile menu dismissed');
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'account',
                       child: Row(
                         children: [
-                          Icon(Icons.settings, color: Colors.blue),
-                          SizedBox(width: 8),
-                          Text('Account Settings'),
+                          Icon(Icons.settings, color: colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Account Settings',
+                            style: TextStyle(color: colorScheme.onSurface),
+                          ),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'signout',
                       child: Row(
                         children: [
-                          Icon(Icons.logout, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('Sign Out'),
+                          Icon(Icons.logout, color: colorScheme.error),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Sign Out',
+                            style: TextStyle(color: colorScheme.onSurface),
+                          ),
                         ],
                       ),
                     ),
@@ -673,10 +736,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Sign in button (compact)
                 Material(
                   color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                   child: InkWell(
                     onTap: _isSigningIn ? null : _handleGoogleSignIn,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       child: Row(
@@ -701,12 +764,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Text(
+                          Text(
                             'Sign in',
-                            style: TextStyle(
+                            style: textTheme.bodyMedium?.copyWith(
                               color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
@@ -742,7 +804,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color.withOpacity(0.7),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.3),
@@ -755,7 +817,7 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
@@ -809,6 +871,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Widget child,
     VoidCallback? onSeeAll,
   }) {
+    final textTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -819,21 +882,14 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF212121),
-                ),
+                style: textTheme.headlineMedium,
               ),
               if (onSeeAll != null)
                 TextButton(
                   onPressed: onSeeAll,
-                  child: const Text(
+                  child: Text(
                     'See All',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: textTheme.labelLarge,
                   ),
                 ),
             ],
@@ -850,25 +906,15 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required VoidCallback? onTap,
   }) {
-    final card = Container(
+    final textTheme = Theme.of(context).textTheme;
+    final card = SizedBox(
       width: 140,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
+      child: Card(
+        margin: const EdgeInsets.only(right: 12),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -878,17 +924,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(icon, size: 32, color: color),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF212121),
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -950,7 +994,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(color: Colors.red.shade300, width: 2),
                         ),
                         child: Row(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:crypto/crypto.dart';
 import '../models/settings_model.dart';
 import '../models/video_model.dart';
@@ -6,6 +7,8 @@ import '../services/storage_service.dart';
 
 class ParentalControlService {
   final StorageService _storageService = StorageService();
+  static final StreamController<SettingsModel> _settingsController =
+      StreamController<SettingsModel>.broadcast();
 
   // Default inappropriate keywords - always filtered (even if parental controls disabled)
   // This ensures basic kid-safety for all users
@@ -32,7 +35,10 @@ class ParentalControlService {
 
   Future<void> saveSettings(SettingsModel settings) async {
     await _storageService.saveSettings(settings);
+    _settingsController.add(settings);
   }
+
+  Stream<SettingsModel> get settingsChanges => _settingsController.stream;
 
   String hashPassword(String password) {
     final bytes = utf8.encode(password);

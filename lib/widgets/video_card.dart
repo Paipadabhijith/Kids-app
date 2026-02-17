@@ -15,12 +15,14 @@ class VideoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.all(8),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -30,7 +32,7 @@ class VideoCard extends StatelessWidget {
             Hero(
               tag: 'video-${video.id}',
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
                 child: Stack(
                   children: [
                     AspectRatio(
@@ -40,18 +42,18 @@ class VideoCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: Colors.grey[300],
+                            color: theme.colorScheme.primary.withOpacity(0.08),
                             child: const Icon(
                               Icons.video_library,
                               size: 48,
-                              color: Colors.grey,
+                              color: Color(0xFF8A90AB),
                             ),
                           );
                         },
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Container(
-                            color: Colors.grey[200],
+                            color: theme.colorScheme.secondary.withOpacity(0.08),
                             child: const Center(
                               child: CircularProgressIndicator(),
                             ),
@@ -70,8 +72,8 @@ class VideoCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(4),
+                            color: const Color(0xFFFF4D6D).withOpacity(0.92),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text(
                             'Short',
@@ -83,6 +85,24 @@ class VideoCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        height: 40,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.35),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -97,9 +117,9 @@ class VideoCard extends StatelessWidget {
                   children: [
                     Text(
                       video.title,
-                      style: const TextStyle(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -107,9 +127,10 @@ class VideoCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       video.channelTitle,
-                      style: TextStyle(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: const Color(0xFF6C7394),
+                        fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

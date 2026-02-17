@@ -6,8 +6,18 @@ import '../utils/constants.dart';
 
 class YouTubeService {
   final String apiKey;
+  static const Duration _requestTimeout = Duration(seconds: 10);
 
   YouTubeService({required this.apiKey});
+
+  Future<http.Response> _getWithTimeout(Uri uri) {
+    return http.get(uri).timeout(
+      _requestTimeout,
+      onTimeout: () {
+        throw Exception('Request timed out. Please check your internet connection.');
+      },
+    );
+  }
 
   /// Sanitize search query to remove inappropriate terms and add "for kids" modifier
   static String sanitizeSearchQuery(String query) {
@@ -62,7 +72,7 @@ class YouTubeService {
         '&key=$apiKey',
       );
 
-      final response = await http.get(uri);
+      final response = await _getWithTimeout(uri);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -106,7 +116,7 @@ class YouTubeService {
         '&key=$apiKey',
       );
 
-      final response = await http.get(uri);
+      final response = await _getWithTimeout(uri);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -145,7 +155,7 @@ class YouTubeService {
         '&key=$apiKey',
       );
 
-      final response = await http.get(uri);
+      final response = await _getWithTimeout(uri);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -181,7 +191,7 @@ class YouTubeService {
         '&key=$apiKey',
       );
 
-      final response = await http.get(uri);
+      final response = await _getWithTimeout(uri);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -235,19 +245,22 @@ class YouTubeService {
       
       final allVideos = <VideoModel>[];
       
-      // Search with each query to get diverse results
-      for (final query in kidsQueries) {
-        try {
-          final videos = await searchVideos(
-            query,
-            maxResults: (maxResults / kidsQueries.length).ceil() + 5,
-          );
-          allVideos.addAll(videos);
-        } catch (e) {
-          debugPrint('Query failed: $query - $e');
-          // Continue with other queries if one fails
-          continue;
-        }
+      // Fetch each query in parallel to reduce end-to-end latency.
+      final queryResults = await Future.wait(
+        kidsQueries.map((query) async {
+          try {
+            return await searchVideos(
+              query,
+              maxResults: (maxResults / kidsQueries.length).ceil() + 5,
+            );
+          } catch (e) {
+            debugPrint('Query failed: $query - $e');
+            return <VideoModel>[];
+          }
+        }),
+      );
+      for (final videos in queryResults) {
+        allVideos.addAll(videos);
       }
       
       // Remove duplicates based on video ID

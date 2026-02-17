@@ -21,7 +21,7 @@ class PlaylistCard extends StatelessWidget {
       margin: const EdgeInsets.all(8),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -32,7 +32,7 @@ class PlaylistCard extends StatelessWidget {
                 height: 64,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   Icons.playlist_play,

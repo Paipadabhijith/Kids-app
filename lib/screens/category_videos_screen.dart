@@ -22,9 +22,7 @@ class CategoryVideosScreen extends StatefulWidget {
 }
 
 class _CategoryVideosScreenState extends State<CategoryVideosScreen> {
-  final YouTubeService _youtubeService = YouTubeService(
-    apiKey: Constants.youtubeApiKey,
-  );
+  final YouTubeService _youtubeService = YouTubeService();
   final ParentalControlService _parentalService = ParentalControlService();
   
   List<VideoModel> _videos = [];

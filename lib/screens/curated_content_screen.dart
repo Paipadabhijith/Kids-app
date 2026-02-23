@@ -15,9 +15,7 @@ class CuratedContentScreen extends StatefulWidget {
 }
 
 class _CuratedContentScreenState extends State<CuratedContentScreen> {
-  final YouTubeService _youtubeService = YouTubeService(
-    apiKey: Constants.youtubeApiKey,
-  );
+  final YouTubeService _youtubeService = YouTubeService();
   final ParentalControlService _parentalService = ParentalControlService();
   final StorageService _storageService = StorageService();
   

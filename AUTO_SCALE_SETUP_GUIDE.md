@@ -323,3 +323,7 @@ firebase functions:log
 
 **Total Monthly Cost:** **$0-5** for most scenarios! 🎉
 
+
+
+
+

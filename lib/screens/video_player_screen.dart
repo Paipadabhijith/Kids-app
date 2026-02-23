@@ -29,6 +29,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late YoutubePlayerController _controller;
+  late Widget _playerCore;
   final StorageService _storageService = StorageService();
   final ParentalControlService _parentalService = ParentalControlService();
   final VideoFilterService _filterService = VideoFilterService();
@@ -42,6 +43,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   bool _isFullScreen = false;
   late VideoModel _currentVideo;
   StreamSubscription? _settingsSubscription;
+  bool _showPlaybackFeedback = false;
+  IconData _playbackFeedbackIcon = Icons.play_arrow_rounded;
+  Timer? _playbackFeedbackTimer;
 
   bool _redirectedToShorts = false;
 
@@ -95,10 +99,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   /// Fetch full video details (including duration) to detect Shorts
   Future<void> _fetchVideoDetails() async {
     try {
-      final apiKey = dotenv.env['YOUTUBE_API_KEY'] ?? '';
-      if (apiKey.isEmpty) return;
-      
-      final youtubeService = YouTubeService(apiKey: apiKey);
+      final youtubeService = YouTubeService();
       final details = await youtubeService.getVideoDetails(widget.video.id);
       
       if (details != null && mounted) {
@@ -225,13 +226,27 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       flags: const YoutubePlayerFlags(
         autoPlay: true,
         mute: false,
-        enableCaption: true,
-        controlsVisibleAtStart: true,
+        enableCaption: false,
+        controlsVisibleAtStart: false,
         // Disable comments and related videos
-        hideControls: false,
+        hideControls: true,
+        disableDragSeek: true,
         loop: false,
         isLive: false,
         startAt: 0,
+      ),
+    );
+
+    // Keep a single player widget instance to avoid unnecessary platform-view rebuilds.
+    _playerCore = RepaintBoundary(
+      child: YoutubePlayer(
+        controller: _controller,
+        showVideoProgressIndicator: false,
+        progressIndicatorColor: Colors.red,
+        progressColors: const ProgressBarColors(
+          playedColor: Colors.red,
+          handleColor: Colors.redAccent,
+        ),
       ),
     );
 
@@ -273,6 +288,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   void dispose() {
     _breakCheckTimer?.cancel();
+    _playbackFeedbackTimer?.cancel();
     _settingsSubscription?.cancel();
     
     // Stop binaural beats
@@ -313,21 +329,71 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     super.dispose();
   }
 
+  void _togglePlayback() {
+    if (_isOnBreak) return;
+    final isPlaying = _controller.value.isPlaying;
+    if (isPlaying) {
+      _controller.pause();
+      _playbackFeedbackIcon = Icons.pause_rounded;
+    } else {
+      _controller.play();
+      _playbackFeedbackIcon = Icons.play_arrow_rounded;
+    }
+
+    setState(() {
+      _showPlaybackFeedback = true;
+    });
+
+    _playbackFeedbackTimer?.cancel();
+    _playbackFeedbackTimer = Timer(const Duration(milliseconds: 450), () {
+      if (mounted) {
+        setState(() {
+          _showPlaybackFeedback = false;
+        });
+      }
+    });
+  }
+
+  Widget _withPlaybackOverlay(Widget child) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _togglePlayback,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          child,
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _showPlaybackFeedback ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 140),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.45),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _playbackFeedbackIcon,
+                    color: Colors.white,
+                    size: 34,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _addToHistoryForActiveProfile(VideoModel video) async {
     final activeProfile = await _storageService.getActiveProfile();
     await _storageService.addToWatchHistory(video, profileId: activeProfile?.id);
   }
 
   Widget _buildYoutubePlayerCore() {
-    return YoutubePlayer(
-      controller: _controller,
-      showVideoProgressIndicator: true,
-      progressIndicatorColor: Theme.of(context).colorScheme.primary,
-      progressColors: ProgressBarColors(
-        playedColor: Theme.of(context).colorScheme.primary,
-        handleColor: Theme.of(context).colorScheme.primary,
-      ),
-    );
+    return _playerCore;
   }
 
   Widget _buildPlayerWidget() {
@@ -335,7 +401,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       tag: 'video-${widget.video.id}',
       child: AspectRatio(
         aspectRatio: 16 / 9,
-        child: _buildYoutubePlayerCore(),
+        child: _withPlaybackOverlay(_buildYoutubePlayerCore()),
       ),
     );
 
@@ -361,7 +427,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           child: SizedBox(
             width: baseWidth,
             height: baseHeight,
-            child: _buildYoutubePlayerCore(),
+            child: _withPlaybackOverlay(_buildYoutubePlayerCore()),
           ),
         ),
       ),

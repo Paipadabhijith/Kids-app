@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/video_model.dart';
 import '../services/youtube_service.dart';
@@ -20,11 +21,10 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final YouTubeService _youtubeService = YouTubeService(
-    apiKey: Constants.youtubeApiKey,
-  );
+  final YouTubeService _youtubeService = YouTubeService();
   final ParentalControlService _parentalService = ParentalControlService();
   final SearchHistoryService _searchHistoryService = SearchHistoryService();
+  Timer? _searchDebounceTimer;
   
   List<VideoModel> _searchResults = [];
   bool _isLoading = false;
@@ -159,16 +159,42 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() {
-      setState(() {
-        _hasSearchText = _searchController.text.isNotEmpty;
-      });
-    });
+    _searchController.addListener(_onSearchChanged);
     _loadRecentSearches();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _hasSearchText = _searchController.text.isNotEmpty;
+    });
+    
+    // Debounce search - wait 500ms after user stops typing
+    _searchDebounceTimer?.cancel();
+    final query = _searchController.text.trim();
+    
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _errorMessage = null;
+      });
+      _loadRecentSearches();
+      return;
+    }
+    
+    // Only show loading if user is actively typing (not on clear)
+    if (query.isNotEmpty) {
+      _searchDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+        if (mounted && _searchController.text.trim() == query) {
+          _searchVideos(query);
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
+    _searchDebounceTimer?.cancel();
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }

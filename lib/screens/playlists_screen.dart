@@ -18,9 +18,7 @@ class PlaylistsScreen extends StatefulWidget {
 
 class _PlaylistsScreenState extends State<PlaylistsScreen> {
   final StorageService _storageService = StorageService();
-  final YouTubeService _youtubeService = YouTubeService(
-    apiKey: Constants.youtubeApiKey,
-  );
+  final YouTubeService _youtubeService = YouTubeService();
   final ParentalControlService _parentalService = ParentalControlService();
   
   List<PlaylistModel> _playlists = [];

@@ -187,10 +187,7 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
     _isLoadingMore = true;
 
     try {
-      final apiKey = dotenv.env['YOUTUBE_API_KEY'] ?? '';
-      if (apiKey.isEmpty) return;
-
-      final youtubeService = YouTubeService(apiKey: apiKey);
+      final youtubeService = YouTubeService();
       // Search for related kid-friendly Shorts
       final queries = [
         '${widget.initialVideo.channelTitle} shorts for kids',

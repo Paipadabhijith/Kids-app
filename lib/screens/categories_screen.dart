@@ -18,9 +18,7 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  final YouTubeService _youtubeService = YouTubeService(
-    apiKey: Constants.youtubeApiKey,
-  );
+  final YouTubeService _youtubeService = YouTubeService();
   final ParentalControlService _parentalService = ParentalControlService();
   
   String? _selectedCategoryId;

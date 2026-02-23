@@ -11,6 +11,7 @@ class StorageService {
   static SharedPreferences? _prefs;
   static final StreamController<ChildProfileModel?> _activeProfileController =
       StreamController<ChildProfileModel?>.broadcast();
+  static const String _apiCachePrefix = 'api_cache_';
 
   static Stream<ChildProfileModel?> get activeProfileChanges =>
       _activeProfileController.stream;
@@ -293,6 +294,38 @@ class StorageService {
     } catch (_) {
       _activeProfileController.add(null);
     }
+  }
+
+  // Generic API cache helpers (TTL-based)
+  Future<Map<String, dynamic>?> getCachedApiData(
+    String cacheKey, {
+    required Duration maxAge,
+  }) async {
+    if (_prefs == null) await init();
+    final raw = _prefs!.getString('$_apiCachePrefix$cacheKey');
+    if (raw == null) return null;
+    try {
+      final decoded = json.decode(raw) as Map<String, dynamic>;
+      final timestampMs = decoded['timestampMs'] as int?;
+      if (timestampMs == null) return null;
+      final age = DateTime.now().millisecondsSinceEpoch - timestampMs;
+      if (age > maxAge.inMilliseconds) {
+        await _prefs!.remove('$_apiCachePrefix$cacheKey');
+        return null;
+      }
+      return decoded['data'] as Map<String, dynamic>?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> setCachedApiData(String cacheKey, Map<String, dynamic> data) async {
+    if (_prefs == null) await init();
+    final payload = <String, dynamic>{
+      'timestampMs': DateTime.now().millisecondsSinceEpoch,
+      'data': data,
+    };
+    await _prefs!.setString('$_apiCachePrefix$cacheKey', json.encode(payload));
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/home_screen.dart';
 import 'services/app_theme_service.dart';
 import 'services/storage_service.dart';
+import 'services/api_key_service.dart';
 import 'utils/theme.dart';
 
 void main() async {
@@ -35,6 +36,18 @@ void main() async {
   // Load environment variables with error handling
   try {
     await dotenv.load(fileName: ".env");
+    
+    // Debug: Check if keys are loaded
+    debugPrint('=== API Key Debug ===');
+    debugPrint('Key 1 loaded: ${dotenv.env['YOUTUBE_API_KEY']?.isNotEmpty ?? false}');
+    debugPrint('Key 2 loaded: ${dotenv.env['YOUTUBE_API_KEY_2']?.isNotEmpty ?? false}');
+    if (dotenv.env['YOUTUBE_API_KEY'] != null) {
+      debugPrint('Key 1 value: ${dotenv.env['YOUTUBE_API_KEY']!.substring(0, 10)}...');
+    }
+    if (dotenv.env['YOUTUBE_API_KEY_2'] != null) {
+      debugPrint('Key 2 value: ${dotenv.env['YOUTUBE_API_KEY_2']!.substring(0, 10)}...');
+    }
+    debugPrint('===================');
   } catch (e) {
     debugPrint('Warning: Could not load .env file: $e');
     // App can still run, but YouTube features won't work without API key
@@ -43,12 +56,29 @@ void main() async {
   // Initialize storage service
   try {
     await StorageService.init();
-    await AppThemeService.init();
+    debugPrint('StorageService initialized');
   } catch (e) {
-    debugPrint('Error initializing storage: $e');
-    // Continue anyway - storage will be initialized on first use
+    debugPrint('Error initializing StorageService: $e');
   }
   
+  try {
+    await AppThemeService.init();
+    debugPrint('AppThemeService initialized');
+  } catch (e) {
+    debugPrint('Error initializing AppThemeService: $e');
+  }
+  
+  try {
+    await ApiKeyService().init(); // Initialize API key service
+    debugPrint('ApiKeyService initialized');
+  } catch (e, stackTrace) {
+    debugPrint('Error initializing ApiKeyService: $e');
+    debugPrint('Stack trace: $stackTrace');
+    // Continue anyway - app should still work
+  }
+  
+  // Ensure app starts even if initialization had issues
+  debugPrint('Starting app...');
   runApp(const KidsTVApp());
 }
 
@@ -66,11 +96,9 @@ class KidsTVApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           debugShowCheckedModeBanner: false,
-          home: StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              // Firebase handles persistence automatically
-              // User stays signed in until they explicitly sign out
+          home: Builder(
+            builder: (context) {
+              // Directly show HomeScreen - Firebase auth is handled inside
               return const HomeScreen();
             },
           ),

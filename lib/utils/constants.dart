@@ -1,31 +1,52 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Constants {
-  // YouTube Data API v3 key loaded from .env file
+  // YouTube Data API v3 keys loaded from .env file
+  // Supports multiple keys for quota rotation
   // Get it from: https://console.cloud.google.com/
   // Add it to .env file as: YOUTUBE_API_KEY=your_key_here
-  static String get youtubeApiKey {
+  static List<String> get youtubeApiKeys {
     try {
-      final envKey = dotenv.env['YOUTUBE_API_KEY'] ?? '';
-
-      // Prefer key from .env if present and not the placeholder
-      if (envKey.isNotEmpty && envKey != 'your_youtube_api_key_here') {
-        return envKey;
+      final keys = <String>[];
+      
+      // Primary key
+      final key1 = dotenv.env['YOUTUBE_API_KEY'] ?? '';
+      if (key1.isNotEmpty && key1 != 'your_youtube_api_key_here') {
+        keys.add(key1);
       }
-
-      // Fallback: hard-coded key provided for local testing ONLY.
-      // NOTE: Before committing or sharing the repo, remove this fallback
-      // and keep the key only in the .env file.
-      const fallbackKey = 'AIzaSyAjrv50h1xxXY96CsJ2xvliYhMNpepyewo';
-      return fallbackKey;
+      
+      // Secondary key
+      final key2 = dotenv.env['YOUTUBE_API_KEY_2'] ?? '';
+      if (key2.isNotEmpty) {
+        keys.add(key2);
+      }
+      
+      // Tertiary key (for future use)
+      final key3 = dotenv.env['YOUTUBE_API_KEY_3'] ?? '';
+      if (key3.isNotEmpty) {
+        keys.add(key3);
+      }
+      
+      // Fallback for local testing (remove before production)
+      if (keys.isEmpty) {
+        const fallbackKey = 'AIzaSyAjrv50h1xxXY96CsJ2xvliYhMNpepyewo';
+        keys.add(fallbackKey);
+      }
+      
+      return keys;
     } catch (e) {
-      return '';
+      return [];
     }
   }
   
+  // Get first available key (for backward compatibility)
+  static String get youtubeApiKey {
+    final keys = youtubeApiKeys;
+    return keys.isNotEmpty ? keys[0] : '';
+  }
+  
   static bool get hasValidApiKey {
-    final key = youtubeApiKey;
-    return key.isNotEmpty && key != 'your_youtube_api_key_here';
+    return youtubeApiKeys.isNotEmpty;
   }
   
   static const String youtubeBaseUrl = 'https://www.googleapis.com/youtube/v3';

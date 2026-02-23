@@ -29,6 +29,26 @@ class ParentalControlService {
     'suicide', 'self harm', 'hate', 'racism',
   ];
 
+  bool _containsBlockedKeyword(String text, String keyword) {
+    final normalizedText = text.toLowerCase();
+    final normalizedKeyword = keyword.toLowerCase().trim();
+    if (normalizedKeyword.isEmpty) return false;
+
+    // For plain words/phrases, use word boundaries so "hell" won't match "hello".
+    final isWordLike = RegExp(r'^[a-z0-9 ]+$').hasMatch(normalizedKeyword);
+    if (isWordLike) {
+      final phrasePattern = normalizedKeyword
+          .split(RegExp(r'\s+'))
+          .where((part) => part.isNotEmpty)
+          .map(RegExp.escape)
+          .join(r'\s+');
+      return RegExp(r'\b' + phrasePattern + r'\b').hasMatch(normalizedText);
+    }
+
+    // Keep substring match for terms with special characters (e.g. "18+").
+    return normalizedText.contains(normalizedKeyword);
+  }
+
   Future<SettingsModel> getSettings() async {
     return await _storageService.getSettings();
   }
@@ -157,7 +177,7 @@ class ParentalControlService {
     
     // Check default inappropriate keywords (always active)
     for (final keyword in _defaultInappropriateKeywords) {
-      if (combinedText.contains(keyword.toLowerCase())) {
+      if (_containsBlockedKeyword(combinedText, keyword)) {
         return false;
       }
     }
@@ -166,7 +186,7 @@ class ParentalControlService {
     if (settings.parentalControlsEnabled) {
       // Check user-configured blocked keywords
       for (final keyword in settings.blockedKeywords) {
-        if (combinedText.contains(keyword.toLowerCase())) {
+        if (_containsBlockedKeyword(combinedText, keyword)) {
           return false;
         }
       }

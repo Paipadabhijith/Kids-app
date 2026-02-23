@@ -40,9 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final UserProfileService _profileService = UserProfileService();
   final StorageService _storageService = StorageService();
   final SubscriptionService _subscriptionService = SubscriptionService();
-  final YouTubeService _youtubeService = YouTubeService(
-    apiKey: Constants.youtubeApiKey,
-  );
+  final YouTubeService _youtubeService = YouTubeService();
   int _remainingMinutes = -1;
   bool _isLimitExceeded = false;
   final ScrollController _scrollController = ScrollController();
@@ -54,6 +52,12 @@ class _HomeScreenState extends State<HomeScreen> {
   SubscriptionModel _subscription = SubscriptionModel();
   StreamSubscription<ChildProfileModel?>? _activeProfileSubscription;
   String? _activeProfileId;
+  String? _recommendationEmptyReason;
+  String? _trendingEmptyReason;
+  int? _recommendationsFetchedCount;
+  int? _recommendationsAllowedCount;
+  int? _trendingFetchedCount;
+  int? _trendingAllowedCount;
 
   @override
   void initState() {
@@ -61,11 +65,67 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkTimeLimit();
     _loadSubscription();
     _setupActiveProfileListener();
-    // Load videos in background without blocking UI
-    Future.microtask(() {
+    // Load cached content first, then refresh in background
+    Future.microtask(() async {
+      await _loadCachedContent();
+      // Then refresh from API
       _loadTrendingShows();
       _loadRecommendations();
     });
+  }
+
+  Future<void> _loadCachedContent() async {
+    try {
+      // Load cached trending (12h cache)
+      final cachedTrending = await _storageService.getCachedApiData(
+        'trending_kids_shows',
+        maxAge: const Duration(hours: 12),
+      );
+      if (cachedTrending != null) {
+        final rawVideos = cachedTrending['videos'] as List?;
+        if (rawVideos != null && mounted) {
+          final videos = rawVideos
+              .whereType<Map>()
+              .map((item) => VideoModel.fromJson(Map<String, dynamic>.from(item)))
+              .toList();
+          if (videos.isNotEmpty) {
+            setState(() {
+              _trendingShows = videos.take(5).toList();
+            });
+          }
+        }
+      }
+
+      // Load cached recommendations (12h cache)
+      final cachedRecommendations = await _storageService.getCachedApiData(
+        'recommendations',
+        maxAge: const Duration(hours: 12),
+      );
+      if (cachedRecommendations != null) {
+        final rawVideos = cachedRecommendations['videos'] as List?;
+        if (rawVideos != null && mounted) {
+          final videos = rawVideos
+              .whereType<Map>()
+              .map((item) => VideoModel.fromJson(Map<String, dynamic>.from(item)))
+              .toList();
+          if (videos.isNotEmpty) {
+            setState(() {
+              _recommendedVideos = videos.take(5).toList();
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading cached content: $e');
+      // Continue anyway - will load from API
+    }
+  }
+
+  Future<void> _refreshContent() async {
+    await Future.wait([
+      _loadTrendingShows(),
+      _loadRecommendations(),
+    ]);
   }
 
   Future<void> _setupActiveProfileListener() async {
@@ -90,10 +150,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadRecommendations() async {
-    if (!Constants.hasValidApiKey) return;
+    if (!Constants.hasValidApiKey) {
+      if (mounted) {
+        setState(() {
+          _recommendedVideos = [];
+          _isLoadingRecommendations = false;
+          _recommendationEmptyReason = 'YouTube API key is missing or invalid.';
+          _recommendationsFetchedCount = 0;
+          _recommendationsAllowedCount = 0;
+        });
+      }
+      return;
+    }
 
     setState(() {
       _isLoadingRecommendations = true;
+      _recommendationEmptyReason = null;
+      _recommendationsFetchedCount = null;
+      _recommendationsAllowedCount = null;
     });
 
     try {
@@ -107,6 +181,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _isLoadingRecommendations = false;
+          _recommendationEmptyReason = 'Could not load recommendations right now.';
+          _recommendationsFetchedCount = null;
+          _recommendationsAllowedCount = null;
         });
       }
     }
@@ -149,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
           try {
             recommendations = await _youtubeService.searchVideos(
               searchQuery,
-              maxResults: 10,
+              maxResults: 5,
             );
           } catch (e) {
             debugPrint('Error searching recommendations: $e');
@@ -167,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
           try {
             recommendations = await _youtubeService.searchVideos(
               '${profileQueryTerms.join(' ')} kids videos',
-              maxResults: 10,
+              maxResults: 5,
             );
           } catch (e) {
             debugPrint('Error loading profile-based recommendations: $e');
@@ -181,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Single query for faster loading
           recommendations = await _youtubeService.searchVideos(
             'popular educational kids videos',
-            maxResults: 10,
+            maxResults: 5,
           );
         } catch (e) {
           debugPrint('Error loading general recommendations: $e');
@@ -208,9 +285,27 @@ class _HomeScreenState extends State<HomeScreen> {
       filteredRecommendations.removeWhere((v) => trendingIds.contains(v.id));
 
       if (mounted) {
+        final reason = await _resolveEmptyReason(
+          fetchedCount: recommendations.length,
+          filteredCount: filteredRecommendations.length,
+        );
+        // Cache the results
+        try {
+          await _storageService.setCachedApiData('recommendations', {
+            'videos': filteredRecommendations.take(5).map((v) => v.toJson()).toList(),
+          });
+        } catch (e) {
+          debugPrint('Error caching recommendations: $e');
+        }
+
         setState(() {
-          _recommendedVideos = filteredRecommendations.take(10).toList();
+          _recommendedVideos = filteredRecommendations.take(5).toList();
           _isLoadingRecommendations = false;
+          _recommendationEmptyReason = _recommendedVideos.isEmpty
+              ? reason ?? 'No recommendations available right now.'
+              : null;
+          _recommendationsFetchedCount = recommendations.length;
+          _recommendationsAllowedCount = filteredRecommendations.length;
         });
       }
     } catch (e) {
@@ -218,6 +313,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _isLoadingRecommendations = false;
+          _recommendationEmptyReason = _friendlyErrorReason(e);
+          _recommendationsFetchedCount = null;
+          _recommendationsAllowedCount = null;
         });
       }
     }
@@ -238,15 +336,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadTrendingShows() async {
-    if (!Constants.hasValidApiKey) return;
+    if (!Constants.hasValidApiKey) {
+      if (mounted) {
+        setState(() {
+          _trendingShows = [];
+          _isLoadingTrending = false;
+          _trendingEmptyReason = 'YouTube API key is missing or invalid.';
+          _trendingFetchedCount = 0;
+          _trendingAllowedCount = 0;
+        });
+      }
+      return;
+    }
     
     setState(() {
       _isLoadingTrending = true;
+      _trendingEmptyReason = null;
+      _trendingFetchedCount = null;
+      _trendingAllowedCount = null;
     });
 
     try {
       // Add timeout to prevent hanging
-      final shows = await _youtubeService.getTrendingKidsShows(maxResults: 10)
+      final shows = await _youtubeService.getTrendingKidsShows(maxResults: 5)
           .timeout(const Duration(seconds: 10));
       
       // Filter based on parental controls
@@ -261,9 +373,27 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       if (mounted) {
+        final reason = await _resolveEmptyReason(
+          fetchedCount: shows.length,
+          filteredCount: filteredShows.length,
+        );
+        // Cache the results
+        try {
+          await _storageService.setCachedApiData('trending_kids_shows', {
+            'videos': filteredShows.take(5).map((v) => v.toJson()).toList(),
+          });
+        } catch (e) {
+          debugPrint('Error caching trending: $e');
+        }
+
         setState(() {
-          _trendingShows = filteredShows;
+          _trendingShows = filteredShows.take(5).toList();
           _isLoadingTrending = false;
+          _trendingEmptyReason = _trendingShows.isEmpty
+              ? reason ?? 'No trending videos available right now.'
+              : null;
+          _trendingFetchedCount = shows.length;
+          _trendingAllowedCount = filteredShows.length;
         });
       }
     } catch (e) {
@@ -271,9 +401,101 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _isLoadingTrending = false;
+          _trendingEmptyReason = _friendlyErrorReason(e);
+          _trendingFetchedCount = null;
+          _trendingAllowedCount = null;
         });
       }
     }
+  }
+
+  Future<String?> _resolveEmptyReason({
+    required int fetchedCount,
+    required int filteredCount,
+  }) async {
+    if (fetchedCount > 0 && filteredCount == 0) {
+      final settings = await _parentalService.getSettings();
+      if (settings.whitelistedChannels.isNotEmpty) {
+        return 'No videos match your allowed channels list.';
+      }
+      if (settings.blockedKeywords.isNotEmpty || settings.blacklistedChannels.isNotEmpty) {
+        return 'Parental filters are blocking available videos.';
+      }
+      return 'Available videos were filtered for safety.';
+    }
+    if (fetchedCount == 0) {
+      return 'No videos returned right now. Check API quota or try again later.';
+    }
+    return null;
+  }
+
+  String _friendlyErrorReason(Object error) {
+    final message = error.toString().toLowerCase();
+    if (message.contains('quota') || message.contains('403')) {
+      return 'YouTube API quota exceeded. Please try later.';
+    }
+    if (message.contains('api key') || message.contains('key')) {
+      return 'YouTube API key is invalid or restricted.';
+    }
+    if (message.contains('timeout')) {
+      return 'Request timed out. Check internet and retry.';
+    }
+    return 'Could not load videos right now.';
+  }
+
+  Widget _buildCompactFeedEmptyState({
+    required String title,
+    required String reason,
+    required IconData icon,
+    required Color iconColor,
+    int? fetchedCount,
+    int? allowedCount,
+  }) {
+    final textTheme = Theme.of(context).textTheme;
+    final debugLine = (fetchedCount != null && allowedCount != null)
+        ? 'Debug: fetched $fetchedCount, allowed $allowedCount'
+        : null;
+    return SizedBox(
+      height: 180,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: iconColor, size: 34),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                reason,
+                style: textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (debugLine != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  debugLine,
+                  style: textTheme.labelSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -963,11 +1185,14 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildHeader(),
               Expanded(
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                child: RefreshIndicator(
+                  onRefresh: _refreshContent,
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(), // Enable pull-to-refresh even when content fits
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                       // Time limit widget - only show if we have a valid limit (>= 0)
                       // -1 means no limit or still loading, so don't show anything
                       if (_remainingMinutes >= 0)
@@ -1235,16 +1460,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             )
                           : _recommendedVideos.isEmpty
-                              ? SizedBox(
-                                  height: 180,
-                                  child: Center(
-                                    child: EmptyStateWidget(
-                                      title: 'No Recommendations Yet',
-                                      message: 'Watch some videos to get personalized recommendations!',
-                                      icon: Icons.recommend,
-                                      iconColor: Colors.blue,
-                                    ),
-                                  ),
+                              ? _buildCompactFeedEmptyState(
+                                  title: 'No Recommendations Yet',
+                                  reason: _recommendationEmptyReason ??
+                                      'Watch some videos to get personalized recommendations.',
+                                  icon: Icons.recommend,
+                                  iconColor: Colors.blue,
+                                  fetchedCount: _recommendationsFetchedCount,
+                                  allowedCount: _recommendationsAllowedCount,
                                 )
                               : SizedBox(
                                   height: 180,
@@ -1308,16 +1531,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             )
                           : _trendingShows.isEmpty
-                              ? SizedBox(
-                                  height: 200,
-                                  child: Center(
-                                    child: EmptyStateWidget(
-                                      title: 'No Trending Shows',
-                                      message: 'Check back later for trending kids content!',
-                                      icon: Icons.trending_up,
-                                      iconColor: Colors.orange,
-                                    ),
-                                  ),
+                              ? _buildCompactFeedEmptyState(
+                                  title: 'No Trending Shows',
+                                  reason: _trendingEmptyReason ??
+                                      'Check back later for trending kids content.',
+                                  icon: Icons.trending_up,
+                                  iconColor: Colors.orange,
+                                  fetchedCount: _trendingFetchedCount,
+                                  allowedCount: _trendingAllowedCount,
                                 )
                               : SizedBox(
                                   height: 200,
@@ -1350,14 +1571,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
 
                     const SizedBox(height: 32),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
     } catch (e) {
       // If there's an error building the home screen, show error UI
       return Scaffold(

@@ -37,17 +37,7 @@ void main() async {
   try {
     await dotenv.load(fileName: ".env");
     
-    // Debug: Check if keys are loaded
-    debugPrint('=== API Key Debug ===');
-    debugPrint('Key 1 loaded: ${dotenv.env['YOUTUBE_API_KEY']?.isNotEmpty ?? false}');
-    debugPrint('Key 2 loaded: ${dotenv.env['YOUTUBE_API_KEY_2']?.isNotEmpty ?? false}');
-    if (dotenv.env['YOUTUBE_API_KEY'] != null) {
-      debugPrint('Key 1 value: ${dotenv.env['YOUTUBE_API_KEY']!.substring(0, 10)}...');
-    }
-    if (dotenv.env['YOUTUBE_API_KEY_2'] != null) {
-      debugPrint('Key 2 value: ${dotenv.env['YOUTUBE_API_KEY_2']!.substring(0, 10)}...');
-    }
-    debugPrint('===================');
+    debugPrint('.env loaded successfully');
   } catch (e) {
     debugPrint('Warning: Could not load .env file: $e');
     // App can still run, but YouTube features won't work without API key
@@ -96,12 +86,7 @@ class KidsTVApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           debugShowCheckedModeBanner: false,
-          home: Builder(
-            builder: (context) {
-              // Directly show HomeScreen - Firebase auth is handled inside
-              return const HomeScreen();
-            },
-          ),
+          home: const HomeScreen(),
           builder: (context, child) {
             // Wrap with error boundary
             return MediaQuery(

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../services/parental_control_service.dart';
 import '../services/auth_service.dart';
 import '../services/user_profile_service.dart';
@@ -11,11 +10,11 @@ import '../models/video_model.dart';
 import '../models/subscription_model.dart';
 import '../models/child_profile_model.dart';
 import '../utils/constants.dart';
+import '../utils/theme.dart';
 import '../utils/page_transitions.dart';
 import '../widgets/time_limit_widget.dart';
 import '../widgets/video_card.dart';
 import '../widgets/loading_skeleton.dart';
-import '../widgets/empty_state.dart';
 import '../widgets/animated_button.dart';
 import '../widgets/tier_badge.dart';
 import 'search_screen.dart';
@@ -45,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLimitExceeded = false;
   final ScrollController _scrollController = ScrollController();
   bool _isSigningIn = false;
+  bool _isScrolled = false;
   List<VideoModel> _trendingShows = [];
   bool _isLoadingTrending = false;
   List<VideoModel> _recommendedVideos = [];
@@ -65,6 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkTimeLimit();
     _loadSubscription();
     _setupActiveProfileListener();
+    _scrollController.addListener(() {
+      final scrolled = _scrollController.offset > 50;
+      if (scrolled != _isScrolled) {
+        setState(() => _isScrolled = scrolled);
+      }
+    });
     // Load cached content first, then refresh in background
     Future.microtask(() async {
       await _loadCachedContent();
@@ -463,8 +469,15 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: iconColor, size: 34),
-              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 34),
+              ),
+              const SizedBox(height: 12),
               Text(
                 title,
                 style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -807,28 +820,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final textTheme = Theme.of(context).textTheme;
         final colorScheme = Theme.of(context).colorScheme;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: _isScrolled ? 6 : 12,
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.purple.shade400,
-                Colors.blue.shade400,
-                Colors.pink.shade300,
+                AppTheme.primaryColor,
+                AppTheme.purpleAccent,
+                AppTheme.pinkAccent,
               ],
             ),
           ),
           child: Row(
             children: [
               // Kids TV title
-              Text(
-                'Kids TV',
-                style: textTheme.displaySmall?.copyWith(
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: (textTheme.displaySmall ?? const TextStyle()).copyWith(
                   color: Colors.white,
                   letterSpacing: 0.8,
+                  fontSize: _isScrolled ? 18 : 24,
                 ),
+                child: const Text('Kids TV'),
               ),
               const SizedBox(width: 8),
               // Tier badge
@@ -1255,7 +1275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               title: 'Categories',
                               subtitle: 'Browse by type',
                               icon: Icons.category_rounded,
-                              color: Colors.purple.shade400,
+                              color: AppTheme.primaryColor,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1271,7 +1291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               title: 'Favorites',
                               subtitle: 'Saved content',
                               icon: Icons.favorite_rounded,
-                              color: Colors.red.shade400,
+                              color: AppTheme.errorColor,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1287,7 +1307,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               title: 'Playlists',
                               subtitle: 'My collections',
                               icon: Icons.playlist_play_rounded,
-                              color: Colors.pink.shade400,
+                              color: AppTheme.pinkAccent,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1318,7 +1338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _buildCategoryCard(
                               title: 'Alphabets',
                               icon: Icons.abc_rounded,
-                              color: Colors.blue.shade400,
+                              color: AppTheme.secondaryColor,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1336,7 +1356,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _buildCategoryCard(
                               title: 'Numbers',
                               icon: Icons.numbers_rounded,
-                              color: Colors.green.shade400,
+                              color: AppTheme.accentColor,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1354,7 +1374,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _buildCategoryCard(
                               title: 'Colors',
                               icon: Icons.palette_rounded,
-                              color: Colors.pink.shade400,
+                              color: AppTheme.pinkAccent,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1372,7 +1392,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _buildCategoryCard(
                               title: 'Shapes',
                               icon: Icons.shape_line_rounded,
-                              color: Colors.orange.shade400,
+                              color: AppTheme.yellowAccent,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1390,7 +1410,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _buildCategoryCard(
                               title: 'Animals',
                               icon: Icons.pets_rounded,
-                              color: Colors.teal.shade400,
+                              color: AppTheme.purpleAccent,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1408,7 +1428,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _buildCategoryCard(
                               title: 'Nursery Rhymes',
                               icon: Icons.music_note_rounded,
-                              color: Colors.purple.shade400,
+                              color: AppTheme.primaryColor,
                               onTap: _isLimitExceeded
                                   ? null
                                   : () {
@@ -1443,60 +1463,69 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               );
                             },
-                      child: _isLoadingRecommendations
-                          ? SizedBox(
-                              height: 180,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                children: List.generate(
-                                  3,
-                                  (index) => Container(
-                                    width: 150,
-                                    margin: const EdgeInsets.only(right: 12),
-                                    child: const VideoCardSkeleton(),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : _recommendedVideos.isEmpty
-                              ? _buildCompactFeedEmptyState(
-                                  title: 'No Recommendations Yet',
-                                  reason: _recommendationEmptyReason ??
-                                      'Watch some videos to get personalized recommendations.',
-                                  icon: Icons.recommend,
-                                  iconColor: Colors.blue,
-                                  fetchedCount: _recommendationsFetchedCount,
-                                  allowedCount: _recommendationsAllowedCount,
-                                )
-                              : SizedBox(
-                                  height: 180,
+                      child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 350),
+                          switchInCurve: Curves.easeOut,
+                          child: _isLoadingRecommendations
+                              ? SizedBox(
+                                  key: const ValueKey('rec-loading'),
+                                  height: 220,
                                   child: ListView(
                                     scrollDirection: Axis.horizontal,
                                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                                    children: _recommendedVideos.map((video) {
-                                      return Container(
-                                        width: 150,
+                                    children: List.generate(
+                                      3,
+                                      (index) => Container(
+                                        width: 190,
                                         margin: const EdgeInsets.only(right: 12),
-                                        child: VideoCard(
-                                          video: video,
-                                          onTap: _isLimitExceeded
-                                              ? null
-                                              : () {
-                                                  Navigator.push(
-                                                    context,
-                                                    SmoothPageRoute(
-                                                      page: VideoPlayerScreen(
-                                                        video: video,
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                        ),
-                                      );
-                                    }).toList(),
+                                        child: const VideoCardSkeleton(),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                )
+                              : _recommendedVideos.isEmpty
+                                  ? SizedBox(
+                                      key: const ValueKey('rec-empty'),
+                                      child: _buildCompactFeedEmptyState(
+                                        title: 'No Recommendations Yet',
+                                        reason: _recommendationEmptyReason ??
+                                            'Watch some videos to get personalized recommendations.',
+                                        icon: Icons.recommend,
+                                        iconColor: Colors.blue,
+                                        fetchedCount: _recommendationsFetchedCount,
+                                        allowedCount: _recommendationsAllowedCount,
+                                      ),
+                                    )
+                                  : SizedBox(
+                                      key: const ValueKey('rec-content'),
+                                      height: 220,
+                                      child: ListView(
+                                        scrollDirection: Axis.horizontal,
+                                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                                        children: _recommendedVideos.map((video) {
+                                          return Container(
+                                            width: 190,
+                                            margin: const EdgeInsets.only(right: 12),
+                                            child: VideoCard(
+                                              video: video,
+                                              onTap: _isLimitExceeded
+                                                  ? null
+                                                  : () {
+                                                      Navigator.push(
+                                                        context,
+                                                        SmoothPageRoute(
+                                                          page: VideoPlayerScreen(
+                                                            video: video,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                        ),
                     ),
 
                     const SizedBox(height: 16),
@@ -1514,60 +1543,69 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               );
                             },
-                      child: _isLoadingTrending
-                          ? SizedBox(
-                              height: 200,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                children: List.generate(
-                                  3,
-                                  (index) => Container(
-                                    width: 160,
-                                    margin: const EdgeInsets.only(right: 12),
-                                    child: const VideoCardSkeleton(),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : _trendingShows.isEmpty
-                              ? _buildCompactFeedEmptyState(
-                                  title: 'No Trending Shows',
-                                  reason: _trendingEmptyReason ??
-                                      'Check back later for trending kids content.',
-                                  icon: Icons.trending_up,
-                                  iconColor: Colors.orange,
-                                  fetchedCount: _trendingFetchedCount,
-                                  allowedCount: _trendingAllowedCount,
-                                )
-                              : SizedBox(
-                                  height: 200,
+                      child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 350),
+                          switchInCurve: Curves.easeOut,
+                          child: _isLoadingTrending
+                              ? SizedBox(
+                                  key: const ValueKey('trend-loading'),
+                                  height: 240,
                                   child: ListView(
                                     scrollDirection: Axis.horizontal,
                                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                                    children: _trendingShows.map((video) {
-                                      return Container(
-                                        width: 160,
+                                    children: List.generate(
+                                      3,
+                                      (index) => Container(
+                                        width: 200,
                                         margin: const EdgeInsets.only(right: 12),
-                                        child: VideoCard(
-                                          video: video,
-                                          onTap: _isLimitExceeded
-                                              ? null
-                                              : () {
-                                                  Navigator.push(
-                                                    context,
-                                                    SmoothPageRoute(
-                                                      page: VideoPlayerScreen(
-                                                        video: video,
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                        ),
-                                      );
-                                    }).toList(),
+                                        child: const VideoCardSkeleton(),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                )
+                              : _trendingShows.isEmpty
+                                  ? SizedBox(
+                                      key: const ValueKey('trend-empty'),
+                                      child: _buildCompactFeedEmptyState(
+                                        title: 'No Trending Shows',
+                                        reason: _trendingEmptyReason ??
+                                            'Check back later for trending kids content.',
+                                        icon: Icons.trending_up,
+                                        iconColor: Colors.orange,
+                                        fetchedCount: _trendingFetchedCount,
+                                        allowedCount: _trendingAllowedCount,
+                                      ),
+                                    )
+                                  : SizedBox(
+                                      key: const ValueKey('trend-content'),
+                                      height: 240,
+                                      child: ListView(
+                                        scrollDirection: Axis.horizontal,
+                                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                                        children: _trendingShows.map((video) {
+                                          return Container(
+                                            width: 200,
+                                            margin: const EdgeInsets.only(right: 12),
+                                            child: VideoCard(
+                                              video: video,
+                                              onTap: _isLimitExceeded
+                                                  ? null
+                                                  : () {
+                                                      Navigator.push(
+                                                        context,
+                                                        SmoothPageRoute(
+                                                          page: VideoPlayerScreen(
+                                                            video: video,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                        ),
                     ),
 
                     const SizedBox(height: 32),

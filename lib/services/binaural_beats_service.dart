@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 
@@ -33,7 +34,7 @@ class BinauralBeatsService {
         androidWillPauseWhenDucked: false,
       ));
     } catch (e) {
-      print('Error configuring audio session: $e');
+      debugPrint('Error configuring audio session: $e');
     }
   }
 
@@ -65,7 +66,7 @@ class BinauralBeatsService {
     if (requireHeadphones) {
       final hasHeadphones = await areHeadphonesConnected();
       if (!hasHeadphones) {
-        print('Binaural beats require headphones - not playing');
+        debugPrint('Binaural beats require headphones - not playing');
         return false;
       }
     }
@@ -105,7 +106,7 @@ class BinauralBeatsService {
       
       return true;
     } catch (e) {
-      print('Error starting binaural beats: $e');
+      debugPrint('Error starting binaural beats: $e');
       _isPlaying = false;
       _currentFrequency = null;
       return false;
@@ -174,7 +175,7 @@ class BinauralBeatsService {
         await _player!.stop();
         await _player!.dispose();
       } catch (e) {
-        print('Error stopping binaural beats: $e');
+        debugPrint('Error stopping binaural beats: $e');
       }
       _player = null;
     }

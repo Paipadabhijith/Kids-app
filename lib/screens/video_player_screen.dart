@@ -145,18 +145,18 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         final success = await _beatsService.startBeats(BeatFrequency.theta);
         if (!success && mounted) {
           // Could show a snackbar about headphones if needed
-          print('Binaural beats not started - headphones may be required');
+          debugPrint('Binaural beats not started - headphones may be required');
         }
       } else if (settings.calmFocusModeEnabled) {
         // Use alpha waves (8-12 Hz) for calm focus
         final success = await _beatsService.startBeats(BeatFrequency.alpha);
         if (!success && mounted) {
-          print('Binaural beats not started - headphones may be required');
+          debugPrint('Binaural beats not started - headphones may be required');
         }
       }
       // If neither mode is enabled, don't play beats
     } catch (e) {
-      print('Error starting binaural beats: $e');
+      debugPrint('Error starting binaural beats: $e');
       // Fail silently - don't interrupt video playback
     }
   }
@@ -290,10 +290,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _breakCheckTimer?.cancel();
     _playbackFeedbackTimer?.cancel();
     _settingsSubscription?.cancel();
-    
-    // Stop binaural beats
-    _beatsService.dispose();
-    
+
     // Record watch time and history asynchronously
     // Note: dispose() must be synchronous, so these operations run in background
     // They will complete but won't block disposal

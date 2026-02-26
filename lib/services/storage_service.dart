@@ -201,12 +201,12 @@ class StorageService {
     return data;
   }
 
-  Future<void> updateWeeklyUsage(String date, int minutesToAdd) async {
+  Future<void> updateWeeklyUsage(String date, int totalMinutesForDay) async {
     if (_prefs == null) await init();
     final weeklyData = await getWeeklyUsage();
     final dailyUsage = Map<String, dynamic>.from(weeklyData['dailyUsage'] ?? {});
-    final currentMinutes = dailyUsage[date] as int? ?? 0;
-    dailyUsage[date] = currentMinutes + minutesToAdd;
+    // totalMinutesForDay is the absolute total for the day, not an incremental delta.
+    dailyUsage[date] = totalMinutesForDay;
     
     weeklyData['dailyUsage'] = dailyUsage;
     await _prefs!.setString(Constants.weeklyUsageKey, json.encode(weeklyData));
@@ -253,7 +253,7 @@ class StorageService {
   // Child Profiles
   Future<List<ChildProfileModel>> getChildProfiles() async {
     if (_prefs == null) await init();
-    final profilesJson = _prefs!.getString('child_profiles');
+    final profilesJson = _prefs!.getString(Constants.childProfilesKey);
     if (profilesJson == null) return [];
     
     try {
@@ -269,7 +269,7 @@ class StorageService {
     final profilesJson = json.encode(
       profiles.map((p) => p.toJson()).toList(),
     );
-    await _prefs!.setString('child_profiles', profilesJson);
+    await _prefs!.setString(Constants.childProfilesKey, profilesJson);
     _emitActiveProfile(profiles);
   }
 

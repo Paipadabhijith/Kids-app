@@ -103,12 +103,6 @@ class ParentalControlService {
     return true;
   }
 
-  bool hasPassword() {
-    // Note: This is synchronous check, but we need async for settings
-    // We'll check in the UI by looking at settings.parentPasswordHash
-    return false; // Placeholder - actual check done in UI
-  }
-
   Future<bool> isTimeLimitExceeded() async {
     final settings = await getSettings();
     if (!settings.parentalControlsEnabled) return false;

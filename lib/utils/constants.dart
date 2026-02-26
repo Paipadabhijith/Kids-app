@@ -27,12 +27,6 @@ class Constants {
         keys.add(key3);
       }
       
-      // Fallback for local testing (remove before production)
-      if (keys.isEmpty) {
-        const fallbackKey = 'AIzaSyAjrv50h1xxXY96CsJ2xvliYhMNpepyewo';
-        keys.add(fallbackKey);
-      }
-      
       return keys;
     } catch (e) {
       return [];
@@ -69,6 +63,7 @@ class Constants {
   static const String curatedVideosKey = 'curated_videos';
   static const String searchHistoryKey = 'search_history';
   static const String themeModeKey = 'theme_mode';
+  static const String childProfilesKey = 'child_profiles';
   
   // Break reminder defaults
   static const int defaultBreakIntervalMinutes = 30;

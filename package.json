@@ -1,0 +1,35 @@
+{
+  "name": "kids-video-app",
+  "version": "1.0.0",
+  "description": "A kid-friendly video platform with screen time controls and educational content",
+  "main": "src/index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -o",
+    "dev": "npx live-server --port=3000 --open=/",
+    "build": "echo 'No build process needed for static site'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "kids",
+    "video",
+    "education",
+    "screen-time",
+    "parental-controls",
+    "youtube",
+    "children"
+  ],
+  "author": "Kids App Developer",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/kids-app.git"
+  },
+  "homepage": "https://your-kids-app.ondigitalocean.app/",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

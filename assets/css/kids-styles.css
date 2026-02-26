@@ -1,0 +1,1052 @@
+/* KidsTube - Kid-Friendly Video App Styles */
+
+:root {
+    /* Kid-friendly color palette */
+    --primary-pink: #FF6B6B;
+    --primary-blue: #4ECDC4;
+    --primary-yellow: #FFE66D;
+    --primary-green: #95E1D3;
+    --primary-purple: #A8E6CF;
+    --primary-orange: #FFB347;
+    
+    /* Background colors */
+    --bg-light: #FFF8E7;
+    --bg-white: #FFFFFF;
+    --bg-gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #FFE66D 100%);
+    
+    /* Text colors */
+    --text-dark: #2C3E50;
+    --text-light: #7F8C8D;
+    --text-white: #FFFFFF;
+    
+    /* Shadows and effects */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.15);
+    --border-radius: 20px;
+    --border-radius-small: 12px;
+    
+    /* Tonedown feature variables */
+    --saturation-level: 1;
+    --brightness-level: 1;
+    --contrast-level: 1;
+    --tonedown-progress: 0;
+    --tonedown-duration: 1800000; /* 30 minutes in milliseconds */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Fredoka', sans-serif;
+    background: var(--bg-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+    filter: saturate(var(--saturation-level)) brightness(var(--brightness-level)) contrast(var(--contrast-level));
+    transition: filter 2s ease-in-out;
+    position: relative;
+}
+
+/* Removed background dinosaurs for better scroll performance */
+
+/* Removed additional background dinosaurs for better scroll performance */
+
+/* Header Styles */
+.header {
+    background: var(--bg-gradient);
+    padding: 1rem;
+    box-shadow: var(--shadow-soft);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add cute dinosaur decorations to header */
+.header::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 18px;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.6) 10px 14px, transparent 10px 14px);
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 20px;
+    width: 20px;
+    height: 15px;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.5) 8px 12px, transparent 8px 12px);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 1rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--text-white);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.logo i {
+    font-size: 2rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+    box-shadow: var(--shadow-soft);
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-family: 'Fredoka', sans-serif;
+    flex: 1;
+    background: transparent;
+}
+
+.search-btn {
+    background: var(--primary-pink);
+    border: none;
+    color: var(--text-white);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: #FF5252;
+    transform: scale(1.05);
+}
+
+/* Navigation Tabs */
+.nav-tabs {
+    display: flex;
+    background: var(--bg-white);
+    padding: 0.5rem;
+    box-shadow: var(--shadow-soft);
+    overflow-x: auto;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+/* Add cute dinosaur decoration to nav tabs */
+.nav-tabs::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 15px;
+    background: radial-gradient(ellipse, var(--primary-green) 8px 12px, transparent 8px 12px);
+    z-index: 1;
+}
+
+.nav-tab {
+    background: var(--primary-green);
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.nav-tab:hover {
+    background: var(--primary-blue);
+    color: var(--text-white);
+    transform: translateY(-2px);
+}
+
+.nav-tab.active {
+    background: var(--primary-pink);
+    color: var(--text-white);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Main Content */
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem 100px 1rem; /* Add bottom padding to prevent overlap with safety notice */
+    position: relative;
+}
+
+/* Removed floating dinosaur elements for better scroll performance */
+
+/* Featured Video Section */
+.featured-video {
+    margin-bottom: 2rem;
+}
+
+.video-container {
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.video-player {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    background: var(--bg-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.video-player:hover {
+    transform: scale(1.02);
+}
+
+.video-placeholder {
+    text-align: center;
+    color: var(--text-white);
+}
+
+.video-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.video-placeholder p {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.video-info {
+    padding: 1.5rem;
+}
+
+.video-info h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.video-info p {
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+/* Video Grid */
+.video-grid h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.videos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.video-card {
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Add cute dinosaur decorations to video cards */
+.video-card::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 16px;
+    height: 12px;
+    background: radial-gradient(ellipse, var(--primary-yellow) 6px 8px, transparent 6px 8px);
+    opacity: 0.7;
+    z-index: 1;
+}
+
+.video-card::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    width: 14px;
+    height: 10px;
+    background: radial-gradient(ellipse, var(--primary-pink) 5px 7px, transparent 5px 7px);
+    opacity: 0.6;
+    z-index: 1;
+}
+
+.video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.video-thumbnail {
+    width: 100%;
+    height: 180px;
+    background: var(--bg-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.video-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--text-white);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.video-card:hover .play-overlay {
+    background: var(--primary-pink);
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.video-details {
+    padding: 1rem;
+}
+
+.video-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.video-meta {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-tag {
+    background: var(--primary-yellow);
+    color: var(--text-dark);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--border-radius-small);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Tonedown Section */
+.tonedown-section {
+    margin: 2rem 0;
+    position: relative;
+    z-index: 20; /* Ensure it's above the safety notice */
+}
+
+.tonedown-panel {
+    background: var(--bg-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-soft);
+    padding: 1.2rem;
+    border: 3px solid var(--primary-pink);
+    position: relative;
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.tonedown-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-pink), var(--primary-blue), var(--primary-yellow));
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+}
+
+.tonedown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.timer-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.quick-timer-btn {
+    background: var(--primary-orange);
+    color: var(--text-white);
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: var(--border-radius);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.quick-timer-btn:hover {
+    background: #FF8C00;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+
+.tonedown-header h4 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tonedown-toggle {
+    background: var(--primary-pink);
+    color: var(--text-white);
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.tonedown-toggle:hover {
+    background: #FF5252;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+
+.tonedown-toggle.active {
+    background: var(--primary-green);
+    animation: pulse 2s infinite;
+}
+
+.tonedown-progress {
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #E0E0E0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-pink), var(--primary-blue));
+    border-radius: 6px;
+    width: 0%;
+    transition: width 1s ease;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.tonedown-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.settings-row:last-child {
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.tonedown-settings label {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.tonedown-settings select {
+    padding: 0.5rem;
+    border: 2px solid var(--primary-green);
+    border-radius: var(--border-radius-small);
+    font-family: 'Fredoka', sans-serif;
+    background: var(--bg-white);
+    color: var(--text-dark);
+    cursor: pointer;
+}
+
+.reset-btn {
+    background: var(--primary-orange);
+    color: var(--text-white);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-small);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.reset-btn:hover {
+    background: #FF8C00;
+    transform: translateY(-1px);
+}
+
+.stats-btn, .parental-btn {
+    background: var(--primary-blue);
+    color: var(--text-white);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-small);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.stats-btn:hover, .parental-btn:hover {
+    background: #3AB0B8;
+    transform: translateY(-1px);
+}
+
+.stats-panel, .parental-panel {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-small);
+    border: 2px solid var(--primary-green);
+}
+
+.stats-panel h5, .parental-panel h5 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--text-dark);
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    text-align: center;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.8rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    background: var(--bg-white);
+    border-radius: var(--border-radius-small);
+    box-shadow: var(--shadow-soft);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-pink);
+    font-family: 'Fredoka One', cursive;
+}
+
+.password-section {
+    text-align: center;
+    padding: 1rem;
+}
+
+.password-section h5 {
+    color: var(--primary-pink);
+    margin-bottom: 0.5rem;
+}
+
+.password-section p {
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.password-input-group {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.password-input-group input {
+    padding: 0.6rem 1rem;
+    border: 2px solid var(--primary-green);
+    border-radius: var(--border-radius-small);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    text-align: center;
+    width: 200px;
+}
+
+.password-btn {
+    background: var(--primary-pink);
+    color: var(--text-white);
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: var(--border-radius-small);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.password-btn:hover {
+    background: #FF5252;
+    transform: translateY(-1px);
+}
+
+.password-hint {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-green);
+}
+
+.lock-btn {
+    background: var(--primary-orange);
+    color: var(--text-white);
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--border-radius-small);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+}
+
+.lock-btn:hover {
+    background: #FF8C00;
+    transform: translateY(-1px);
+}
+
+.parental-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+}
+
+.setting-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-pink);
+}
+
+.setting-item input[type="number"] {
+    width: 60px;
+    padding: 0.3rem;
+    border: 2px solid var(--primary-green);
+    border-radius: var(--border-radius-small);
+    font-family: 'Fredoka', sans-serif;
+    text-align: center;
+}
+
+.setting-item input[type="number"]:disabled {
+    background: #f0f0f0;
+    color: #999;
+}
+
+/* Tonedown Effects */
+.tonedown-active {
+    --saturation-level: 0.3;
+    --brightness-level: 0.7;
+    --contrast-level: 0.8;
+}
+
+.tonedown-extreme {
+    --saturation-level: 0.1;
+    --brightness-level: 0.5;
+    --contrast-level: 0.6;
+}
+
+/* Safety Notice */
+.safety-notice {
+    background: var(--primary-green);
+    color: var(--text-dark);
+    padding: 0.8rem;
+    text-align: center;
+    font-weight: 600;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add cute dinosaur decorations to safety notice */
+.safety-notice::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 20px;
+    width: 10px;
+    height: 8px;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.7) 4px 6px, transparent 4px 6px);
+}
+
+.safety-notice::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 20px;
+    width: 8px;
+    height: 6px;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.6) 3px 5px, transparent 3px 5px);
+}
+
+.safety-notice i {
+    margin-right: 0.5rem;
+    color: var(--primary-pink);
+}
+
+/* Make safety notice less intrusive */
+.safety-notice {
+    opacity: 0.9;
+    backdrop-filter: blur(5px);
+    border-top: 2px solid var(--primary-pink);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 200;
+    background: var(--bg-white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-soft);
+}
+
+.loading-spinner.show {
+    display: block;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--primary-green);
+    border-top: 4px solid var(--primary-pink);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .search-container {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .nav-tabs {
+        padding: 0.5rem 1rem;
+    }
+    
+    .nav-tab {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .video-player {
+        height: 200px;
+    }
+    
+    .videos-container {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .video-thumbnail {
+        height: 150px;
+    }
+    
+    .main-content {
+        padding: 0 0.5rem 120px 0.5rem; /* Extra bottom padding on mobile */
+    }
+    
+    /* Adjust remaining dinosaur elements for mobile */
+    .header::before,
+    .header::after {
+        width: 18px;
+        height: 14px;
+    }
+    
+    .video-card::before,
+    .video-card::after {
+        width: 12px;
+        height: 9px;
+    }
+    
+    /* Tonedown panel mobile styles */
+    .tonedown-panel {
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .tonedown-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+    
+    .tonedown-header h4 {
+        text-align: center;
+        font-size: 1rem;
+    }
+    
+    .tonedown-toggle {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem 1rem;
+    }
+    
+    .tonedown-settings {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+    
+    .tonedown-settings label {
+        text-align: center;
+    }
+    
+    .tonedown-settings select {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .reset-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1.5rem;
+    }
+    
+    .logo i {
+        font-size: 1.8rem;
+    }
+    
+    .videos-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .video-player {
+        height: 180px;
+    }
+    
+    .video-thumbnail {
+        height: 140px;
+    }
+    
+    /* Further reduce dinosaur elements on very small screens */
+    .video-card::before,
+    .video-card::after {
+        display: none;
+    }
+    
+    .safety-notice::before,
+    .safety-notice::after {
+        display: none;
+    }
+    
+    .nav-tabs::before {
+        display: none;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus styles for keyboard navigation */
+button:focus,
+input:focus {
+    outline: 3px solid var(--primary-pink);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-pink: #E91E63;
+        --primary-blue: #00BCD4;
+        --text-dark: #000000;
+        --text-light: #424242;
+    }
+}

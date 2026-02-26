@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Video App - Simple & Working</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --saturation-level: 1;
+            --brightness-level: 1;
+            --contrast-level: 1;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #ff6b9d, #4ecdc4);
+            min-height: 100vh;
+            color: #2d3436;
+            filter: saturate(var(--saturation-level)) brightness(var(--brightness-level)) contrast(var(--contrast-level));
+            transition: filter 2s ease-in-out;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 15px 15px;
+        }
+
+        .header h1 {
+            color: #ff6b9d;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 1rem;
+            border: 3px solid #4ecdc4;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ff6b9d;
+        }
+
+        .search-btn {
+            padding: 1rem 2rem;
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #e55a87;
+            transform: translateY(-2px);
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem auto;
+            max-width: 1200px;
+            padding: 0 1rem;
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b9d, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .play-icon {
+            position: absolute;
+            font-size: 3rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-info {
+            padding: 1.5rem;
+        }
+
+        .video-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 0.5rem;
+        }
+
+        .video-description {
+            color: #636e72;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .video-category {
+            background: #4ecdc4;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .video-player-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 450px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-placeholder {
+            background: linear-gradient(45deg, #ff6b9d, #4ecdc4);
+            color: white;
+            padding: 3rem;
+            border-radius: 15px;
+            font-size: 1.2rem;
+        }
+
+        .video-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .success-message {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .error-message {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .no-videos {
+            text-align: center;
+            padding: 2rem;
+            color: #636e72;
+            font-size: 1.2rem;
+        }
+
+        .tonedown-section {
+            margin: 2rem auto;
+            max-width: 800px;
+            padding: 0 1rem;
+        }
+
+        .tonedown-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 3px solid #ff6b9d;
+        }
+
+        .tonedown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .tonedown-header h4 {
+            color: #ff6b9d;
+            font-size: 1.3rem;
+            margin: 0;
+        }
+
+        .tonedown-toggle {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tonedown-toggle:hover {
+            background: #3ba8a0;
+            transform: translateY(-2px);
+        }
+
+        .tonedown-toggle.active {
+            background: #ff6b9d;
+        }
+
+        .tonedown-progress {
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #ff6b9d);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #636e72;
+        }
+
+        .tonedown-settings {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .tonedown-settings label {
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .tonedown-settings select {
+            padding: 0.5rem;
+            border: 2px solid #4ecdc4;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .reset-btn {
+            background: #636e72;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .reset-btn:hover {
+            background: #555;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-player {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎬 Kids Video Hub</h1>
+        <p>Safe, fun videos for kids!</p>
+    </div>
+
+    <div class="search-section">
+        <h3><i class="fas fa-search"></i> Search Videos</h3>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search for videos...">
+            <button onclick="searchVideos()" class="search-btn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+    </div>
+
+    <div class="video-grid" id="videoGrid">
+        <!-- Videos will be loaded here -->
+    </div>
+
+    <div class="video-player-container">
+        <div id="videoPlayer" class="video-placeholder">
+            <i class="fas fa-play-circle"></i>
+            <p>Select a video to start watching!</p>
+        </div>
+    </div>
+
+    <!-- Tonedown Control Panel -->
+    <div class="tonedown-section">
+        <div class="tonedown-panel">
+            <div class="tonedown-header">
+                <h4><i class="fas fa-clock"></i> Screen Time Control</h4>
+                <button class="tonedown-toggle" id="tonedownToggle" onclick="toggleTonedown()">
+                    <i class="fas fa-play"></i> Start Tonedown
+                </button>
+            </div>
+            <div class="tonedown-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progressText">Ready to start tonedown</span>
+                    <span id="timeRemaining"></span>
+                </div>
+            </div>
+            <div class="tonedown-settings">
+                <label for="tonedownDuration">Duration (minutes):</label>
+                <select id="tonedownDuration">
+                    <option value="15">15 minutes</option>
+                    <option value="30" selected>30 minutes</option>
+                    <option value="45">45 minutes</option>
+                    <option value="60">1 hour</option>
+                </select>
+                <button class="reset-btn" onclick="resetTonedown()">
+                    <i class="fas fa-undo"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple video data
+        const videos = [
+            {
+                id: 'dQw4w9WgXcQ',
+                title: 'Never Gonna Give You Up',
+                description: 'A classic song that everyone loves!',
+                category: 'music',
+                thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg'
+            },
+            {
+                id: 'jNQXAC9IVRw',
+                title: 'Me at the zoo',
+                description: 'The first YouTube video ever!',
+                category: 'education',
+                thumbnail: 'https://img.youtube.com/vi/jNQXAC9IVRw/maxresdefault.jpg'
+            },
+            {
+                id: 'M7lc1UVf-VE',
+                title: 'How to tie your shoes',
+                description: 'Learn how to tie your shoes like a pro!',
+                category: 'education',
+                thumbnail: 'https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg'
+            },
+            {
+                id: 'jNQXAC9IVRw',
+                title: 'Colors and Shapes',
+                description: 'Learn about colors and shapes in a fun way!',
+                category: 'education',
+                thumbnail: 'https://img.youtube.com/vi/jNQXAC9IVRw/maxresdefault.jpg'
+            },
+            {
+                id: 'dQw4w9WgXcQ',
+                title: 'Happy Music Time',
+                description: 'Fun and happy music for kids!',
+                category: 'music',
+                thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg'
+            },
+            {
+                id: 'M7lc1UVf-VE',
+                title: 'Cartoon Adventure',
+                description: 'Join us on a fun cartoon adventure!',
+                category: 'cartoons',
+                thumbnail: 'https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg'
+            }
+        ];
+
+        let currentVideo = null;
+        let tonedownActive = false;
+        let tonedownStartTime = null;
+        let tonedownDuration = 30; // minutes
+        let tonedownInterval = null;
+        let tonedownProgress = 0;
+
+        // Initialize app
+        window.onload = function() {
+            console.log('App loaded');
+            displayVideos(videos);
+            loadTonedownSettings();
+        };
+
+        // Search videos - SIMPLE VERSION
+        function searchVideos() {
+            console.log('=== SEARCH CALLED ===');
+            
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            console.log('Search term:', searchTerm);
+            
+            if (!searchTerm) {
+                console.log('No search term, showing all videos');
+                displayVideos(videos);
+                return;
+            }
+            
+            console.log('Filtering videos...');
+            
+            const filtered = videos.filter(video => {
+                const titleMatch = video.title.toLowerCase().includes(searchTerm);
+                const descMatch = video.description.toLowerCase().includes(searchTerm);
+                const categoryMatch = video.category.toLowerCase().includes(searchTerm);
+                
+                const result = titleMatch || descMatch || categoryMatch;
+                console.log(`Video: ${video.title} - Match: ${result}`);
+                return result;
+            });
+            
+            console.log('Found videos:', filtered.length);
+            displayVideos(filtered);
+            
+            if (filtered.length === 0) {
+                showMessage('No videos found for "' + searchTerm + '"', 'error');
+            } else {
+                showMessage('Found ' + filtered.length + ' video(s) for "' + searchTerm + '"', 'success');
+            }
+        }
+
+        // Display videos
+        function displayVideos(videoList) {
+            console.log('=== DISPLAY VIDEOS ===');
+            console.log('Videos to show:', videoList.length);
+            
+            const videoGrid = document.getElementById('videoGrid');
+            
+            if (!videoList || videoList.length === 0) {
+                videoGrid.innerHTML = '<div class="no-videos"><i class="fas fa-search"></i><br>No videos found</div>';
+                return;
+            }
+            
+            videoGrid.innerHTML = videoList.map(video => `
+                <div class="video-card" onclick="playVideo('${video.id}', '${video.title.replace(/'/g, "\\'")}', '${video.description.replace(/'/g, "\\'")}')">
+                    <div class="video-thumbnail">
+                        <img src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
+                        <i class="fas fa-play-circle play-icon"></i>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-description">${video.description}</div>
+                        <div class="video-category">${video.category}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            console.log('Videos displayed successfully');
+        }
+
+        // Play video
+        function playVideo(videoId, title, description) {
+            console.log('Playing video:', title);
+            
+            currentVideo = { id: videoId, title, description };
+            
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.innerHTML = `
+                <iframe 
+                    class="video-player" 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1&cc_load_policy=1" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+                <div style="margin-top: 1rem;">
+                    <h3>${title}</h3>
+                    <p>${description}</p>
+                </div>
+            `;
+            
+            showMessage('Now playing: ' + title, 'success');
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.message');
+            existingMessages.forEach(msg => msg.remove());
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + type + '-message';
+            messageDiv.innerHTML = '<i class="fas fa-' + (type === 'error' ? 'exclamation-triangle' : 'check-circle') + '"></i> ' + message;
+            
+            document.querySelector('.search-section').appendChild(messageDiv);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // Test function
+        function testSearch() {
+            console.log('=== TESTING SEARCH ===');
+            document.getElementById('searchInput').value = 'colors';
+            searchVideos();
+        }
+
+        // ==================== TONEDOWN FEATURE ====================
+        function toggleTonedown() {
+            if (tonedownActive) {
+                stopTonedown();
+            } else {
+                startTonedown();
+            }
+        }
+
+        function startTonedown() {
+            tonedownActive = true;
+            tonedownStartTime = Date.now();
+            tonedownDuration = parseInt(document.getElementById('tonedownDuration').value) * 60 * 1000; // Convert to milliseconds
+            
+            const toggleBtn = document.getElementById('tonedownToggle');
+            toggleBtn.innerHTML = '<i class="fas fa-pause"></i> Stop Tonedown';
+            toggleBtn.classList.add('active');
+            
+            tonedownInterval = setInterval(updateTonedown, 5000); // Update every 5 seconds
+            updateTonedown();
+        }
+
+        function stopTonedown() {
+            tonedownActive = false;
+            tonedownStartTime = null;
+            
+            if (tonedownInterval) {
+                clearInterval(tonedownInterval);
+                tonedownInterval = null;
+            }
+            
+            const toggleBtn = document.getElementById('tonedownToggle');
+            toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start Tonedown';
+            toggleBtn.classList.remove('active');
+            
+            updateProgressDisplay(0, 'Tonedown stopped');
+            updateVisualEffects(0);
+        }
+
+        function updateTonedown() {
+            if (!tonedownActive || !tonedownStartTime) return;
+            
+            const elapsed = Date.now() - tonedownStartTime;
+            const progress = Math.min(elapsed / tonedownDuration, 1);
+            
+            updateProgressDisplay(progress, 'Tonedown in progress...');
+            updateVisualEffects(progress);
+            
+            if (progress >= 1) {
+                completeTonedown();
+            }
+        }
+
+        function updateVisualEffects(progress) {
+            const root = document.documentElement;
+            
+            // Gradual reduction of visual effects
+            const saturation = calculateGradualSaturation(progress);
+            const brightness = calculateGradualBrightness(progress);
+            const contrast = calculateGradualContrast(progress);
+            
+            root.style.setProperty('--saturation-level', saturation);
+            root.style.setProperty('--brightness-level', brightness);
+            root.style.setProperty('--contrast-level', contrast);
+        }
+
+        function calculateGradualSaturation(progress) {
+            if (progress < 0.1) return 1.0;
+            if (progress < 0.3) return 1.0 - (progress - 0.1) * 0.2;
+            if (progress < 0.6) return 0.96 - (progress - 0.3) * 0.3;
+            if (progress < 0.9) return 0.87 - (progress - 0.6) * 0.4;
+            return 0.75 - (progress - 0.9) * 0.65;
+        }
+
+        function calculateGradualBrightness(progress) {
+            if (progress < 0.2) return 1.0;
+            if (progress < 0.5) return 1.0 - (progress - 0.2) * 0.15;
+            if (progress < 0.8) return 0.955 - (progress - 0.5) * 0.25;
+            return 0.88 - (progress - 0.8) * 0.4;
+        }
+
+        function calculateGradualContrast(progress) {
+            if (progress < 0.3) return 1.0;
+            if (progress < 0.6) return 1.0 - (progress - 0.3) * 0.2;
+            if (progress < 0.9) return 0.94 - (progress - 0.6) * 0.3;
+            return 0.85 - (progress - 0.9) * 0.5;
+        }
+
+        function updateProgressDisplay(progress, text) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const timeRemaining = document.getElementById('timeRemaining');
+            
+            progressFill.style.width = `${progress * 100}%`;
+            progressText.textContent = text;
+            
+            if (tonedownActive && tonedownStartTime) {
+                const remaining = Math.max(0, tonedownDuration - (Date.now() - tonedownStartTime));
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                timeRemaining.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+            } else {
+                timeRemaining.textContent = '';
+            }
+        }
+
+        function completeTonedown() {
+            tonedownActive = false;
+            if (tonedownInterval) {
+                clearInterval(tonedownInterval);
+                tonedownInterval = null;
+            }
+            
+            const toggleBtn = document.getElementById('tonedownToggle');
+            toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start Tonedown';
+            toggleBtn.classList.remove('active');
+            
+            updateProgressDisplay(1, 'Tonedown complete! Time for a break!');
+            showMessage('Tonedown complete! Time for a break! 🌟', 'success');
+        }
+
+        function resetTonedown() {
+            stopTonedown();
+            updateProgressDisplay(0, 'Ready to start tonedown');
+            updateVisualEffects(0);
+            showMessage('Tonedown reset! Ready for a new session.', 'success');
+        }
+
+        function loadTonedownSettings() {
+            const savedDuration = localStorage.getItem('tonedownDuration');
+            if (savedDuration) {
+                document.getElementById('tonedownDuration').value = savedDuration;
+                tonedownDuration = parseInt(savedDuration) * 60 * 1000;
+            }
+        }
+
+        function saveTonedownSettings() {
+            const duration = document.getElementById('tonedownDuration').value;
+            localStorage.setItem('tonedownDuration', duration);
+        }
+    </script>
+</body>
+</html>

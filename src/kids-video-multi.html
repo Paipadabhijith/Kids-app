@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidsTube - Multi-Platform Video Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4, #FFE66D);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #FF6B6B;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 30px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            border: 3px solid #4ECDC4;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .search-btn {
+            padding: 15px 25px;
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 400px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #FFE66D;
+            position: relative;
+        }
+        
+        .video-placeholder {
+            text-align: center;
+            color: #666;
+        }
+        
+        .video-placeholder i {
+            font-size: 4rem;
+            color: #FF6B6B;
+            margin-bottom: 15px;
+        }
+        
+        .video-source-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+        }
+        
+        .video-platform {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+        
+        .video-info {
+            padding: 15px;
+        }
+        
+        .video-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .video-duration {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .category-tab {
+            padding: 10px 20px;
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .category-tab.active {
+            background: #FF6B6B;
+        }
+        
+        .tonedown-panel {
+            background: #f8f9fa;
+            border: 3px solid #FF6B6B;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .tonedown-btn {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        .platform-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .platform-btn {
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .platform-btn.active {
+            background: #FF6B6B;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-play-circle"></i> KidsTube</h1>
+            <p>Fun videos from multiple platforms! 🎈</p>
+        </div>
+        
+        <div class="platform-selector">
+            <button class="platform-btn active" onclick="switchPlatform('all')">All Platforms</button>
+            <button class="platform-btn" onclick="switchPlatform('vimeo')">Vimeo</button>
+            <button class="platform-btn" onclick="switchPlatform('youtube')">YouTube</button>
+            <button class="platform-btn" onclick="switchPlatform('local')">Local Videos</button>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search for fun videos...">
+            <button onclick="searchVideos()" class="search-btn">Search</button>
+        </div>
+        
+        <div class="category-tabs">
+            <button class="category-tab active" onclick="filterVideos('all')">All</button>
+            <button class="category-tab" onclick="filterVideos('education')">Learning</button>
+            <button class="category-tab" onclick="filterVideos('music')">Music</button>
+            <button class="category-tab" onclick="filterVideos('cartoons')">Cartoons</button>
+        </div>
+        
+        <div class="video-player" id="videoPlayer" onclick="playSelectedVideo()">
+            <div class="video-placeholder">
+                <i class="fas fa-play-circle"></i>
+                <p>Click a video below to start watching!</p>
+            </div>
+        </div>
+        
+        <div class="tonedown-panel">
+            <h3><i class="fas fa-clock"></i> Screen Time Control</h3>
+            <button class="tonedown-btn" onclick="toggleTonedown()" id="tonedownBtn">Start Tonedown</button>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="tonedownStatus">Ready to start tonedown</p>
+        </div>
+        
+        <div class="video-grid" id="videoGrid">
+            <!-- Videos will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Multi-platform video data
+        const videos = [
+            // Vimeo videos (better embedding)
+            {
+                id: '148751763',
+                title: 'Colorful Learning Adventure! 🌈',
+                category: 'education',
+                duration: '3:45',
+                platform: 'vimeo',
+                embeddable: true
+            },
+            {
+                id: '123456789',
+                title: 'Fun Animal Sounds! 🐱',
+                category: 'education',
+                duration: '4:20',
+                platform: 'vimeo',
+                embeddable: true
+            },
+            {
+                id: '987654321',
+                title: 'Happy Kids Songs! 🎵',
+                category: 'music',
+                duration: '5:15',
+                platform: 'vimeo',
+                embeddable: true
+            },
+            
+            // YouTube videos (working ones)
+            {
+                id: 'XqZsoesa55w',
+                title: 'Baby Shark Dance! 🦈',
+                category: 'music',
+                duration: '4:15',
+                platform: 'youtube',
+                embeddable: true
+            },
+            {
+                id: 'kffacxfA7G4',
+                title: 'Wheels on the Bus! 🚌',
+                category: 'music',
+                duration: '3:47',
+                platform: 'youtube',
+                embeddable: true
+            },
+            {
+                id: 'h6CNvzJhLdE',
+                title: 'ABC Song - Alphabet Song! 📚',
+                category: 'education',
+                duration: '7:12',
+                platform: 'youtube',
+                embeddable: true
+            },
+            
+            // Local video examples (you can add your own)
+            {
+                id: 'local1',
+                title: 'Local Learning Video! 📚',
+                category: 'education',
+                duration: '2:30',
+                platform: 'local',
+                embeddable: true,
+                url: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4'
+            },
+            {
+                id: 'local2',
+                title: 'Fun Animation! 🎬',
+                category: 'cartoons',
+                duration: '3:00',
+                platform: 'local',
+                embeddable: true,
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+            }
+        ];
+        
+        let currentCategory = 'all';
+        let currentPlatform = 'all';
+        let selectedVideo = null;
+        let tonedownActive = false;
+        
+        // Initialize app
+        function init() {
+            console.log('Initializing Multi-Platform KidsTube...');
+            displayVideos(videos);
+            console.log('App initialized successfully!');
+        }
+        
+        // Switch platform filter
+        function switchPlatform(platform) {
+            currentPlatform = platform;
+            console.log('Switching to platform:', platform);
+            
+            // Update active platform button
+            document.querySelectorAll('.platform-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter and display videos
+            filterVideos(currentCategory);
+        }
+        
+        // Display videos
+        function displayVideos(videoList) {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+            
+            videoList.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => selectVideo(video);
+                
+                const platformIcon = getPlatformIcon(video.platform);
+                const platformColor = getPlatformColor(video.platform);
+                
+                card.innerHTML = `
+                    <div class="video-thumbnail" style="background: ${platformColor};">
+                        <i class="${platformIcon}"></i>
+                        <div class="video-platform">${video.platform.toUpperCase()}</div>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-duration">${video.duration}</div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            console.log(`Displayed ${videoList.length} videos`);
+        }
+        
+        // Get platform icon
+        function getPlatformIcon(platform) {
+            switch(platform) {
+                case 'vimeo': return 'fab fa-vimeo';
+                case 'youtube': return 'fab fa-youtube';
+                case 'local': return 'fas fa-video';
+                default: return 'fas fa-play';
+            }
+        }
+        
+        // Get platform color
+        function getPlatformColor(platform) {
+            switch(platform) {
+                case 'vimeo': return 'linear-gradient(45deg, #1ab7ea, #4ECDC4)';
+                case 'youtube': return 'linear-gradient(45deg, #ff0000, #FF6B6B)';
+                case 'local': return 'linear-gradient(45deg, #28a745, #4ECDC4)';
+                default: return 'linear-gradient(45deg, #FF6B6B, #4ECDC4)';
+            }
+        }
+        
+        // Select video
+        function selectVideo(video) {
+            console.log('Selected video:', video.title, 'Platform:', video.platform);
+            selectedVideo = video;
+            
+            const player = document.getElementById('videoPlayer');
+            player.innerHTML = `
+                <div class="video-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Click to play: ${video.title}</p>
+                </div>
+                <div class="video-source-badge">${video.platform.toUpperCase()}</div>
+            `;
+        }
+        
+        // Play selected video
+        function playSelectedVideo() {
+            if (!selectedVideo) {
+                alert('Please select a video first!');
+                return;
+            }
+            
+            console.log('Playing video:', selectedVideo.title, 'Platform:', selectedVideo.platform);
+            
+            const player = document.getElementById('videoPlayer');
+            
+            switch(selectedVideo.platform) {
+                case 'vimeo':
+                    playVimeoVideo(selectedVideo);
+                    break;
+                case 'youtube':
+                    playYouTubeVideo(selectedVideo);
+                    break;
+                case 'local':
+                    playLocalVideo(selectedVideo);
+                    break;
+                default:
+                    showVideoFallback();
+            }
+        }
+        
+        // Play Vimeo video
+        function playVimeoVideo(video) {
+            const player = document.getElementById('videoPlayer');
+            
+            const iframe = document.createElement('iframe');
+            iframe.width = '100%';
+            iframe.height = '100%';
+            iframe.frameBorder = '0';
+            iframe.allowFullscreen = true;
+            iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+            iframe.src = `https://player.vimeo.com/video/${video.id}?autoplay=1&title=0&byline=0&portrait=0`;
+            
+            player.innerHTML = '';
+            player.appendChild(iframe);
+            
+            console.log('Playing Vimeo video:', video.id);
+        }
+        
+        // Play YouTube video
+        function playYouTubeVideo(video) {
+            const player = document.getElementById('videoPlayer');
+            
+            const iframe = document.createElement('iframe');
+            iframe.width = '100%';
+            iframe.height = '100%';
+            iframe.frameBorder = '0';
+            iframe.allowFullscreen = true;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.src = `https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1`;
+            
+            player.innerHTML = '';
+            player.appendChild(iframe);
+            
+            console.log('Playing YouTube video:', video.id);
+        }
+        
+        // Play local video
+        function playLocalVideo(video) {
+            const player = document.getElementById('videoPlayer');
+            
+            const videoElement = document.createElement('video');
+            videoElement.width = '100%';
+            videoElement.height = '100%';
+            videoElement.controls = true;
+            videoElement.autoplay = true;
+            videoElement.src = video.url;
+            
+            player.innerHTML = '';
+            player.appendChild(videoElement);
+            
+            console.log('Playing local video:', video.url);
+        }
+        
+        // Show fallback
+        function showVideoFallback() {
+            const player = document.getElementById('videoPlayer');
+            player.innerHTML = `
+                <div class="video-placeholder">
+                    <i class="fas fa-exclamation-triangle" style="color: #ff6b6b;"></i>
+                    <p>Video not available</p>
+                    <p>Try a different video or platform</p>
+                </div>
+            `;
+        }
+        
+        // Search videos
+        function searchVideos() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            console.log('Searching for:', searchTerm);
+            
+            if (!searchTerm) {
+                filterVideos(currentCategory);
+                return;
+            }
+            
+            let filtered = videos.filter(video => 
+                video.title.toLowerCase().includes(searchTerm) ||
+                video.category.toLowerCase().includes(searchTerm) ||
+                video.platform.toLowerCase().includes(searchTerm)
+            );
+            
+            // Apply platform filter
+            if (currentPlatform !== 'all') {
+                filtered = filtered.filter(video => video.platform === currentPlatform);
+            }
+            
+            console.log(`Found ${filtered.length} videos for "${searchTerm}"`);
+            displayVideos(filtered);
+        }
+        
+        // Filter by category
+        function filterVideos(category) {
+            console.log('Filtering by category:', category);
+            currentCategory = category;
+            
+            // Update active tab
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            let filtered = videos;
+            
+            // Apply category filter
+            if (category !== 'all') {
+                filtered = filtered.filter(video => video.category === category);
+            }
+            
+            // Apply platform filter
+            if (currentPlatform !== 'all') {
+                filtered = filtered.filter(video => video.platform === currentPlatform);
+            }
+            
+            displayVideos(filtered);
+        }
+        
+        // Tonedown feature
+        function toggleTonedown() {
+            const btn = document.getElementById('tonedownBtn');
+            const status = document.getElementById('tonedownStatus');
+            const progress = document.getElementById('progressFill');
+            
+            if (!tonedownActive) {
+                tonedownActive = true;
+                btn.textContent = 'Stop Tonedown';
+                status.textContent = 'Tonedown in progress...';
+                
+                let progressValue = 0;
+                const interval = setInterval(() => {
+                    progressValue += 2;
+                    progress.style.width = progressValue + '%';
+                    
+                    const saturation = Math.max(0.1, 1 - (progressValue / 100) * 0.9);
+                    document.body.style.filter = `saturate(${saturation}) brightness(${1 - progressValue/200})`;
+                    
+                    if (progressValue >= 100) {
+                        clearInterval(interval);
+                        status.textContent = 'Tonedown complete!';
+                        btn.textContent = 'Reset';
+                        tonedownActive = false;
+                    }
+                }, 1000);
+                
+            } else {
+                tonedownActive = false;
+                btn.textContent = 'Start Tonedown';
+                status.textContent = 'Ready to start tonedown';
+                progress.style.width = '0%';
+                document.body.style.filter = 'none';
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Test functions
+        window.testApp = function() {
+            console.log('=== Multi-Platform KidsTube Test ===');
+            console.log('Videos loaded:', videos.length);
+            console.log('Selected video:', selectedVideo);
+            console.log('Current category:', currentCategory);
+            console.log('Current platform:', currentPlatform);
+        };
+        
+        window.testPlatform = function(platform) {
+            console.log('Testing platform:', platform);
+            switchPlatform(platform);
+        };
+    </script>
+</body>
+</html>
